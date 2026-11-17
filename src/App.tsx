@@ -183,9 +183,9 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
                   </ul>
                   <button
                     onClick={() => onOpen(t)}
-                    className="mt-3 inline-flex items-center gap-1.5 self-start rounded-full bg-wine px-4 py-2 text-sm text-rose hover:bg-wine-deep"
+                    className="mt-3 inline-flex items-center gap-1.5 self-start whitespace-nowrap rounded-full bg-wine px-4 py-2 text-sm text-rose hover:bg-wine-deep"
                   >
-                    <Pencil className="size-3.5" aria-hidden /> Customize template
+                    <Pencil className="size-3.5" aria-hidden /> Customize
                   </button>
                 </article>
               )
