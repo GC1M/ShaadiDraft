@@ -630,7 +630,8 @@ const chinar: Design = {
 // Gujarati Sandhya kankotri: the couple's own pink dusk artwork, one painted scene per page,
 // with the printed text removed (titles kept) so every language can be typed over it.
 // Text band under each page's printed calligraphy title, in story px. Order follows the Gujarati page titles.
-const SANDHYA_PAGES: [top: number, bottom: number][] = [[350, 380], [295, 320], [285, 275], [345, 292], [272, 310], [258, 420], [320, 370]]
+// [top, bottom, starting text size]: the original sets each page at its own size.
+const SANDHYA_PAGES: [top: number, bottom: number, size: number][] = [[350, 380, 1.3], [295, 320, 1.08], [285, 275, 1.3], [345, 292, 1.3], [272, 310, 1.3], [258, 420, 1.55], [320, 370, 1.3]]
 const sandhya: Design = {
   id: 'sandhya',
   sky: '#f1c4cf',
@@ -639,10 +640,12 @@ const sandhya: Design = {
   script: { gu: { title: '"Sandhya Gujarati Bold"', body: '"Sandhya Gujarati"' } },
   tracking: '0.04em',
   type: { body: 0.72, heading: 1.12, names: 2.15, rsvpHeading: 1.3, plainDate: true, lists: 'left', grow: 1.3 },
-  ornaments: { couple: `${import.meta.env.BASE_URL}templates/sandhya/couple.png`, swirl: [`${import.meta.env.BASE_URL}templates/sandhya/swirl-l.png`, `${import.meta.env.BASE_URL}templates/sandhya/swirl-r.png`] },
+  ornaments: Object.fromEntries(
+    Object.entries({ couple: 2.9, 'swirl-l': 2.6, 'swirl-r': 2.6, hands: 3.4, maps: 2.6 }).map(([k, w]) => [k, { src: `${import.meta.env.BASE_URL}templates/sandhya/${k}.png`, w }]),
+  ),
   Top: () => null,
   Bottom: () => null,
-  pages: SANDHYA_PAGES.map(([top, bottom], i) => ({ src: `${import.meta.env.BASE_URL}templates/sandhya/${i + 1}.jpg`, top, bottom, head: true })),
+  pages: SANDHYA_PAGES.map(([top, bottom, size], i) => ({ src: `${import.meta.env.BASE_URL}templates/sandhya/${i + 1}.jpg`, top, bottom, size, head: true })),
   safe: { story: { top: 160, bottom: 320, x: 14 }, print: { top: 48, bottom: 182, x: 12 } },
 }
 

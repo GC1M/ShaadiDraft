@@ -1,8 +1,8 @@
-import { useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
+import { createContext, useContext, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { LANGS } from '../i18n'
 import { templateById } from '../templates'
 import type { CoverPage, Format, Invite, Lang, Page, SectionsPage, SymbolId } from '../types'
-import { DESIGNS, type Design } from './designs'
+import { DESIGNS, type Design, type Ornaments } from './designs'
 import { Emblem, Flourish } from './motifs'
 
 export const SIZES: Record<Format, { w: number; h: number }> = {
@@ -37,14 +37,31 @@ function look(design: Design, lang: Lang): Look {
   }
 }
 
-// "\n" = new line, *word* = accent colour, **words** = large heading-colour line.
+// The design's artwork icons, for [[name]] in text.
+const Art = createContext<Ornaments>({})
+
+// "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold,
+// [[name]] = artwork icon, ___ = a rule to write on, and a line starting << or >> leans left or right.
 function Rich({ text, accent, big }: { text: string; accent: string; big: string }) {
+  const art = useContext(Art)
   return (
     <>
-      {text.split('\n').map((line, i) => (
-        <span key={i} style={{ display: 'block', minHeight: '1em' }}>
-          {line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/).map((part, j) =>
-            part.length > 4 && part.startsWith('**') && part.endsWith('**') ? (
+      {text.split('\n').map((raw, i) => {
+        const lean = raw.startsWith('<<') ? 'left' : raw.startsWith('>>') ? 'right' : undefined
+        const line = lean ? raw.slice(2) : raw
+        const pad = lean === 'left' ? { paddingLeft: '14%' } : lean === 'right' ? { paddingRight: '14%' } : {}
+        return (
+        <span key={i} style={{ display: 'block', minHeight: '1em', textAlign: lean, ...pad }}>
+          {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|_{3,})/).map((part, j) =>
+            /^\[\[.+\]\]$/.test(part) && art[part.slice(2, -2)] ? (
+              <img key={j} src={art[part.slice(2, -2)].src} alt="" style={{ display: 'inline-block', width: `${art[part.slice(2, -2)].w}em`, verticalAlign: 'middle' }} />
+            ) : /^_{3,}$/.test(part) ? (
+              <span key={j} style={{ display: 'inline-block', width: `${part.length * 0.45}em`, borderBottom: '1px solid currentColor', marginLeft: '0.2em' }} />
+            ) : part.length > 6 && part.startsWith('***') && part.endsWith('***') ? (
+              <span key={j} style={{ fontWeight: 700, fontSize: '1.2em' }}>
+                {part.slice(3, -3)}
+              </span>
+            ) : part.length > 4 && part.startsWith('**') && part.endsWith('**') ? (
               <span key={j} style={{ color: big, fontWeight: 700, fontSize: '1.6em', lineHeight: 1.25 }}>
                 {part.slice(2, -2)}
               </span>
@@ -57,14 +74,17 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
             ),
           )}
         </span>
-      ))}
+        )
+      })}
     </>
   )
 }
 
 function Heading({ x, children, size = 1.05 }: { x: Look; children: string; size?: number }) {
   if (!children.trim()) return null
-  const text = DANDA.includes(x.lang) ? `॥ ${children} ॥` : children
+  // Headings typed with their own marks (":: Li. Snehadhin ::") keep them.
+  const own = /^(::|॥|\|\||II )/.test(children.trim())
+  const text = DANDA.includes(x.lang) && !own ? `॥ ${children} ॥` : children
   return (
     <p style={{ fontFamily: x.f.heading, color: x.d.colors.heading, fontSize: `${size}em`, fontWeight: 700, letterSpacing: x.lang === 'en' ? '0.06em' : 0 }}>
       {text}
@@ -76,7 +96,7 @@ const P = ({ show, style, children }: { show: boolean; style: CSSProperties; chi
 
 function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId; head: boolean }) {
   const c = x.d.colors
-  const o = x.d.ornaments
+  const o = x.d.ornaments?.couple ? x.d.ornaments : undefined
   const ty = x.d.type ?? {}
   const name: CSSProperties = { fontFamily: x.f.names, color: c.names ?? c.heading, fontSize: `${ty.names ?? 1.95}em`, lineHeight: 1.2 }
   return (
@@ -111,7 +131,7 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
               </P>
             </div>
           ))}
-          <img src={o.couple} alt="" style={{ order: 1, width: '2.9em' }} />
+          <img src={o.couple.src} alt="" style={{ order: 1, width: `${o.couple.w}em` }} />
         </div>
       ) : (
         <div>
@@ -155,11 +175,11 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
         <div style={{ marginTop: ty.plainDate ? '1em' : 0 }}>
           {o ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35em' }}>
-              <img src={o.swirl[0]} alt="" style={{ width: '2.6em' }} />
+              <img src={o['swirl-l'].src} alt="" style={{ width: `${o['swirl-l'].w}em` }} />
               <Heading x={x} size={ty.rsvpHeading ?? 0.95}>
                 {p.rsvpTitle}
               </Heading>
-              <img src={o.swirl[1]} alt="" style={{ width: '2.6em' }} />
+              <img src={o['swirl-r'].src} alt="" style={{ width: `${o['swirl-r'].w}em` }} />
             </div>
           ) : (
             <Heading x={x} size={0.95}>
@@ -270,7 +290,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       const b = box.current
       const el = inner.current
       if (!b || !el) return
-      let k = SCALE[invite.scale] * (d.type?.grow ?? 1)
+      let k = SCALE[invite.scale] * (art?.size ?? d.type?.grow ?? 1)
       el.style.fontSize = `${base * k}px`
       while (el.scrollHeight > b.clientHeight + 1 && k > 0.5) {
         k -= 0.03
@@ -312,7 +332,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             fontSize: base,
           }}
         >
-          {page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={!!art?.head} /> : <Sections x={x} p={page} head={!!art?.head} />}
+          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={!!art?.head} /> : <Sections x={x} p={page} head={!!art?.head} />}</Art.Provider>
         </div>
       </div>
     </div>

@@ -268,7 +268,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
             <section ref={formRef} className="scroll-mt-24 space-y-5">
               <Step n={3} title={`Words on page ${index + 1}`} />
               <p className="text-[14px] leading-relaxed text-ink/65">
-                Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour, or in double stars, like **Rathod Parivar**, for a large line.
+                Press Enter for a new line. Wrap a word in stars, like *Sajode*, for the accent colour; **double stars** for a large line; ***triple stars*** for bold. Start a line with &lt;&lt; or &gt;&gt; to lean it left or right, and type ___ for a line to write on. Templates with artwork icons accept [[maps]] or [[hands]].
               </p>
               {page.kind === 'cover' ? (
                 <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
