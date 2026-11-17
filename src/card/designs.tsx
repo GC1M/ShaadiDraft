@@ -37,7 +37,8 @@ export interface Design {
   Overlay?: FC<{ h: number }> // full-card frame, h in 540-wide units
   // Full-bleed 1080x1920 artwork, one per page (cycled), replacing Top/Bottom/Overlay.
   // top/bottom are the text-free band in 540x960 story px; print crops the image to 5:7.
-  pages?: { src: string; top: number; bottom: number }[]
+  // head: the image already prints the page title, symbol and invocation, so the card leaves them out.
+  pages?: { src: string; top: number; bottom: number; head?: boolean }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }

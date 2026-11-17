@@ -70,21 +70,23 @@ function Heading({ x, children, size = 1.05 }: { x: Look; children: string; size
 
 const P = ({ show, style, children }: { show: boolean; style: CSSProperties; children: ReactNode }) => (show ? <div style={style}>{children}</div> : null)
 
-function Cover({ x, p, symbol }: { x: Look; p: CoverPage; symbol: SymbolId }) {
+function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId; head: boolean }) {
   const c = x.d.colors
   const name: CSSProperties = { fontFamily: x.f.names, color: c.heading, fontSize: '1.95em', lineHeight: 1.2 }
   return (
     <>
-      <P show={!!p.invocation} style={{ fontSize: '0.92em', color: c.heading, fontWeight: 600 }}>
+      <P show={!head && !!p.invocation} style={{ fontSize: '0.92em', color: c.heading, fontWeight: 600 }}>
         {p.invocation}
       </P>
-      <P show={!!p.shlok} style={{ fontSize: '0.76em', color: c.muted, lineHeight: 1.35 }}>
+      <P show={!head && !!p.shlok} style={{ fontSize: '0.76em', color: c.muted, lineHeight: 1.35 }}>
         <Rich text={p.shlok} accent={c.accent} />
       </P>
-      <div style={{ width: '3.4em', alignSelf: 'center' }}>
-        <Emblem symbol={symbol} color={c.title} accent={c.accent} size="100%" />
-      </div>
-      <P show={!!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.5em', lineHeight: 1.15 }}>
+      {!head && (
+        <div style={{ width: '3.4em', alignSelf: 'center' }}>
+          <Emblem symbol={symbol} color={c.title} accent={c.accent} size="100%" />
+        </div>
+      )}
+      <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.5em', lineHeight: 1.15 }}>
         {p.title}
       </P>
       <P show={!!p.hostLine} style={{ fontSize: '0.92em', lineHeight: 1.4 }}>
@@ -141,7 +143,7 @@ function Cover({ x, p, symbol }: { x: Look; p: CoverPage; symbol: SymbolId }) {
 type Sec = SectionsPage['sections'][number]
 const lineCount = (b: string) => b.split('\n').length
 
-function Sections({ x, p }: { x: Look; p: SectionsPage }) {
+function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
   const c = x.d.colors
   const short = (s: Sec) => !!s.heading && lineCount(s.body) <= 5 && s.heading.length < 24
   // Pair consecutive short sections side by side, as kankotris do; long ones take the full width.
@@ -156,12 +158,14 @@ function Sections({ x, p }: { x: Look; p: SectionsPage }) {
   }
   return (
     <>
-      <P show={!!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
+      <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
         {p.title}
       </P>
-      <div style={{ width: '9em', alignSelf: 'center' }}>
-        <Flourish color={c.heading} width="100%" />
-      </div>
+      {!head && (
+        <div style={{ width: '9em', alignSelf: 'center' }}>
+          <Flourish color={c.heading} width="100%" />
+        </div>
+      )}
       {rows.map((row, i) => (
         <div key={i} style={{ display: 'flex', gap: '1em', width: '100%' }}>
           {row.map((s, j) => (
@@ -243,7 +247,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             fontSize: base,
           }}
         >
-          {page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} /> : <Sections x={x} p={page} />}
+          {page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={!!art?.head} /> : <Sections x={x} p={page} head={!!art?.head} />}
         </div>
       </div>
     </div>
