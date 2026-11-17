@@ -1,3 +1,7 @@
+import { templates as batchA } from './card/designs-a'
+import { templates as batchB } from './card/designs-b'
+import { templates as batchC } from './card/designs-c'
+import { templates as batchD } from './card/designs-d'
 import { SAMPLES } from './i18n'
 import type { CoverPage, EventType, Invite, Lang, Page, SectionsPage, SymbolId } from './types'
 
@@ -39,6 +43,15 @@ export const TEMPLATES: Template[] = [
   },
   { id: 'mangalashtak', name: 'Mandapam Mangalashtak', design: 'paithani', lang: 'mr', symbol: 'ganesha', event: 'ring' },
   { id: 'bandhani', name: 'Bandhani Festive Invite', design: 'bandhani', lang: 'gu', symbol: 'ganesha', event: 'save-the-date' },
+  { id: 'ivory-monogram', name: 'Ivory Monogram Minimal', design: 'ivory', lang: 'en', symbol: 'floral', event: 'save-the-date' },
+  { id: 'nischayathartham', name: 'Nischayathartham Banana Leaf', design: 'nischayam', lang: 'ta', symbol: 'balaji', event: 'ring' },
+  { id: 'peacock-mehfil', name: 'Peacock Teal Mehfil', design: 'peacock', lang: 'en', symbol: 'floral', event: 'mehendi' },
+  { id: 'palace-night', name: 'Palace Night Lights', design: 'palace-night', lang: 'hi', symbol: 'ganesha', event: 'reception' },
+  { id: 'mangala-snanam', name: 'Mangala Snanam Turmeric Bath', design: 'snanam', lang: 'ta', symbol: 'balaji', event: 'haldi' },
+  ...batchA,
+  ...batchB,
+  ...batchC,
+  ...batchD,
 ]
 
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0]
