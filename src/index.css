@@ -1,17 +1,43 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Cinzel", serif;
+  --font-display: "Bodoni Moda", "Didot", serif;
+  --font-sans: "Jost", system-ui, sans-serif;
   --font-serif: "Cormorant Garamond", Georgia, serif;
-  --font-script: "Great Vibes", cursive;
-  --font-deva: "Noto Sans Devanagari", sans-serif;
-  --color-ivory: #fbf6ec;
-  --color-maroon: #7a1f1f;
-  --color-gold: #b8860b;
-  --color-marigold: #f08a00;
+  --font-deva: "Tiro Devanagari Hindi", serif;
+  --font-bodoni: "Bodoni Moda", Didot, serif;
+  --font-mulish: "Mulish", system-ui, sans-serif;
+  --color-wine: #4a0e1c;
+  --color-wine-deep: #2c0710;
+  --color-zari: #c9a45c;
+  --color-zari-light: #d8b56c;
+  --color-rose: #f7edea;
+  --color-ink: #2b1418;
+  /* editor aliases */
+  --color-ivory: #f7edea;
+  --color-maroon: #6b1428;
+  --color-gold: #9a7330;
 }
 
 body {
-  background: var(--color-ivory);
-  color: #2b1d14;
+  background: var(--color-rose);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-gold);
+  outline-offset: 3px;
+}
+
+/* The one orchestrated moment: the hero cards settle into place on load. Tilt comes from the
+   per-card `rotate` property, so the keyframes only move. */
+@keyframes settle {
+  from { opacity: 0; transform: translateY(28px); }
+  to { opacity: 1; transform: none; }
+}
+.bg-wine :focus-visible { outline-color: var(--color-zari); }
+.hero-card { animation: settle 900ms cubic-bezier(.2,.7,.2,1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .hero-card { animation: none; }
 }

@@ -1,281 +1,325 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
-import { PAGE_TITLES, RoyalMarigoldPage } from './card/RoyalMarigold'
-import { defaultInvite, sampleInvite, type AuspiciousHeader, type EventInfo, type PageId, type Person, type WeddingInviteData } from './types'
-import { AdSlot, ScaledCard } from './ui'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { Wordmark } from './App'
+import { CardPage, SIZES } from './card/Card'
+import { LANGS, SAMPLES } from './i18n'
+import { samplePages, sectionsPage, templateById } from './templates'
+import { TransliterateInput } from './transliterate'
+import { LANG_IDS, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type SectionsPage } from './types'
+import { ScaledCard, Segmented } from './ui'
 
-type Props = { data: WeddingInviteData; setData: Dispatch<SetStateAction<WeddingInviteData>> }
+type Props = { invite: Invite; setInvite: Dispatch<SetStateAction<Invite | null>>; onBack: () => void }
 
-const HEADERS: { value: AuspiciousHeader; label: string }[] = [
-  { value: 'ganesh', label: 'Shree Ganeshay Namah' },
-  { value: 'ikonkar', label: 'Ik Onkar' },
-  { value: 'bismillah', label: 'Bismillah' },
-  { value: 'custom', label: 'Custom text' },
-  { value: 'none', label: 'None' },
-]
+const inputCls = 'mt-1 w-full rounded-lg border border-stone-400 bg-white px-3 py-2 text-base outline-none focus:border-maroon focus:ring-2 focus:ring-maroon/20'
+const stripIds = (pages: Page[]) => JSON.stringify(pages.map(({ id: _id, ...rest }) => rest))
 
-const EXTRA_FIELD = {
-  haldi: { key: 'dressCode', label: 'Dress code note', placeholder: 'Shades of yellow & green' },
-  sangeet: { key: 'rsvp', label: 'RSVP contact', placeholder: 'Name · +91 98765 43210' },
-  reception: { key: 'hosts', label: 'Family host footer', placeholder: 'The Sharma & Mehta Families' },
-} as const
+export default function Editor({ invite, setInvite, onBack }: Props) {
+  const t = templateById(invite.templateId)
+  const [current, setCurrent] = useState(invite.pages[0]?.id)
+  const [zoom, setZoom] = useState<'fit' | '100'>('fit')
+  const [phonetic, setPhonetic] = useState(true)
+  const [busy, setBusy] = useState<'' | 'png' | 'pdf' | 'share'>('')
+  const [toast, setToast] = useState('')
+  const exportRef = useRef<HTMLDivElement>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
 
-const inputCls =
-  'mt-1 w-full rounded-md border border-stone-300 bg-white px-3 py-2 text-[15px] outline-none focus:border-maroon focus:ring-2 focus:ring-maroon/20'
+  const page = invite.pages.find((p) => p.id === current) ?? invite.pages[0]
+  const index = invite.pages.indexOf(page)
+  const { w, h } = SIZES[invite.format]
+  const L = invite.lang
 
-function Field(props: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string }) {
-  return (
-    <label className="block">
-      <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">{props.label}</span>
-      <input
-        type={props.type ?? 'text'}
-        value={props.value}
-        placeholder={props.placeholder}
-        onChange={(e) => props.onChange(e.target.value)}
-        className={inputCls}
-      />
-    </label>
-  )
-}
+  useEffect(() => {
+    if (!toast) return
+    const id = setTimeout(() => setToast(''), 3500)
+    return () => clearTimeout(id)
+  }, [toast])
 
-export default function Editor({ data, setData }: Props) {
-  const [tab, setTab] = useState<'edit' | 'preview'>('edit')
-  const [page, setPage] = useState<PageId>('cover')
-  const [exporting, setExporting] = useState<ExportKind | null>(null)
+  // Keep the page being edited in view in the preview.
+  useEffect(() => {
+    const box = previewRef.current
+    const el = box?.querySelector<HTMLElement>(`[data-page="${page.id}"]`)
+    if (box && el) box.scrollTo({ top: el.offsetTop - 16, behavior: 'smooth' })
+  }, [page.id, zoom, invite.format])
 
-  const pages: PageId[] = ['cover', ...data.pages.filter((p) => p.enabled).map((p) => p.id)]
-  const current = pages.includes(page) ? page : 'cover'
+  const set = (patch: Partial<Invite>) => setInvite((i) => i && { ...i, ...patch })
+  const editPage = (fn: (p: Page) => Page) => setInvite((i) => i && { ...i, pages: i.pages.map((p) => (p.id === page.id ? fn(p) : p)) })
+  const editCover = (patch: Partial<CoverPage>) => editPage((p) => ({ ...(p as CoverPage), ...patch }))
+  const editSections = (fn: (p: SectionsPage) => SectionsPage) => editPage((p) => fn(p as SectionsPage))
 
-  // Clone-and-mutate keeps nested updates one-liners.
-  const edit = (fn: (d: WeddingInviteData) => void) =>
-    setData((d) => {
-      const copy = structuredClone(d)
-      fn(copy)
-      return copy
-    })
-
-  const personFields = (who: 'bride' | 'groom', title: string) => {
-    const p = data.cover[who]
-    const set = (k: keyof Person) => (v: string) => edit((d) => void (d.cover[who][k] = v))
-    return (
-      <fieldset className="space-y-3">
-        <legend className="mb-2 font-display text-sm font-bold text-maroon">{title}</legend>
-        <Field label="Full name" value={p.name} onChange={set('name')} />
-        <Field label="Parents" value={p.parents} onChange={set('parents')} placeholder="Mr. & Mrs. ..." />
-        <Field label="Grandparents" value={p.grandparents} onChange={set('grandparents')} placeholder="Shri & Smt. ..." />
-      </fieldset>
-    )
+  const untouched = stripIds(invite.pages) === stripIds(samplePages(t, invite.lang))
+  const changeLang = (lang: Lang) => {
+    if (untouched || confirm(`Replace your text with the ${LANGS[lang].name} sample text? Choose Cancel to keep your text and only switch fonts and typing.`)) {
+      const pages = samplePages(t, lang)
+      set({ lang, pages })
+      setCurrent(pages[0].id)
+    } else set({ lang })
+  }
+  const reset = () => {
+    if (!confirm('Replace every page with the sample text?')) return
+    const pages = samplePages(t, invite.lang)
+    set({ pages })
+    setCurrent(pages[0].id)
   }
 
-  const eventFields = (info: EventInfo, set: (k: keyof EventInfo, v: string) => void, timeLabel = 'Time') => (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-      <Field label="Date" type="date" value={info.date} onChange={(v) => set('date', v)} />
-      <Field label={timeLabel} value={info.time} onChange={(v) => set('time', v)} placeholder="7:30 PM onwards" />
-      <Field label="Venue" value={info.venue} onChange={(v) => set('venue', v)} />
-      <Field label="Address / City" value={info.address} onChange={(v) => set('address', v)} />
-    </div>
-  )
-
-  const move = (i: number, dir: -1 | 1) =>
-    edit((d) => {
-      const j = i + dir
-      ;[d.pages[i], d.pages[j]] = [d.pages[j], d.pages[i]]
+  const move = (dir: -1 | 1) =>
+    setInvite((i) => {
+      if (!i) return i
+      const pages = [...i.pages]
+      const j = index + dir
+      ;[pages[index], pages[j]] = [pages[j], pages[index]]
+      return { ...i, pages }
     })
+  const remove = () => {
+    if (invite.pages.length < 2 || !confirm('Delete this page?')) return
+    const pages = invite.pages.filter((p) => p.id !== page.id)
+    set({ pages })
+    setCurrent(pages[Math.max(0, index - 1)].id)
+  }
+  const s = SAMPLES[L]
+  const PAGE_KINDS: { label: string; make: () => SectionsPage }[] = [
+    { label: 'Event details', make: () => sectionsPage(s.functions.title, s.functions.sections.slice(0, 2)) },
+    { label: 'Invitation letter', make: () => sectionsPage(s.letter.title, [['', s.letter.body]]) },
+    { label: 'Family names', make: () => sectionsPage(s.family.title, s.family.sections) },
+    { label: 'Message / RSVP', make: () => sectionsPage(s.message.title, [['', s.message.body]]) },
+  ]
+  const addPage = (make: () => SectionsPage) => {
+    const p = make()
+    set({ pages: [...invite.pages, p] })
+    setCurrent(p.id)
+  }
+
+  const cover = invite.pages.find((p) => p.kind === 'cover') as CoverPage | undefined
+  const slug =
+    [cover?.bride.name, cover?.groom.name]
+      .map((n) => (n ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ''))
+      .filter(Boolean)
+      .join('-') || 'wedding'
+
+  // Renders pages off-screen at full size, then captures them.
+  const [exportPages, setExportPages] = useState<Page[] | null>(null)
+  const run = async (kind: 'png' | 'pdf' | 'share') => {
+    setBusy(kind)
+    setExportPages(kind === 'png' ? [page] : invite.pages)
+    await new Promise((r) => setTimeout(r, 60)) // let the off-screen pages mount
+    try {
+      const m = await import('./pdf')
+      const el = exportRef.current!
+      if (kind === 'pdf') {
+        save(await m.buildPdf(el, invite.format, `${slug}-invitation`))
+        setToast('PDF downloaded')
+      } else {
+        const files = await m.buildPngs(el, invite.format, kind === 'png' ? `${slug}-page-${index + 1}` : `${slug}-invitation`)
+        if (kind === 'share' && navigator.canShare?.({ files })) {
+          await navigator.share({ files, title: 'Wedding invitation' }).catch((e) => {
+            if (e.name !== 'AbortError') throw e
+          })
+        } else {
+          files.forEach(save)
+          setToast(files.length > 1 ? `${files.length} images downloaded` : 'Image downloaded')
+        }
+      }
+    } catch (e) {
+      console.error(e)
+      setToast('Could not create the file. Please try again.')
+    } finally {
+      setBusy('')
+      setExportPages(null)
+    }
+  }
+
+  const btn = 'inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-60'
+  const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-stone-200 bg-ivory/95 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
-          <a href="#" className="font-display text-sm font-bold tracking-wider text-maroon sm:text-base sm:tracking-widest">
-            ShaadiDraft
-          </a>
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => setData((d) => sampleInvite(d.themeId, d.pages))}
-              className="whitespace-nowrap rounded-full border border-maroon px-2.5 py-1.5 text-xs sm:px-3 sm:text-sm font-medium text-maroon hover:bg-maroon/5"
-            >
-              <span className="hidden sm:inline">Quick </span>Sample Fill
+      <header className="sticky top-0 z-20 bg-wine text-rose shadow-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
+          <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-rose/85 hover:text-rose">
+            <ArrowLeft className="size-4" aria-hidden /> Back to templates
+          </button>
+          <span className="hidden sm:inline">
+            <Wordmark />
+          </span>
+          <div className="ml-auto flex flex-wrap gap-2">
+            <button onClick={() => run('png')} disabled={!!busy} className={`${btn} bg-zari text-wine-deep hover:bg-zari-light`}>
+              {busy === 'png' ? <Loader2 className="size-4 animate-spin" /> : <ImageDown className="size-4" />} Download PNG
             </button>
-            <button
-              onClick={() => setExporting('pdf')}
-              className="whitespace-nowrap rounded-full bg-maroon px-3 py-1.5 text-xs sm:px-4 sm:text-sm font-semibold text-white hover:bg-[#5f1717]"
-            >
-              Download PDF
+            <button onClick={() => run('pdf')} disabled={!!busy} className={`${btn} border border-zari/80 text-rose hover:bg-white/10`}>
+              {busy === 'pdf' ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />} PDF ({invite.pages.length})
             </button>
+            {canShare && (
+              <button onClick={() => run('share')} disabled={!!busy} className={`${btn} border border-zari/80 text-rose hover:bg-white/10`}>
+                {busy === 'share' ? <Loader2 className="size-4 animate-spin" /> : <Share2 className="size-4" />} Share
+              </button>
+            )}
           </div>
-        </div>
-        <div className="grid grid-cols-2 lg:hidden" role="tablist">
-          {(['edit', 'preview'] as const).map((t) => (
-            <button
-              key={t}
-              role="tab"
-              aria-selected={tab === t}
-              onClick={() => setTab(t)}
-              className={`border-b-2 py-2.5 text-sm font-semibold ${tab === t ? 'border-maroon text-maroon' : 'border-transparent text-stone-500'}`}
-            >
-              {t === 'edit' ? 'Edit Details' : 'Live Preview'}
-            </button>
-          ))}
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]">
-        {/* ---------- Form ---------- */}
-        <div className={`space-y-6 ${tab === 'edit' ? '' : 'hidden'} lg:block`}>
-          <section className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
-            <h2 className="font-display text-lg font-bold text-maroon">Page 1 · Main Wedding Invite</h2>
-            <label className="block">
-              <span className="text-xs font-semibold uppercase tracking-wide text-stone-600">Auspicious header</span>
-              <select
-                value={data.cover.header}
-                onChange={(e) => edit((d) => void (d.cover.header = e.target.value as AuspiciousHeader))}
-                className={inputCls}
-              >
-                {HEADERS.map((h) => (
-                  <option key={h.value} value={h.value}>
-                    {h.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            {data.cover.header === 'custom' && (
-              <Field
-                label="Custom header text"
-                value={data.cover.customHeader}
-                onChange={(v) => edit((d) => void (d.cover.customHeader = v))}
-                placeholder="|| Shubh Vivah ||"
-              />
-            )}
-            <div className="grid gap-6 sm:grid-cols-2">
-              {personFields('bride', 'Bride')}
-              {personFields('groom', 'Groom')}
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)]">
+        <div className="min-w-0 space-y-8">
+          <section className="space-y-4">
+            <h1 className="font-display text-3xl">{t.name}</h1>
+            <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
+              <label className="block">
+                <span className="text-[13px] text-stone-600">Card language</span>
+                <select value={L} onChange={(e) => changeLang(e.target.value as Lang)} className={`${inputCls} w-auto`}>
+                  {LANG_IDS.map((l) => (
+                    <option key={l} value={l}>
+                      {l === 'en' ? 'English' : `${LANGS[l].name} (${LANGS[l].native})`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Control label="Card shape">
+                <Segmented<Format>
+                  label="Card shape"
+                  value={invite.format}
+                  onChange={(format) => set({ format })}
+                  options={[
+                    { id: 'story', label: 'Phone 9:16' },
+                    { id: 'print', label: 'Print 5:7' },
+                  ]}
+                />
+              </Control>
+              <Control label="Text size">
+                <Segmented<FontScale>
+                  label="Text size"
+                  value={invite.scale}
+                  onChange={(scale) => set({ scale })}
+                  options={[
+                    { id: 's', label: 'S' },
+                    { id: 'm', label: 'M' },
+                    { id: 'l', label: 'L' },
+                  ]}
+                />
+              </Control>
             </div>
-            <h3 className="pt-2 font-display text-sm font-bold text-maroon">Wedding Ceremony</h3>
-            {eventFields(data.cover.wedding, (k, v) => edit((d) => void (d.cover.wedding[k] = v)), 'Muhurat / Time')}
+            {L !== 'en' && (
+              <label className="flex items-start gap-2 text-[15px] text-stone-700">
+                <input type="checkbox" checked={phonetic} onChange={(e) => setPhonetic(e.target.checked)} className="mt-1 size-4 accent-maroon" />
+                <span>
+                  Type in English letters and get {LANGS[L].native}. Press space to accept a word, Esc to keep English.
+                  <span className="block text-[13px] text-stone-500">Each word you type is sent to Google's transliteration service.</span>
+                </span>
+              </label>
+            )}
           </section>
 
-          <section className="space-y-3">
-            <h2 className="font-display text-lg font-bold text-maroon">Event Pages</h2>
-            {data.pages.map((p, i) => {
-              const extra = EXTRA_FIELD[p.id]
-              const ev = data.events[p.id]
-              return (
-                <details key={p.id} className="group rounded-xl bg-white shadow-sm ring-1 ring-stone-200">
-                  <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
-                    <input
-                      type="checkbox"
-                      checked={p.enabled}
-                      onClick={(e) => e.stopPropagation()}
-                      onChange={(e) => edit((d) => void (d.pages[i].enabled = e.target.checked))}
-                      aria-label={`Include ${PAGE_TITLES[p.id]} page`}
-                      className="size-4 accent-maroon"
-                    />
-                    <span className={`font-semibold ${p.enabled ? 'text-stone-800' : 'text-stone-400 line-through'}`}>
-                      {PAGE_TITLES[p.id]}
-                    </span>
-                    <span className="ml-auto flex gap-1">
-                      {([-1, 1] as const).map((dir) => (
-                        <button
-                          key={dir}
-                          type="button"
-                          disabled={i + dir < 0 || i + dir >= data.pages.length}
-                          onClick={(e) => {
-                            e.preventDefault()
-                            move(i, dir)
-                          }}
-                          aria-label={`Move ${PAGE_TITLES[p.id]} ${dir < 0 ? 'up' : 'down'}`}
-                          className="rounded border border-stone-300 px-2 py-0.5 text-sm text-stone-600 hover:bg-stone-100 disabled:opacity-30"
-                        >
-                          {dir < 0 ? '↑' : '↓'}
-                        </button>
-                      ))}
-                      <span className="px-1 text-stone-400 transition group-open:rotate-180">▾</span>
-                    </span>
-                  </summary>
-                  <div className="space-y-3 border-t border-stone-100 p-4">
-                    {eventFields(ev, (k, v) => edit((d) => void (d.events[p.id][k] = v)))}
-                    <Field
-                      label={extra.label}
-                      value={(ev as unknown as Record<string, string>)[extra.key]}
-                      placeholder={extra.placeholder}
-                      onChange={(v) => edit((d) => void ((d.events[p.id] as unknown as Record<string, string>)[extra.key] = v))}
-                    />
-                  </div>
-                </details>
-              )
-            })}
-          </section>
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              onClick={() => setExporting('pdf')}
-              className="rounded-full bg-maroon px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#5f1717]"
-            >
-              Download PDF ({pages.length} {pages.length === 1 ? 'page' : 'pages'})
-            </button>
-            <button
-              onClick={() => setExporting('images')}
-              className="rounded-full border border-maroon px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-maroon/5"
-            >
-              Images for WhatsApp
-            </button>
-            <button
-              onClick={() => confirm('Clear all details and start over?') && setData((d) => defaultInvite(d.themeId))}
-              className="rounded-full px-4 py-2.5 text-sm text-stone-500 hover:text-maroon"
-            >
-              Reset
-            </button>
-          </div>
-
-          <AdSlot slot="editor-below-controls" />
-        </div>
-
-        {/* ---------- Preview (ad-free) ---------- */}
-        <div className={`${tab === 'preview' ? '' : 'hidden'} lg:block`}>
-          <div className="space-y-4 lg:sticky lg:top-20">
-            <div className="flex flex-wrap justify-center gap-1.5" role="tablist" aria-label="Card pages">
-              {pages.map((id, n) => (
+          <section className="space-y-3 border-t border-zari/50 pt-6">
+            <div className="flex flex-wrap items-center gap-2">
+              <h2 className="mr-2 font-display text-xl">Pages</h2>
+              {invite.pages.map((p, i) => (
                 <button
-                  key={id}
-                  role="tab"
-                  aria-selected={current === id}
-                  onClick={() => setPage(id)}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                    current === id ? 'bg-maroon text-white' : 'bg-white text-stone-600 ring-1 ring-stone-200'
-                  }`}
+                  key={p.id}
+                  onClick={() => setCurrent(p.id)}
+                  aria-current={p.id === page.id}
+                  className={`max-w-[11rem] truncate rounded-full px-3.5 py-1.5 text-sm ${p.id === page.id ? 'bg-maroon text-white' : 'bg-white text-stone-700 ring-1 ring-stone-300'}`}
                 >
-                  {n + 1}. {PAGE_TITLES[id]}
+                  {i + 1}. {(p.kind === 'cover' ? p.title : p.title) || 'Untitled'}
                 </button>
               ))}
             </div>
-            <ScaledCard>
-              <RoyalMarigoldPage data={data} page={current} />
-            </ScaledCard>
-            <div className="flex justify-center gap-2">
-              <button
-                onClick={() => setExporting('pdf')}
-                className="rounded-full bg-maroon px-5 py-2 text-sm font-semibold text-white hover:bg-[#5f1717]"
-              >
-                Download PDF
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <button onClick={() => move(-1)} disabled={index === 0} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Move page earlier">
+                <ArrowUp className="size-4" />
               </button>
-              <button
-                onClick={() => setExporting('images')}
-                className="rounded-full border border-maroon px-5 py-2 text-sm font-semibold text-maroon hover:bg-maroon/5"
-              >
-                Images for WhatsApp
+              <button onClick={() => move(1)} disabled={index === invite.pages.length - 1} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Move page later">
+                <ArrowDown className="size-4" />
               </button>
+              <button onClick={remove} disabled={invite.pages.length < 2} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Delete page">
+                <Trash2 className="size-4" />
+              </button>
+              <span className="ml-2 text-stone-500">Add page:</span>
+              {PAGE_KINDS.map((k) => (
+                <button key={k.label} onClick={() => addPage(k.make)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-maroon ring-1 ring-maroon/40 hover:bg-maroon/5">
+                  <Plus className="size-3.5" aria-hidden /> {k.label}
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="space-y-4 border-t border-zari/50 pt-6">
+            <p className="text-[13px] text-stone-600">
+              Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour.
+            </p>
+            {page.kind === 'cover' ? (
+              <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
+            ) : (
+              <SectionsForm p={page} on={editSections} lang={L} phonetic={phonetic} />
+            )}
+            <button onClick={reset} className="inline-flex items-center gap-1.5 text-sm text-stone-600 hover:text-maroon">
+              <RotateCcw className="size-4" aria-hidden /> Reset to sample text
+            </button>
+          </section>
+        </div>
+
+        <aside className="min-w-0">
+          <div className="space-y-3 lg:sticky lg:top-24">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-stone-600">
+                Page {index + 1} of {invite.pages.length}
+              </p>
+              <Segmented<'fit' | '100'>
+                label="Zoom"
+                value={zoom}
+                onChange={setZoom}
+                options={[
+                  { id: 'fit', label: 'Fit' },
+                  { id: '100', label: '100%' },
+                ]}
+              />
+            </div>
+            {/* Every page in one scrollable column, like a PDF viewer. Click a page to edit it. */}
+            <div ref={previewRef} className="relative max-h-[80vh] space-y-5 overflow-auto rounded-lg bg-stone-200/50 p-4 ring-1 ring-stone-300 lg:max-h-[calc(100vh-9rem)]">
+              {invite.pages.map((p, i) => (
+                <button
+                  key={p.id}
+                  data-page={p.id}
+                  onClick={() => setCurrent(p.id)}
+                  aria-label={`Edit page ${i + 1}`}
+                  aria-current={p.id === page.id}
+                  className={`mx-auto block rounded-sm ${p.id === page.id ? 'ring-2 ring-maroon ring-offset-4 ring-offset-stone-100' : ''}`}
+                  style={zoom === 'fit' ? { width: '100%', maxWidth: invite.format === 'story' ? 380 : 460 } : { width: w }}
+                >
+                  <div className="pointer-events-none">
+                    {zoom === 'fit' ? (
+                      <ScaledCard w={w} h={h}>
+                        <CardPage invite={invite} page={p} />
+                      </ScaledCard>
+                    ) : (
+                      <div className="shadow-xl">
+                        <CardPage invite={invite} page={p} />
+                      </div>
+                    )}
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-        </div>
+        </aside>
       </main>
 
-      {exporting && <DownloadModal kind={exporting} data={data} pages={pages} onClose={() => setExporting(null)} />}
+      {exportPages && (
+        <div ref={exportRef} aria-hidden className="pointer-events-none fixed top-0" style={{ left: -100000 }}>
+          {exportPages.map((p) => (
+            <div key={p.id}>
+              <CardPage invite={invite} page={p} />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {toast && (
+        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-rose shadow-xl">
+          <Check className="size-4 text-zari" aria-hidden /> {toast}
+        </div>
+      )}
     </div>
   )
 }
 
-type ExportKind = 'pdf' | 'images'
-
-function saveFile(file: File) {
+function save(file: File) {
   const a = document.createElement('a')
   a.href = URL.createObjectURL(file)
   a.download = file.name
@@ -283,113 +327,89 @@ function saveFile(file: File) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
-function DownloadModal({
-  kind,
-  data,
-  pages,
-  onClose,
-}: {
-  kind: ExportKind
-  data: WeddingInviteData
-  pages: PageId[]
-  onClose: () => void
-}) {
-  const exportRef = useRef<HTMLDivElement>(null)
-  const [error, setError] = useState('')
-  const [files, setFiles] = useState<File[] | null>(null)
-  const slug =
-    [data.cover.bride.name, data.cover.groom.name]
-      .map((n) => n.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, ''))
-      .filter(Boolean)
-      .join('-') || 'wedding'
+const Control = ({ label, children }: { label: string; children: ReactNode }) => (
+  <div>
+    <span className="mb-1 block text-[13px] text-stone-600">{label}</span>
+    {children}
+  </div>
+)
 
-  useEffect(() => {
-    let cancelled = false
-    const work = import('./pdf').then(async (m) => {
-      if (kind === 'images') return m.buildImages(exportRef.current!, `${slug}-invitation`)
-      return (await m.buildPdf(exportRef.current!)).output('blob')
-    })
-    // Hold the modal for at least 3s so the ad zone gets a fair impression.
-    Promise.all([work, new Promise((r) => setTimeout(r, 3000))])
-      .then(([result]) => {
-        if (cancelled) return
-        if (Array.isArray(result)) return setFiles(result)
-        saveFile(new File([result], `${slug}-invitation.pdf`, { type: 'application/pdf' }))
-        onClose()
-      })
-      .catch((e) => {
-        console.error(e)
-        if (!cancelled) setError('Something went wrong while creating your invitation. Please try again.')
-      })
-    return () => {
-      cancelled = true
-    }
-    // Runs once per modal open; data is a snapshot of that moment.
-  }, [])
+type FieldProps = { label: string; value: string; onChange: (v: string) => void; lang: Lang; phonetic: boolean; multiline?: boolean; rows?: number }
 
-  // navigator.share needs a fresh user tap, so it runs from a button once images are ready.
-  const canShare = !!files && !!navigator.canShare?.({ files })
-  const share = () =>
-    navigator.share({ files: files!, title: 'Wedding Invitation' }).catch((e) => {
-      if (e.name !== 'AbortError') setError('Sharing failed. Use "Save images" instead.')
-    })
-
-  const btn = 'w-full rounded-full px-5 py-2.5 text-sm font-semibold'
+function Field({ label, value, onChange, lang, phonetic, multiline, rows = 3 }: FieldProps) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
-      <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 text-center shadow-2xl">
-        {error ? (
-          <>
-            <p className="text-sm text-red-700">{error}</p>
-            <button onClick={onClose} className={`${btn} bg-maroon text-white`}>
-              Close
-            </button>
-          </>
-        ) : files ? (
-          <>
-            <p className="font-display font-bold text-maroon">Your invitation images are ready</p>
-            <p className="text-xs text-stone-500">
-              {files.length} {files.length === 1 ? 'image' : 'images'} · ready to send on WhatsApp
-            </p>
-            <div className="space-y-2">
-              {canShare && (
-                <button onClick={share} className={`${btn} bg-[#1f8f4e] text-white hover:bg-[#187040]`}>
-                  Share to WhatsApp
-                </button>
-              )}
-              <button
-                onClick={() => files.forEach(saveFile)}
-                className={`${btn} ${canShare ? 'border border-maroon text-maroon' : 'bg-maroon text-white'}`}
-              >
-                Save images
-              </button>
-              <button onClick={onClose} className="text-sm text-stone-500 hover:text-maroon">
-                Close
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="mx-auto size-10 animate-spin rounded-full border-4 border-gold/30 border-t-maroon" />
-            <p className="font-display font-bold text-maroon">
-              {kind === 'pdf' ? 'Preparing your high-resolution PDF...' : 'Preparing your invitation images...'}
-            </p>
-            <p className="text-xs text-stone-500">
-              {pages.length} {pages.length === 1 ? 'page' : 'pages'} · {kind === 'pdf' ? 'A5 · print-ready' : 'JPEG · WhatsApp-ready'}
-            </p>
-          </>
-        )}
-        <AdSlot slot="download-modal" className="min-h-[250px]" />
-      </div>
+    <label className="block">
+      <span className="text-[13px] text-stone-600">{label}</span>
+      <TransliterateInput lang={lang} enabled={phonetic} value={value} onChange={onChange} multiline={multiline} rows={multiline ? rows : undefined} className={inputCls} />
+    </label>
+  )
+}
 
-      {/* Full-size, unscaled pages captured for export. Off-screen but rendered (not display:none). */}
-      <div ref={exportRef} aria-hidden className="pointer-events-none fixed top-0" style={{ left: -100000 }}>
-        {pages.map((id) => (
-          <div key={id}>
-            <RoyalMarigoldPage data={data} page={id} />
-          </div>
-        ))}
+function CoverForm({ p, on, lang, phonetic }: { p: CoverPage; on: (patch: Partial<CoverPage>) => void; lang: Lang; phonetic: boolean }) {
+  const f = (label: string, key: keyof CoverPage, multiline = false) => (
+    <Field label={label} value={p[key] as string} onChange={(v) => on({ [key]: v })} lang={lang} phonetic={phonetic} multiline={multiline} rows={2} />
+  )
+  const person = (who: 'bride' | 'groom', title: string) => (
+    <fieldset className="space-y-3">
+      <legend className="mb-1 font-display text-lg">{title}</legend>
+      <Field label="Name" value={p[who].name} onChange={(name) => on({ [who]: { ...p[who], name } })} lang={lang} phonetic={phonetic} />
+      <Field label="Parents (optional)" value={p[who].parents} onChange={(parents) => on({ [who]: { ...p[who], parents } })} lang={lang} phonetic={phonetic} />
+    </fieldset>
+  )
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 sm:grid-cols-2">
+        {f('Sacred invocation / header', 'invocation')}
+        {f('Event title', 'title')}
       </div>
+      {f('Shlok (optional)', 'shlok', true)}
+      {f('Host / parents line', 'hostLine', true)}
+      <div className="grid gap-6 sm:grid-cols-2">
+        {person('bride', 'Bride')}
+        {person('groom', 'Groom')}
+      </div>
+      {f('Word between the names', 'joiner')}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {f('Date & day', 'date')}
+        {f('Time / Shubh Muhurat', 'time')}
+        {f('Venue name', 'venue')}
+        {f('Full address', 'address')}
+        {f('RSVP heading', 'rsvpTitle')}
+      </div>
+      {f('RSVP / family contact details', 'rsvp', true)}
+    </div>
+  )
+}
+
+function SectionsForm({ p, on, lang, phonetic }: { p: SectionsPage; on: (fn: (p: SectionsPage) => SectionsPage) => void; lang: Lang; phonetic: boolean }) {
+  const setSection = (i: number, patch: Partial<SectionsPage['sections'][number]>) =>
+    on((q) => ({ ...q, sections: q.sections.map((s, j) => (j === i ? { ...s, ...patch } : s)) }))
+  return (
+    <div className="space-y-5">
+      <Field label="Page title" value={p.title} onChange={(title) => on((q) => ({ ...q, title }))} lang={lang} phonetic={phonetic} />
+      {p.sections.map((s, i) => (
+        <fieldset key={i} className="space-y-3 rounded-xl bg-white/60 p-4 ring-1 ring-stone-300">
+          <div className="flex items-end gap-2">
+            <div className="flex-1">
+              <Field label={`Section ${i + 1} heading (optional)`} value={s.heading} onChange={(heading) => setSection(i, { heading })} lang={lang} phonetic={phonetic} />
+            </div>
+            <button
+              onClick={() => on((q) => ({ ...q, sections: q.sections.filter((_, j) => j !== i) }))}
+              className="mb-0.5 inline-flex size-10 items-center justify-center rounded-full text-stone-500 ring-1 ring-stone-300 hover:text-maroon"
+              aria-label={`Remove section ${i + 1}`}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </div>
+          <Field label="Text" value={s.body} onChange={(body) => setSection(i, { body })} lang={lang} phonetic={phonetic} multiline rows={Math.min(10, Math.max(3, s.body.split('\n').length + 1))} />
+        </fieldset>
+      ))}
+      <button
+        onClick={() => on((q) => ({ ...q, sections: [...q.sections, { heading: '', body: '' }] }))}
+        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm text-maroon ring-1 ring-maroon/40 hover:bg-maroon/5"
+      >
+        <Plus className="size-4" aria-hidden /> Add section
+      </button>
     </div>
   )
 }

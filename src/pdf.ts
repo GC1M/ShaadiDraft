@@ -1,40 +1,42 @@
-import { getFontEmbedCSS, toJpeg } from 'html-to-image'
+import { getFontEmbedCSS, toJpeg, toPng } from 'html-to-image'
 import { jsPDF } from 'jspdf'
+import type { Format } from './types'
 
-// Each direct child of `container` is one CARD_W x CARD_H page rendered at full size.
-// Returns one JPEG data URL per page.
-export async function capturePages(container: HTMLElement, pixelRatio: number) {
+// story: 2x -> 1080 x 1920 (WhatsApp / status). print: 4x -> 1800 x 2520 (~360 DPI at 5x7 in).
+const RATIO: Record<Format, number> = { story: 2, print: 4 }
+const PAGE_MM: Record<Format, [number, number]> = { story: [90, 160], print: [127, 177.8] }
+
+// Each direct child of `container` is one full-size card page.
+async function capture(container: HTMLElement, format: Format, kind: 'png' | 'jpeg') {
   await document.fonts.ready
   // Embed fonts once and reuse for every page instead of re-fetching per capture.
   const fontEmbedCSS = await getFontEmbedCSS(container)
   const pages = Array.from(container.children) as HTMLElement[]
   // Safari often paints fonts blank on the first capture; a cheap throwaway pass warms it up.
-  await toJpeg(pages[0], { pixelRatio: 1, fontEmbedCSS })
-  const images: string[] = []
+  await toJpeg(pages[0], { pixelRatio: 0.5, fontEmbedCSS })
+  // Low-memory phones get a lighter print export.
+  const pixelRatio = format === 'print' && matchMedia('(pointer: coarse)').matches ? 3 : RATIO[format]
+  const out: string[] = []
   for (const el of pages) {
-    images.push(await toJpeg(el, { pixelRatio, quality: 0.9, fontEmbedCSS, backgroundColor: '#ffffff' }))
+    out.push(kind === 'png' ? await toPng(el, { pixelRatio, fontEmbedCSS }) : await toJpeg(el, { pixelRatio, quality: 0.92, fontEmbedCSS }))
   }
-  return images
+  return out
 }
 
-export async function buildPdf(container: HTMLElement) {
-  // 4x ≈ 305 DPI on desktop; 3x ≈ 230 DPI on touch devices to stay within low-end phone memory.
-  const images = await capturePages(container, matchMedia('(pointer: coarse)').matches ? 3 : 4)
-  const pdf = new jsPDF({ unit: 'mm', format: 'a5', compress: true })
-  images.forEach((img, i) => {
-    if (i) pdf.addPage('a5')
-    pdf.addImage(img, 'JPEG', 0, 0, 148, 210)
+const toFile = async (url: string, name: string, type: string) => new File([await (await fetch(url)).blob()], name, { type })
+
+export async function buildPngs(container: HTMLElement, format: Format, baseName: string) {
+  const urls = await capture(container, format, 'png')
+  return Promise.all(urls.map((u, i) => toFile(u, urls.length > 1 ? `${baseName}-${i + 1}.png` : `${baseName}.png`, 'image/png')))
+}
+
+export async function buildPdf(container: HTMLElement, format: Format, baseName: string) {
+  const urls = await capture(container, format, 'jpeg')
+  const [w, h] = PAGE_MM[format]
+  const pdf = new jsPDF({ unit: 'mm', format: [w, h], compress: true })
+  urls.forEach((u, i) => {
+    if (i) pdf.addPage([w, h])
+    pdf.addImage(u, 'JPEG', 0, 0, w, h)
   })
-  return pdf
-}
-
-// 3x (1332 x 1890) is already above what WhatsApp keeps after its own compression.
-export async function buildImages(container: HTMLElement, baseName: string) {
-  const images = await capturePages(container, 3)
-  return Promise.all(
-    images.map(async (url, i) => {
-      const blob = await (await fetch(url)).blob()
-      return new File([blob], `${baseName}-${i + 1}.jpg`, { type: 'image/jpeg' })
-    }),
-  )
+  return new File([pdf.output('blob')], `${baseName}.pdf`, { type: 'application/pdf' })
 }
