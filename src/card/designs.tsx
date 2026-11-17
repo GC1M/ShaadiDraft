@@ -35,6 +35,9 @@ export interface Design {
   Top: FC // full-width top decoration, natural height
   Bottom: FC // 540 x 340 scene anchored to the bottom (print crops its sky)
   Overlay?: FC<{ h: number }> // full-card frame, h in 540-wide units
+  // Full-bleed 1080x1920 artwork, one per page (cycled), replacing Top/Bottom/Overlay.
+  // top/bottom are the text-free band in 540x960 story px; print crops the image to 5:7.
+  pages?: { src: string; top: number; bottom: number }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }

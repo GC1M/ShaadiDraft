@@ -182,7 +182,11 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const t = templateById(invite.templateId)
   const d = DESIGNS[t.design]
   const { w, h } = SIZES[invite.format]
-  const safe = d.safe[invite.format]
+  // Painted templates: each page has its own artwork and its own text band, scaled from story px.
+  const art = d.pages?.[Math.max(0, invite.pages.indexOf(page)) % d.pages.length]
+  const k = w / 540
+  const crop = (960 * k - h) / 2
+  const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
   const x = look(d, invite.lang)
   const base = w / 30
   const box = useRef<HTMLDivElement>(null)
@@ -209,17 +213,21 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       live = false
     }
     // Only pages whose content or look changed re-fit; untouched pages keep their object identity.
-  }, [page, base, invite.scale, invite.lang, invite.templateId])
+  }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: d.sky, color: d.colors.text, fontFamily: x.f.body }}>
-      {d.Overlay && <d.Overlay h={(h * 540) / w} />}
-      <div className="absolute inset-x-0 top-0">
-        <d.Top />
-      </div>
-      <div className="absolute inset-x-0 bottom-0" style={{ height: invite.format === 'story' ? (w * 340) / 540 : w * 0.46 }}>
-        <d.Bottom />
-      </div>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body }}>
+      {!art && (
+        <>
+          {d.Overlay && <d.Overlay h={(h * 540) / w} />}
+          <div className="absolute inset-x-0 top-0">
+            <d.Top />
+          </div>
+          <div className="absolute inset-x-0 bottom-0" style={{ height: invite.format === 'story' ? (w * 340) / 540 : w * 0.46 }}>
+            <d.Bottom />
+          </div>
+        </>
+      )}
       <div ref={box} className="absolute overflow-hidden" style={{ top: safe.top, bottom: safe.bottom, left: safe.x, right: safe.x }}>
         <div
           ref={inner}
