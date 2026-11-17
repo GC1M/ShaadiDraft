@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { Wordmark } from './App'
 import { CardPage, SIZES } from './card/Card'
+import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
 import { LANGS, SAMPLES } from './i18n'
 import { samplePages, sectionsPage, templateById } from './templates'
 import { TransliterateInput } from './transliterate'
@@ -271,7 +272,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
             <section ref={formRef} className="scroll-mt-24 space-y-5">
               <Step n={3} title={`Words on page ${index + 1}`} />
               <p className="text-[14px] leading-relaxed text-ink/65">
-                Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour.
+                Press Enter for a new line. Wrap a word in stars, like *Sajode*, for the accent colour; **double stars** for a large line; ***triple stars*** for bold. Start a line with &lt;&lt; or &gt;&gt; to lean it left or right, and type ___ for a line to write on. Templates with artwork icons accept [[maps]] or [[hands]].
               </p>
               {page.kind === 'cover' ? (
                 <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
@@ -400,6 +401,35 @@ function Field({ label, value, onChange, lang, phonetic, multiline, rows = 3 }: 
   )
 }
 
+// Picks a date and writes it into "Date & day" in the chosen day-first format, in the card's language.
+function DatePicker({ lang, onPick }: { lang: Lang; onPick: (date: string) => void }) {
+  const [iso, setIso] = useState('')
+  const [fmt, setFmt] = useState<DateFormat>('dd/mm/yyyy')
+  const pick = (i: string, f: DateFormat) => {
+    setIso(i)
+    setFmt(f)
+    if (i) onPick(formatDate(i, f, lang))
+  }
+  return (
+    <div className="flex flex-wrap items-end gap-4">
+      <label className="block">
+        <span className="text-[13px] text-ink/65">Pick a date</span>
+        <input type="date" value={iso} onChange={(e) => pick(e.target.value, fmt)} className={`${inputCls} w-auto`} />
+      </label>
+      <label className="block">
+        <span className="text-[13px] text-ink/65">Date format</span>
+        <select value={fmt} onChange={(e) => pick(iso, e.target.value as DateFormat)} className={`${inputCls} select-chevron w-auto pr-10`}>
+          {DATE_FORMATS.map((d) => (
+            <option key={d} value={d}>
+              {d}
+            </option>
+          ))}
+        </select>
+      </label>
+    </div>
+  )
+}
+
 function CoverForm({ p, on, lang, phonetic }: { p: CoverPage; on: (patch: Partial<CoverPage>) => void; lang: Lang; phonetic: boolean }) {
   const f = (label: string, key: keyof CoverPage, multiline = false) => (
     <Field label={label} value={p[key] as string} onChange={(v) => on({ [key]: v })} lang={lang} phonetic={phonetic} multiline={multiline} rows={2} />
@@ -424,6 +454,7 @@ function CoverForm({ p, on, lang, phonetic }: { p: CoverPage; on: (patch: Partia
         {person('groom', 'Groom')}
       </div>
       {f('Word between the names', 'joiner')}
+      <DatePicker lang={lang} onPick={(date) => on({ date })} />
       <div className="grid gap-4 sm:grid-cols-2">
         {f('Date & day', 'date')}
         {f('Time / Shubh Muhurat', 'time')}

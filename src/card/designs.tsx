@@ -1,4 +1,5 @@
 import type { FC, ReactNode } from 'react'
+import type { Lang } from '../types'
 import {
   ArchFrame,
   Diya,
@@ -30,15 +31,28 @@ import { designs as batchD } from './designs-d'
 export interface Design {
   id: string
   sky: string // CSS background of the whole card
-  colors: { title: string; heading: string; text: string; accent: string; muted: string }
+  colors: { title: string; heading: string; text: string; accent: string; muted: string; names?: string } // names default to heading
   fonts: { title: string; heading: string; body: string; names: string } // Latin faces
+  script?: Partial<Record<Lang, { title: string; body: string }>> // replaces the app-wide face for a script
+  tracking?: string // letter-spacing for body text
+  // Type sizes in em, where a design departs from the defaults (body .88, heading 1.05, names 1.95, RSVP heading .95).
+  type?: { body?: number; heading?: number; names?: number; rsvpHeading?: number; plainDate?: boolean; lists?: 'left'; grow?: number }
+  // Cut-outs from the artwork, w in em. couple sits between the names, swirl-l/-r flank the RSVP heading;
+  // any of them can be placed in text as [[name]].
+  ornaments?: Ornaments
   Top: FC // full-width top decoration, natural height
   Bottom: FC // 540 x 340 scene anchored to the bottom (print crops its sky)
   Overlay?: FC<{ h: number }> // full-card frame, h in 540-wide units
+  // Full-bleed 1080x1920 artwork, one per page (cycled), replacing Top/Bottom/Overlay.
+  // top/bottom are the text-free band in 540x960 story px; print crops the image to 5:7.
+  // head: the image already prints the page title, symbol and invocation, so the card leaves them out.
+  // size: starting text size for that page, before shrinking to fit (pages differ in density).
+  pages?: { src: string; top: number; bottom: number; head?: boolean; size?: number }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }
 type Box = { top: number; bottom: number; x: number }
+export type Ornaments = Record<string, { src: string; w: number }>
 
 const SAFE: Design['safe'] = { story: { top: 170, bottom: 250, x: 34 }, print: { top: 128, bottom: 160, x: 28 } }
 
