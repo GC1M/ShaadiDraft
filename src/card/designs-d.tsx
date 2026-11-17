@@ -637,10 +637,13 @@ const sandhya: Design = {
   colors: { title: '#3d5a2a', heading: '#3d5a2a', text: '#5b1f3c', accent: '#d0312d', muted: '#7a4560', names: '#7e224a' },
   fonts: { title: '"Pinyon Script"', heading: '"Marcellus"', body: serif, names: '"Pinyon Script"' },
   script: { gu: { title: '"Sandhya Gujarati Bold"', body: '"Sandhya Gujarati"' } },
+  tracking: '0.04em',
+  type: { body: 0.72, heading: 1.12, names: 2.15, rsvpHeading: 1.3, plainDate: true, lists: 'left', grow: 1.3 },
+  ornaments: { couple: `${import.meta.env.BASE_URL}templates/sandhya/couple.png`, swirl: [`${import.meta.env.BASE_URL}templates/sandhya/swirl-l.png`, `${import.meta.env.BASE_URL}templates/sandhya/swirl-r.png`] },
   Top: () => null,
   Bottom: () => null,
   pages: SANDHYA_PAGES.map(([top, bottom], i) => ({ src: `${import.meta.env.BASE_URL}templates/sandhya/${i + 1}.jpg`, top, bottom, head: true })),
-  safe: { story: { top: 160, bottom: 320, x: 40 }, print: { top: 48, bottom: 182, x: 33 } },
+  safe: { story: { top: 160, bottom: 320, x: 14 }, print: { top: 48, bottom: 182, x: 12 } },
 }
 
 export const designs: Design[] = [shubho, kasavu, pelli, jainLagna, chapel, parsiLagan, chinar, sandhya]

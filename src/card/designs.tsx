@@ -34,6 +34,11 @@ export interface Design {
   colors: { title: string; heading: string; text: string; accent: string; muted: string; names?: string } // names default to heading
   fonts: { title: string; heading: string; body: string; names: string } // Latin faces
   script?: Partial<Record<Lang, { title: string; body: string }>> // replaces the app-wide face for a script
+  tracking?: string // letter-spacing for body text
+  // Type sizes in em, where a design departs from the defaults (body .88, heading 1.05, names 1.95, RSVP heading .95).
+  type?: { body?: number; heading?: number; names?: number; rsvpHeading?: number; plainDate?: boolean; lists?: 'left'; grow?: number }
+  // Cut-outs from the artwork: an icon between the names and swirls either side of the RSVP heading.
+  ornaments?: { couple: string; swirl: [string, string] }
   Top: FC // full-width top decoration, natural height
   Bottom: FC // 540 x 340 scene anchored to the bottom (print crops its sky)
   Overlay?: FC<{ h: number }> // full-card frame, h in 540-wide units

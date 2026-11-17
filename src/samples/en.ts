@@ -33,12 +33,12 @@ export const en: SampleText = {
   joiner: 'with',
   date: {
     'save-the-date': '22 . 11 . 2026',
-    ring: 'Sunday, 15th November 2026',
-    haldi: 'Saturday, 21st November 2026',
-    mehendi: 'Saturday, 21st November 2026',
-    sangeet: 'Saturday, 21st November 2026',
-    wedding: 'Sunday, 22nd November 2026',
-    reception: 'Monday, 23rd November 2026',
+    ring: 'Sunday, 15/11/2026',
+    haldi: 'Saturday, 21/11/2026',
+    mehendi: 'Saturday, 21/11/2026',
+    sangeet: 'Saturday, 21/11/2026',
+    wedding: 'Sunday, 22/11/2026',
+    reception: 'Monday, 23/11/2026',
   },
   time: {
     'save-the-date': 'Formal invitation to follow',
@@ -56,15 +56,15 @@ export const en: SampleText = {
   functions: {
     title: 'Auspicious Beginnings',
     sections: [
-      ['Mandap Muhurat', 'Saturday, 21st November 2026\n3:00 PM\nMrs. Kavita & Mr. Anil Sharma\nPoolside Lawns, The Leela Palace'],
-      ['Garba Night', 'Saturday, 21st November 2026\n8:00 PM onwards\nMrs. Rekha & Mr. Suresh Mehta\nDurbar Hall, The Leela Palace'],
+      ['Mandap Muhurat', 'Saturday, 21/11/2026\n3:00 PM\nMrs. Kavita & Mr. Anil Sharma\nPoolside Lawns, The Leela Palace'],
+      ['Garba Night', 'Saturday, 21/11/2026\n8:00 PM onwards\nMrs. Rekha & Mr. Suresh Mehta\nDurbar Hall, The Leela Palace'],
       ['A note from the little ones', 'Drums are beating, the shehnai sings,\nour aunt is getting married, come early and dance with us!\n- Aarav, Diya, Kabir, Myra'],
     ],
   },
   ceremonies: {
     title: 'The Golden Day',
     sections: [
-      ['Baraat Arrival', 'Sunday, 22nd November 2026\n6:00 PM'],
+      ['Baraat Arrival', 'Sunday, 22/11/2026\n6:00 PM'],
       ['Hast Melap', '7:30 PM\nPheras under the mandap'],
       ['Wedding Dinner', '8:30 PM onwards\nYou are invited *with family*'],
       ['Wedding Venue', 'The Leela Palace\nLake Pichola, Udaipur'],
@@ -72,7 +72,7 @@ export const en: SampleText = {
   },
   letter: {
     title: 'Parinayotsav',
-    body: 'Dear friends and family,\nBy the grace of God and the blessings of our elders,\nwe are delighted to announce the wedding of our daughter\n*Ananya*\nwith\n*Arjun*\nson of Mrs. Neeta & Mr. Vikram Mehta,\non Sunday, 22nd November 2026.\nPlease join us with your family and bless the couple.',
+    body: 'Dear friends and family,\nBy the grace of God and the blessings of our elders,\nwe are delighted to announce the wedding of our daughter\n*Ananya*\nwith\n*Arjun*\nson of Mrs. Neeta & Mr. Vikram Mehta,\non Sunday, 22/11/2026.\nPlease join us with your family and bless the couple.',
   },
   family: {
     title: 'Eagerly Awaiting You',

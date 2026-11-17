@@ -37,14 +37,18 @@ function look(design: Design, lang: Lang): Look {
   }
 }
 
-// "\n" = new line, *word* = accent colour.
-function Rich({ text, accent }: { text: string; accent: string }) {
+// "\n" = new line, *word* = accent colour, **words** = large heading-colour line.
+function Rich({ text, accent, big }: { text: string; accent: string; big: string }) {
   return (
     <>
       {text.split('\n').map((line, i) => (
-        <span key={i} style={{ display: 'block' }}>
-          {line.split(/(\*[^*]+\*)/).map((part, j) =>
-            part.length > 2 && part.startsWith('*') && part.endsWith('*') ? (
+        <span key={i} style={{ display: 'block', minHeight: '1em' }}>
+          {line.split(/(\*\*[^*]+\*\*|\*[^*]+\*)/).map((part, j) =>
+            part.length > 4 && part.startsWith('**') && part.endsWith('**') ? (
+              <span key={j} style={{ color: big, fontWeight: 700, fontSize: '1.6em', lineHeight: 1.25 }}>
+                {part.slice(2, -2)}
+              </span>
+            ) : part.length > 2 && part.startsWith('*') && part.endsWith('*') ? (
               <span key={j} style={{ color: accent, fontWeight: 700 }}>
                 {part.slice(1, -1)}
               </span>
@@ -72,14 +76,16 @@ const P = ({ show, style, children }: { show: boolean; style: CSSProperties; chi
 
 function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId; head: boolean }) {
   const c = x.d.colors
-  const name: CSSProperties = { fontFamily: x.f.names, color: c.names ?? c.heading, fontSize: '1.95em', lineHeight: 1.2 }
+  const o = x.d.ornaments
+  const ty = x.d.type ?? {}
+  const name: CSSProperties = { fontFamily: x.f.names, color: c.names ?? c.heading, fontSize: `${ty.names ?? 1.95}em`, lineHeight: 1.2 }
   return (
     <>
       <P show={!head && !!p.invocation} style={{ fontSize: '0.92em', color: c.heading, fontWeight: 600 }}>
         {p.invocation}
       </P>
       <P show={!head && !!p.shlok} style={{ fontSize: '0.76em', color: c.muted, lineHeight: 1.35 }}>
-        <Rich text={p.shlok} accent={c.accent} />
+        <Rich text={p.shlok} accent={c.accent} big={c.heading} />
       </P>
       {!head && (
         <div style={{ width: '3.4em', alignSelf: 'center' }}>
@@ -90,34 +96,53 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
         {p.title}
       </P>
       <P show={!!p.hostLine} style={{ fontSize: '0.92em', lineHeight: 1.4 }}>
-        <Rich text={p.hostLine} accent={c.accent} />
+        <Rich text={p.hostLine} accent={c.accent} big={c.heading} />
       </P>
+      {o ? (
+        // Names side by side around the artwork's couple icon, as on the printed card.
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.1em', width: '100%' }}>
+          {(['bride', 'groom'] as const).map((who, i) => (
+            <div key={who} style={{ flex: 1, minWidth: 0, order: i * 2, textAlign: i ? 'left' : 'right' }}>
+              <P show={!!p[who].name} style={name}>
+                {p[who].name}
+              </P>
+              <P show={!!p[who].parents} style={{ fontSize: '0.8em', color: c.muted }}>
+                {p[who].parents}
+              </P>
+            </div>
+          ))}
+          <img src={o.couple} alt="" style={{ order: 1, width: '2.9em' }} />
+        </div>
+      ) : (
+        <div>
+          <P show={!!p.bride.name} style={name}>
+            {p.bride.name}
+          </P>
+          <P show={!!p.bride.parents} style={{ fontSize: '0.8em', color: c.muted }}>
+            {p.bride.parents}
+          </P>
+          <P show={!!p.joiner} style={{ fontFamily: x.f.names, color: c.title, fontSize: '1.1em', margin: '0.15em 0' }}>
+            {p.joiner}
+          </P>
+          <P show={!!p.groom.name} style={name}>
+            {p.groom.name}
+          </P>
+          <P show={!!p.groom.parents} style={{ fontSize: '0.8em', color: c.muted }}>
+            {p.groom.parents}
+          </P>
+        </div>
+      )}
+      {!head && (
+        <div style={{ width: '9em', alignSelf: 'center' }}>
+          <Flourish color={c.heading} width="100%" />
+        </div>
+      )}
       <div>
-        <P show={!!p.bride.name} style={name}>
-          {p.bride.name}
-        </P>
-        <P show={!!p.bride.parents} style={{ fontSize: '0.8em', color: c.muted }}>
-          {p.bride.parents}
-        </P>
-        <P show={!!p.joiner} style={{ fontFamily: x.f.names, color: c.title, fontSize: '1.1em', margin: '0.15em 0' }}>
-          {p.joiner}
-        </P>
-        <P show={!!p.groom.name} style={name}>
-          {p.groom.name}
-        </P>
-        <P show={!!p.groom.parents} style={{ fontSize: '0.8em', color: c.muted }}>
-          {p.groom.parents}
-        </P>
-      </div>
-      <div style={{ width: '9em', alignSelf: 'center' }}>
-        <Flourish color={c.heading} width="100%" />
-      </div>
-      <div>
-        <P show={!!p.date} style={{ fontFamily: x.f.heading, color: c.heading, fontSize: '1.05em', fontWeight: 700 }}>
+        <P show={!!p.date} style={ty.plainDate ? { fontSize: '1.05em' } : { fontFamily: x.f.heading, color: c.heading, fontSize: '1.05em', fontWeight: 700 }}>
           {p.date}
         </P>
         <P show={!!p.time} style={{ fontSize: '0.92em' }}>
-          <Rich text={p.time} accent={c.accent} />
+          <Rich text={p.time} accent={c.accent} big={c.heading} />
         </P>
         <P show={!!p.venue} style={{ fontSize: '1em', fontWeight: 700, marginTop: '0.3em' }}>
           {p.venue}
@@ -127,16 +152,44 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
         </P>
       </div>
       {p.rsvp.trim() && (
-        <div>
-          <Heading x={x} size={0.95}>
-            {p.rsvpTitle}
-          </Heading>
+        <div style={{ marginTop: ty.plainDate ? '1em' : 0 }}>
+          {o ? (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.35em' }}>
+              <img src={o.swirl[0]} alt="" style={{ width: '2.6em' }} />
+              <Heading x={x} size={ty.rsvpHeading ?? 0.95}>
+                {p.rsvpTitle}
+              </Heading>
+              <img src={o.swirl[1]} alt="" style={{ width: '2.6em' }} />
+            </div>
+          ) : (
+            <Heading x={x} size={0.95}>
+              {p.rsvpTitle}
+            </Heading>
+          )}
           <div style={{ fontSize: '0.85em', lineHeight: 1.4 }}>
-            <Rich text={p.rsvp} accent={c.accent} />
+            <Rich text={p.rsvp} accent={c.accent} big={c.heading} />
           </div>
         </div>
       )}
     </>
+  )
+}
+
+// Name list as two centred tables whose words line up, the way kankotri family lists are typeset.
+function Table({ lines, accent, big }: { lines: string[]; accent: string; big: string }) {
+  const half = Math.ceil(lines.length / 2)
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', gap: '1.6em' }}>
+      {[lines.slice(0, half), lines.slice(half)].map((col, k) => {
+        const words = col.map((l) => l.trim().split(/\s+/))
+        const n = Math.max(...words.map((w) => w.length))
+        return (
+          <div key={k} style={{ display: 'grid', gridTemplateColumns: `repeat(${n}, auto)`, columnGap: '0.4em', textAlign: 'left' }}>
+            {words.flatMap((w, i) => Array.from({ length: n }, (_, j) => <Rich key={`${i}.${j}`} text={w[j] ?? ''} accent={accent} big={big} />))}
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -145,17 +198,28 @@ const lineCount = (b: string) => b.split('\n').length
 
 function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
   const c = x.d.colors
-  const short = (s: Sec) => !!s.heading && lineCount(s.body) <= 5 && s.heading.length < 24
+  const ty = x.d.type ?? {}
+  const short = (s: Sec) => !!s.heading && lineCount(s.body) <= 6 && s.heading.length < 24
   // Pair consecutive short sections side by side, as kankotris do; long ones take the full width.
+  // In a run of 5, 9... the middle one stands alone, centred between the pairs.
   const rows: Sec[][] = []
-  for (let i = 0; i < p.sections.length; i++) {
-    const a = p.sections[i]
-    const b = p.sections[i + 1]
-    if (b && short(a) && short(b)) {
-      rows.push([a, b])
-      i++
-    } else rows.push([a])
+  for (let i = 0; i < p.sections.length; ) {
+    let n = 0
+    while (i + n < p.sections.length && short(p.sections[i + n])) n++
+    if (!n) {
+      rows.push([p.sections[i++]])
+      continue
+    }
+    const run = p.sections.slice(i, i + n)
+    const mid = n % 4 === 1 && n >= 5 ? (n - 1) / 2 : -1
+    for (let j = 0; j < n; ) {
+      if (j === mid || j === n - 1) rows.push([run[j++]])
+      else rows.push([run[j++], run[j++]])
+    }
+    i += n
   }
+  // Name lists flow into two columns; long sentences (an invitation letter) stay one wide column.
+  const list = (b: string) => lineCount(b) > 6 && Math.max(...b.split('\n').map((l) => l.length)) <= 40
   return (
     <>
       <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
@@ -170,9 +234,12 @@ function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
         <div key={i} style={{ display: 'flex', gap: '1em', width: '100%' }}>
           {row.map((s, j) => (
             <div key={j} style={{ flex: 1, minWidth: 0 }}>
-              <Heading x={x}>{s.heading}</Heading>
-              <div style={{ fontSize: '0.88em', lineHeight: 1.5, columnCount: lineCount(s.body) > 6 ? 2 : 1, columnGap: '1.2em' }}>
-                <Rich text={s.body} accent={c.accent} />
+              <Heading x={x} size={ty.heading}>
+                {s.heading}
+              </Heading>
+              {/* columnCount only for real lists: a one-column multicol box with a fixed height pushes overflow into an invisible extra column on export. */}
+              <div style={{ fontSize: `${ty.body ?? 0.88}em`, lineHeight: 1.5, columnCount: list(s.body) && !ty.lists ? 2 : undefined, columnGap: '1.2em' }}>
+                {list(s.body) && ty.lists ? <Table lines={s.body.split('\n')} accent={c.accent} big={c.heading} /> : <Rich text={s.body} accent={c.accent} big={c.heading} />}
               </div>
             </div>
           ))}
@@ -197,12 +264,13 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const inner = useRef<HTMLDivElement>(null)
 
   // Shrink text until it fits the safe area, so long family lists never spill onto the artwork.
+  // Designs with type.grow start larger, so sparse pages fill their band as a designer would.
   useLayoutEffect(() => {
     const fit = () => {
       const b = box.current
       const el = inner.current
       if (!b || !el) return
-      let k = SCALE[invite.scale]
+      let k = SCALE[invite.scale] * (d.type?.grow ?? 1)
       el.style.fontSize = `${base * k}px`
       while (el.scrollHeight > b.clientHeight + 1 && k > 0.5) {
         k -= 0.03
@@ -210,17 +278,14 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       }
     }
     fit()
-    // Re-fit once web fonts arrive; skipped once they're loaded so typing doesn't queue extra passes.
-    let live = true
-    if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => live && fit())
-    return () => {
-      live = false
-    }
+    // Re-fit whenever a web font finishes loading (faces load lazily on first use), not on every keystroke.
+    document.fonts?.addEventListener('loadingdone', fit)
+    return () => document.fonts?.removeEventListener('loadingdone', fit)
     // Only pages whose content or look changed re-fit; untouched pages keep their object identity.
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body }}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking }}>
       {!art && (
         <>
           {d.Overlay && <d.Overlay h={(h * 540) / w} />}
