@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import type { Design } from './designs'
 import type { Template } from '../templates'
 import { FoilDefs, GRAIN, GRAIN_LIGHT, LuxeFrame, SHEEN, VIGNETTE, foil } from './luxe'
-import { Mandap, Mountains, Water } from './motifs'
+import { Grass, HangingVines, LotusBloom, LotusPad, Mandap, Mountains, SideVine, Trees, Water, rng } from './motifs'
 
 const serif = '"Cormorant Garamond", Georgia, serif'
 
@@ -627,7 +627,96 @@ const chinar: Design = {
   safe: { story: { top: 112, bottom: 222, x: 56 }, print: { top: 86, bottom: 176, x: 46 } },
 }
 
-export const designs: Design[] = [shubho, kasavu, pelli, jainLagna, chapel, parsiLagan, chinar]
+// Gujarati Sandhya kankotri: pink dusk sky, belled vines, fern sprays at the edges and a misty
+// Kailash peak over a lotus pond.
+function Fern({ x, y, len, rot = 0, color, n = 14 }: { x: number; y: number; len: number; rot?: number; color: string; n?: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) rotate(${rot})`} fill={color}>
+      <path d={`M0 0 Q${len * 0.08} ${-len * 0.5} 0 ${-len}`} stroke={color} strokeWidth="1.4" fill="none" />
+      {Array.from({ length: n }, (_, i) => {
+        const t = (i + 1) / (n + 1)
+        const yy = -len * t
+        const r = 4 + (1 - t) * 13
+        return [1, -1].map((k) => (
+          <ellipse key={`${i}${k}`} cx={k * r * 0.95} cy={yy} rx={r} ry={r * 0.3} transform={`rotate(${k * -28} ${k * r * 0.95} ${yy})`} />
+        ))
+      })}
+    </g>
+  )
+}
+
+// Tall stalk of drooping golden bell flowers for the foreground corners.
+function BellStalk({ x, y, h, flip = false }: { x: number; y: number; h: number; flip?: boolean }) {
+  const k = flip ? -1 : 1
+  return (
+    <g transform={`translate(${x} ${y}) scale(${k} 1)`}>
+      <path d={`M0 0 Q14 ${-h * 0.5} 6 ${-h}`} stroke="#4f6b34" strokeWidth="1.6" fill="none" />
+      {[0.3, 0.48, 0.64, 0.8, 0.94].map((t, i) => {
+        const bx = 9 * Math.sin(t * Math.PI) + (i % 2 ? 10 : -6)
+        const by = -h * t
+        return (
+          <g key={t} transform={`translate(${bx} ${by}) rotate(${i % 2 ? 24 : -24})`}>
+            <path d="M0 0 L0 6" stroke="#4f6b34" strokeWidth="1" />
+            <path d="M-6 18 Q-7 6 0 5 Q7 6 6 18 Q3 15 0 18 Q-3 15 -6 18 Z" fill="#e3a73a" stroke="#a86b1c" strokeWidth="0.8" />
+          </g>
+        )
+      })}
+    </g>
+  )
+}
+
+const SA_FERN = '#5f8a4c'
+const sandhya: Design = {
+  id: 'sandhya',
+  sky: `${GRAIN}, linear-gradient(180deg,#e4a2b6 0%,#eeb5c3 28%,#f3c6cf 52%,#ecd3dc 72%,#dcd6e2 100%)`,
+  colors: { title: '#355c32', heading: '#355c32', text: '#5b1f3c', accent: '#d0312d', muted: '#7a4560' },
+  fonts: { title: '"Pinyon Script"', heading: '"Marcellus"', body: serif, names: '"Pinyon Script"' },
+  Top: () => <HangingVines drop="bell" leaf={['#3f6a33', '#5d8a42', '#86ad5c']} cord="#f6ecdc" pendant={{ a: '#d9a441', b: '#8a5a1c' }} seed={19} />,
+  Overlay: ({ h }) => {
+    const r = rng(23)
+    return (
+      <FrameSvg h={h}>
+        {Array.from({ length: 34 }, (_, i) => (
+          <circle key={i} cx={20 + r() * 500} cy={30 + r() * h * 0.5} r={0.6 + r() * 1.2} fill="#fff" opacity={0.5 + r() * 0.4} />
+        ))}
+        <g opacity="0.9">
+          <Fern x={546} y={h * 0.46} len={115} rot={-24} color={SA_FERN} />
+          <Fern x={550} y={h * 0.53} len={80} rot={-44} color="#86ad5c" n={10} />
+          <Fern x={-6} y={h * 0.68} len={115} rot={24} color={SA_FERN} />
+          <Fern x={-10} y={h * 0.75} len={80} rot={44} color="#86ad5c" n={10} />
+        </g>
+      </FrameSvg>
+    )
+  },
+  Bottom: () => (
+    <Scene>
+      <Mountains y={150} far="#c3b5c9" near="#aea5ba" />
+      <g transform="translate(270 92)">
+        <path d="M-110 120 L-30 8 Q0 -16 30 8 L110 120 Z" fill="#b5adc0" />
+        <path d="M-30 8 Q0 -16 30 8 L22 22 L10 14 L0 28 L-12 16 L-22 26 Z" fill="#fbf7fb" />
+      </g>
+      <rect y="186" width="540" height="40" fill="#f3e9ef" opacity="0.45" />
+      <Trees y={258} seed={21} greens={['#3a6a3c', '#4d8247', '#5f9450']} />
+      <Water y={268} color="#a9c4c9" line="#eef6f6" />
+      {[150, 230, 330, 400].map((x, i) => (
+        <LotusPad key={x} x={x} y={292 + (i % 2) * 8} r={14} />
+      ))}
+      {[190, 300, 365].map((x, i) => (
+        <LotusBloom key={x} x={x} y={290 + (i % 2) * 6} s={0.75} petal="#f6c2d0" deep="#d36c8f" />
+      ))}
+      <Grass y={312} seed={8} color="#36612f" light="#6d9b48" />
+      <BellStalk x={26} y={330} h={150} />
+      <BellStalk x={62} y={334} h={110} />
+      <BellStalk x={514} y={330} h={150} flip />
+      <BellStalk x={478} y={334} h={110} flip />
+      <SideVine x={10} top={130} bottom={320} flower="#f08fb0" />
+      <SideVine x={530} flip top={120} bottom={320} flower="#f08fb0" />
+    </Scene>
+  ),
+  safe: { story: { top: 160, bottom: 236, x: 58 }, print: { top: 122, bottom: 186, x: 48 } },
+}
+
+export const designs: Design[] = [shubho, kasavu, pelli, jainLagna, chapel, parsiLagan, chinar, sandhya]
 
 export const templates: Template[] = [
   { id: 'shubho-bibaho', name: 'Shubho Bibaho Alpana Red', design: 'shubho', lang: 'en', symbol: 'ganesha', event: 'wedding' },
@@ -637,4 +726,5 @@ export const templates: Template[] = [
   { id: 'white-chapel', name: 'White Chapel Silver Arch', design: 'chapel', lang: 'en', symbol: 'floral', event: 'wedding' },
   { id: 'parsi-lagan', name: 'Parsi Lagan Pastel Chalk', design: 'parsi-lagan', lang: 'gu', symbol: 'floral', event: 'wedding' },
   { id: 'kashmiri-chinar', name: 'Kashmiri Chinar & Shikara', design: 'chinar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
+  { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding' },
 ]
