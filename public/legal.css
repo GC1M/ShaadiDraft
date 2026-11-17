@@ -1,0 +1,12 @@
+/* Shared style for the static About / Contact / Privacy / Terms / Refund pages. Plain HTML so crawlers and
+   payment-gateway reviewers can read them without running the app. */
+body { margin: 0; background: #f7edea; color: #2b1418; font: 17px/1.65 Georgia, "Times New Roman", serif; }
+header { background: #4a0e1c; color: #f7edea; padding: 18px 16px; }
+header a { color: #f7edea; text-decoration: none; font: italic 24px Didot, "Bodoni MT", Georgia, serif; }
+main { max-width: 720px; margin: 0 auto; padding: 32px 16px 48px; }
+h1 { font: 38px/1.15 Didot, "Bodoni MT", Georgia, serif; margin: 0 0 8px; }
+h2 { font-size: 22px; margin: 32px 0 6px; }
+a { color: #6b1428; }
+.muted { color: #6b5b5e; font-size: 15px; }
+footer { border-top: 1px solid #d9c9c5; padding: 24px 16px; text-align: center; font-size: 15px; }
+footer a { margin: 0 8px; }
