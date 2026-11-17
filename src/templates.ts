@@ -1,0 +1,110 @@
+import { SAMPLES } from './i18n'
+import type { CoverPage, EventType, Invite, Lang, Page, SectionsPage, SymbolId } from './types'
+
+export interface Template {
+  id: string
+  name: string
+  design: string // key in DESIGNS
+  lang: Lang
+  symbol: SymbolId
+  event: EventType
+  // Replaces sample fields when the card is in the template's own language (e.g. a Nikkah couple).
+  override?: Partial<Pick<CoverPage, 'title' | 'hostLine' | 'joiner' | 'rsvp'>> & { bride?: [string, string]; groom?: [string, string] }
+}
+
+export const TEMPLATES: Template[] = [
+  { id: 'gulabi-kankotri', name: 'Gulabi Kankotri', design: 'gulabi', lang: 'gu', symbol: 'ganesha', event: 'wedding' },
+  { id: 'royal-udaipur', name: 'Royal Udaipur Maroon & Gold', design: 'udaipur', lang: 'en', symbol: 'ganesha', event: 'wedding' },
+  { id: 'shubh-vivah', name: 'Shubh Vivah Traditional', design: 'kesar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
+  { id: 'haldi-sunshine', name: 'Marigold & Haldi Sunshine', design: 'marigold', lang: 'en', symbol: 'floral', event: 'haldi' },
+  { id: 'henna-courtyard', name: 'Emerald Henna Courtyard', design: 'henna', lang: 'en', symbol: 'floral', event: 'mehendi' },
+  { id: 'vrindavan', name: 'Vrindavan Peacock & Flute', design: 'vrindavan', lang: 'hi', symbol: 'radha-krishna', event: 'sangeet' },
+  { id: 'anand-karaj', name: 'Anand Karaj Royal Blue', design: 'anand-karaj', lang: 'pa', symbol: 'ek-onkar', event: 'wedding' },
+  { id: 'kanchipuram', name: 'Kanchipuram Temple Silk', design: 'kanchipuram', lang: 'ta', symbol: 'balaji', event: 'wedding' },
+  {
+    id: 'nikkah-walima',
+    name: 'Nikkah & Walima Ivory Gold',
+    design: 'nikkah',
+    lang: 'en',
+    symbol: 'bismillah',
+    event: 'reception',
+    override: {
+      title: 'Walima Reception',
+      hostLine: 'Mr. & Mrs. Imran Khan and Mr. & Mrs. Salim Siddiqui request the pleasure of your company at the Walima of',
+      bride: ['Zoya', 'D/o Mrs. Rukhsar & Mr. Imran Khan'],
+      groom: ['Ayaan', 'S/o Mrs. Farah & Mr. Salim Siddiqui'],
+      joiner: '&',
+      rsvp: 'Khan & Siddiqui Families\n+91 98765 43210',
+    },
+  },
+  { id: 'mangalashtak', name: 'Mandapam Mangalashtak', design: 'paithani', lang: 'mr', symbol: 'ganesha', event: 'ring' },
+  { id: 'bandhani', name: 'Bandhani Festive Invite', design: 'bandhani', lang: 'gu', symbol: 'ganesha', event: 'save-the-date' },
+]
+
+export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0]
+
+let n = 0
+const uid = () => `p${Date.now().toString(36)}${(n++).toString(36)}`
+
+export function sectionsPage(title: string, sections: [string, string][]): SectionsPage {
+  return { id: uid(), kind: 'sections', title, sections: sections.map(([heading, body]) => ({ heading, body })) }
+}
+
+// Sample pages for a template in a language. Weddings get the full kankotri set; other events are one card.
+export function samplePages(t: Template, lang: Lang): Page[] {
+  const s = SAMPLES[lang]
+  const e = t.event
+  const o = lang === t.lang ? (t.override ?? {}) : {}
+  const lineage = e === 'wedding' || e === 'ring' || e === 'reception'
+  const bride = o.bride ?? s.bride
+  const groom = o.groom ?? s.groom
+  const cover: CoverPage = {
+    id: uid(),
+    kind: 'cover',
+    invocation: s.invocation[t.symbol],
+    shlok: t.symbol === 'ganesha' && e === 'wedding' ? s.shlok : '',
+    title: o.title ?? s.titles[e],
+    hostLine: o.hostLine ?? s.hostLine[e],
+    bride: { name: bride[0], parents: lineage ? bride[1] : '' },
+    groom: { name: groom[0], parents: lineage ? groom[1] : '' },
+    joiner: o.joiner ?? s.joiner,
+    date: s.date[e],
+    time: s.time[e],
+    venue: e === 'save-the-date' ? '' : s.venue,
+    address: s.address,
+    rsvpTitle: s.rsvpTitle,
+    rsvp: o.rsvp ?? s.rsvp,
+  }
+  if (e !== 'wedding') return [cover]
+  return [
+    cover,
+    sectionsPage(s.functions.title, s.functions.sections),
+    sectionsPage(s.ceremonies.title, s.ceremonies.sections),
+    sectionsPage(s.letter.title, [['', s.letter.body]]),
+    sectionsPage(s.family.title, s.family.sections),
+    sectionsPage(s.message.title, [['', s.message.body]]),
+  ]
+}
+
+export function newInvite(t: Template, lang: Lang = t.lang): Invite {
+  return { version: 2, templateId: t.id, lang, format: 'story', scale: 'm', pages: samplePages(t, lang) }
+}
+
+const KEY = 'shaadidraft:invite:v2'
+
+export function loadInvite(): Invite | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(KEY) ?? 'null')
+    return v?.version === 2 ? v : null
+  } catch {
+    return null // corrupt or unavailable storage: start fresh
+  }
+}
+
+export function saveInvite(i: Invite) {
+  try {
+    localStorage.setItem(KEY, JSON.stringify(i))
+  } catch {
+    // private mode / quota: editing still works, just not persisted
+  }
+}

@@ -1,0 +1,304 @@
+/* Organza Veil: sample couple website. Scoped under .ov so it never leaks into the card editor. */
+.ov {
+  --ov-white: #fbfaf8; /* chikankari white */
+  --ov-sage: #c9d1c3; /* mist sage */
+  --ov-rose: #c98f8f; /* dusty rose */
+  --ov-zari: #a88a4e; /* antique zari gold */
+  --ov-ink: #3b2433; /* ink plum */
+  background: var(--ov-white);
+  color: var(--ov-ink);
+  font-family: var(--font-mulish);
+}
+.ov :focus-visible {
+  outline: 2px solid var(--ov-zari);
+  outline-offset: 3px;
+}
+.ov-display {
+  font-family: var(--font-bodoni);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+/* ---------- The veil: sheer organza with chikan buti, zari kinari edges, a slow sheen ---------- */
+.ov-veil {
+  position: absolute;
+  inset: 0 -24px; /* overhang so the kinari border sits just off-screen until dragged */
+  z-index: 10;
+  touch-action: pan-y;
+  cursor: grab;
+  background-color: rgb(251 250 248 / 0.8);
+  backdrop-filter: blur(16px) saturate(0.7);
+  -webkit-backdrop-filter: blur(16px) saturate(0.7);
+  transform-origin: 50% 0;
+  will-change: transform;
+}
+.ov-veil:active {
+  cursor: grabbing;
+}
+.ov-veil::before {
+  /* chikankari buti: five-petal flower with stem dots, tone-on-tone */
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23a88a4e' stroke-width='.7' stroke-opacity='.55'%3E%3Cg transform='translate(16 16)'%3E%3Cellipse rx='2.2' ry='5' cy='-5'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(72)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(144)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(216)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(288)'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23a88a4e' fill-opacity='.4'%3E%3Ccircle cx='48' cy='48' r='1.2'/%3E%3Ccircle cx='43' cy='52' r='.8'/%3E%3Ccircle cx='53' cy='44' r='.8'/%3E%3C/g%3E%3C/svg%3E");
+}
+.ov-veil::after {
+  /* light catching the weave */
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 38%, rgb(255 255 255 / 0.5) 50%, transparent 62%);
+  background-size: 260% 100%;
+  animation: ov-sheen 9s ease-in-out infinite;
+  pointer-events: none;
+}
+.ov-kinari {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 22px;
+  background:
+    repeating-linear-gradient(0deg, var(--ov-zari) 0 2px, transparent 2px 9px) center / 6px 100% no-repeat,
+    linear-gradient(90deg, transparent 2px, var(--ov-zari) 2px 3px, transparent 3px 19px, var(--ov-zari) 19px 20px, transparent 20px);
+  opacity: 0.85;
+}
+@keyframes ov-sheen {
+  0%,
+  100% {
+    background-position: 110% 0;
+  }
+  50% {
+    background-position: -10% 0;
+  }
+}
+
+/* Mughal arch window for the story photographs */
+.ov-arch {
+  border-radius: 999px 999px 6px 6px;
+  overflow: hidden;
+  outline: 1px solid var(--ov-zari);
+  outline-offset: 8px;
+}
+
+/* Sheer panel used over event photographs */
+.ov-sheer {
+  background: rgb(251 250 248 / 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.ov-fade {
+  transition: opacity 900ms ease;
+}
+
+/* ---------- motion ---------- */
+
+/* The veil breathes while it waits to be lifted. `translate` composes with the inline transform. */
+.ov-sway {
+  animation: ov-sway 5.5s ease-in-out infinite;
+}
+@keyframes ov-sway {
+  50% {
+    translate: 10px 0;
+  }
+}
+
+/* Names arrive letter by letter once the veil is gone. */
+.ov-letter {
+  display: inline-block;
+  opacity: 0;
+  filter: blur(8px);
+  transform: translateY(0.35em);
+  transition:
+    opacity 900ms ease,
+    filter 900ms ease,
+    transform 900ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+[data-open] .ov-letter {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.ov-hero-arch {
+  transform: scale(0.94);
+  transition: transform 1600ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+[data-open] .ov-hero-arch {
+  transform: none;
+}
+
+.ov-petal {
+  position: absolute;
+  top: -4vh;
+  width: 12px;
+  height: 16px;
+  border-radius: 80% 0 80% 0;
+  opacity: 0.95;
+  animation: ov-fall linear forwards;
+}
+@keyframes ov-fall {
+  to {
+    transform: translate3d(var(--dx), 112vh, 0) rotate(var(--rot));
+    opacity: 0.4;
+  }
+}
+
+/* Story: the active photo settles in from a slow zoom; other chapters step back. */
+.ov-story-img {
+  opacity: 0;
+  transform: scale(1.12);
+  transition:
+    opacity 1000ms ease,
+    transform 6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ov-story-img.is-active {
+  opacity: 1;
+  transform: none;
+}
+.ov-chapter {
+  opacity: 0.3;
+  transition: opacity 700ms ease;
+}
+.ov-chapter.is-active {
+  opacity: 1;
+}
+
+.ov-vow {
+  animation: ov-vow 800ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+@keyframes ov-vow {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(14px);
+  }
+}
+
+.ov-press {
+  transition:
+    transform 160ms ease,
+    background-color 200ms ease,
+    border-color 200ms ease;
+}
+.ov-press:active {
+  transform: scale(0.96);
+}
+
+.ov-chip {
+  display: inline-flex;
+  cursor: pointer;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgb(59 36 51 / 0.25);
+  padding: 0.55rem 1.1rem;
+  background: rgb(251 250 248 / 0.6);
+  transition:
+    background-color 250ms ease,
+    color 250ms ease,
+    border-color 250ms ease,
+    transform 160ms ease;
+}
+.ov-chip:active {
+  transform: scale(0.95);
+}
+.ov-chip:has(:checked) {
+  border-color: var(--ov-ink);
+  background: var(--ov-ink);
+  color: var(--ov-white);
+}
+.ov-chip:has(:focus-visible) {
+  outline: 2px solid var(--ov-zari);
+  outline-offset: 3px;
+}
+
+.ov-tick {
+  animation: ov-tick 300ms cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+@keyframes ov-tick {
+  from {
+    transform: scale(0.6);
+    opacity: 0.3;
+  }
+}
+
+.ov-rise {
+  animation: ov-rise 900ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+@keyframes ov-rise {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+
+/* RSVP confirmation: two threads draw in and meet in a knot. */
+.ov-knot path {
+  fill: none;
+  stroke: var(--ov-zari);
+  stroke-width: 2;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: ov-draw 1400ms cubic-bezier(0.6, 0, 0.2, 1) forwards;
+}
+.ov-knot .ov-knot-rose {
+  stroke: var(--ov-rose);
+  animation-delay: 200ms;
+}
+.ov-knot circle {
+  fill: var(--ov-zari);
+  transform-origin: 60px 20px;
+  transform: scale(0);
+  animation: ov-pop 500ms 1300ms cubic-bezier(0.3, 1.6, 0.5, 1) forwards;
+}
+@keyframes ov-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ov-pop {
+  to {
+    transform: scale(1);
+  }
+}
+
+.ov-preview {
+  border: 1px solid rgb(168 138 78 / 0.5);
+  background: rgb(251 250 248 / 0.92);
+  padding: 2rem;
+  rotate: -1.5deg;
+  box-shadow: 0 30px 60px -30px rgb(59 36 51 / 0.45);
+  transition:
+    rotate 500ms ease,
+    opacity 400ms ease;
+}
+.ov-preview[data-empty] {
+  opacity: 0.6;
+}
+.ov-preview:not([data-empty]) {
+  rotate: 0deg;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ov-veil::after,
+  .ov-sway,
+  .ov-vow,
+  .ov-tick,
+  .ov-rise {
+    animation: none;
+  }
+  .ov-knot path,
+  .ov-knot circle {
+    animation-duration: 1ms;
+    animation-delay: 0ms;
+  }
+  .ov-veil,
+  .ov-fade,
+  .ov-letter,
+  .ov-hero-arch,
+  .ov-story-img,
+  .ov-chapter {
+    transition: none !important;
+  }
+}

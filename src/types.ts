@@ -1,133 +1,79 @@
 // Single serializable source of truth for an invite. Persisted to localStorage today;
 // the same JSON is intended to power a hosted couple microsite in Phase 2.
 
-export type ThemeId = 'royal-marigold' | 'pastel-peach' | 'classic-crimson'
-export type AuspiciousHeader = 'ganesh' | 'ikonkar' | 'bismillah' | 'custom' | 'none'
-export type EventId = 'haldi' | 'sangeet' | 'reception'
-export type PageId = 'cover' | EventId
+export const LANG_IDS = ['en', 'hi', 'mr', 'gu', 'pa', 'ta'] as const
+export type Lang = (typeof LANG_IDS)[number]
 
-export interface Person {
-  name: string
-  parents: string
-  grandparents: string
-}
+export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'balaji', 'ek-onkar', 'bismillah', 'floral'] as const
+export type SymbolId = (typeof SYMBOL_IDS)[number]
 
-export interface EventInfo {
-  date: string // ISO yyyy-mm-dd
-  time: string // free text, e.g. "Shubh Muhurat 7:45 PM"
+export const EVENT_IDS = ['save-the-date', 'ring', 'haldi', 'mehendi', 'sangeet', 'wedding', 'reception'] as const
+export type EventType = (typeof EVENT_IDS)[number]
+
+export type Format = 'story' | 'print' // 9:16 phone image, 5:7 print card
+export type FontScale = 's' | 'm' | 'l'
+
+// Text fields use "\n" for line breaks and *word* to set a word in the accent colour.
+export interface CoverPage {
+  id: string
+  kind: 'cover'
+  invocation: string // || Shri Ganeshaya Namah ||
+  shlok: string
+  title: string // Shubh Vivah, Haldi Ceremony...
+  hostLine: string
+  bride: { name: string; parents: string }
+  groom: { name: string; parents: string }
+  joiner: string // word between the names
+  date: string
+  time: string
   venue: string
   address: string
+  rsvpTitle: string
+  rsvp: string
 }
 
-export interface WeddingInviteData {
-  version: 1
-  themeId: ThemeId
-  cover: {
-    header: AuspiciousHeader
-    customHeader: string
-    bride: Person
-    groom: Person
-    wedding: EventInfo
-  }
-  events: {
-    haldi: EventInfo & { dressCode: string }
-    sangeet: EventInfo & { rsvp: string }
-    reception: EventInfo & { hosts: string }
-  }
-  // Event pages in display order; the cover is always page 1.
-  pages: { id: EventId; enabled: boolean }[]
+export interface Section {
+  heading: string
+  body: string // more than 6 lines are laid out in two columns
 }
 
-const emptyEvent = (): EventInfo => ({ date: '', time: '', venue: '', address: '' })
-const emptyPerson = (): Person => ({ name: '', parents: '', grandparents: '' })
-
-export const defaultInvite = (themeId: ThemeId = 'royal-marigold'): WeddingInviteData => ({
-  version: 1,
-  themeId,
-  cover: {
-    header: 'ganesh',
-    customHeader: '',
-    bride: emptyPerson(),
-    groom: emptyPerson(),
-    wedding: emptyEvent(),
-  },
-  events: {
-    haldi: { ...emptyEvent(), dressCode: '' },
-    sangeet: { ...emptyEvent(), rsvp: '' },
-    reception: { ...emptyEvent(), hosts: '' },
-  },
-  pages: [
-    { id: 'haldi', enabled: true },
-    { id: 'sangeet', enabled: true },
-    { id: 'reception', enabled: true },
-  ],
-})
-
-export const sampleInvite = (themeId: ThemeId, pages: WeddingInviteData['pages']): WeddingInviteData => ({
-  version: 1,
-  themeId,
-  cover: {
-    header: 'ganesh',
-    customHeader: '',
-    bride: {
-      name: 'Ananya Sharma',
-      parents: 'Mr. Rajesh Sharma & Mrs. Sunita Sharma',
-      grandparents: 'Late Shri Ramnath Sharma & Smt. Kamla Devi Sharma',
-    },
-    groom: {
-      name: 'Arjun Mehta',
-      parents: 'Mr. Vikram Mehta & Mrs. Neeta Mehta',
-      grandparents: 'Shri Harish Mehta & Smt. Savitri Mehta',
-    },
-    wedding: {
-      date: '2027-02-14',
-      time: 'Shubh Muhurat · 7:45 PM',
-      venue: 'The Leela Palace',
-      address: 'Lake Pichola, Udaipur, Rajasthan',
-    },
-  },
-  events: {
-    haldi: {
-      date: '2027-02-12',
-      time: '11:00 AM onwards',
-      venue: 'Poolside Lawns, The Leela Palace',
-      address: 'Udaipur, Rajasthan',
-      dressCode: 'Shades of yellow & green',
-    },
-    sangeet: {
-      date: '2027-02-13',
-      time: '7:30 PM onwards',
-      venue: 'Grand Durbar Hall',
-      address: 'The Leela Palace, Udaipur',
-      rsvp: 'Rohan Sharma · +91 98765 43210',
-    },
-    reception: {
-      date: '2027-02-15',
-      time: '8:00 PM onwards',
-      venue: 'Lakeside Terrace',
-      address: 'The Leela Palace, Udaipur',
-      hosts: 'The Sharma & Mehta Families',
-    },
-  },
-  pages,
-})
-
-const STORAGE_KEY = 'shaadidraft:invite'
-
-export function loadInvite(): WeddingInviteData {
-  try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
-    if (parsed?.version === 1) return parsed
-  } catch {
-    // corrupt or unavailable storage: fall through to a fresh invite
-  }
-  return defaultInvite()
+export interface SectionsPage {
+  id: string
+  kind: 'sections'
+  title: string
+  sections: Section[]
 }
 
-export function saveInvite(data: WeddingInviteData) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-  } catch {
-    // private mode / quota: editing still works, just not persisted
-  }
+export type Page = CoverPage | SectionsPage
+
+export interface Invite {
+  version: 2
+  templateId: string
+  lang: Lang
+  format: Format
+  scale: FontScale
+  pages: Page[]
+}
+
+// Everything a template needs to pre-fill itself in one language. One file per language in src/samples/.
+export interface SampleText {
+  invocation: Record<SymbolId, string>
+  shlok: string // Ganesha shlok, shown on Ganesha templates only
+  titles: Record<EventType, string>
+  hostLine: Record<EventType, string>
+  bride: [name: string, parents: string]
+  groom: [name: string, parents: string]
+  joiner: string
+  date: Record<EventType, string>
+  time: Record<EventType, string>
+  venue: string
+  address: string
+  rsvpTitle: string
+  rsvp: string
+  // Extra pages of a full wedding set (kankotri). Sections are [heading, body].
+  functions: { title: string; sections: [string, string][] }
+  ceremonies: { title: string; sections: [string, string][] }
+  letter: { title: string; body: string }
+  family: { title: string; sections: [string, string][] }
+  message: { title: string; body: string }
 }

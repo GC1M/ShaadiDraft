@@ -1,0 +1,89 @@
+import type { SampleText } from '../types'
+
+export const en: SampleText = {
+  invocation: {
+    ganesha: '|| Shri Ganeshaya Namah ||',
+    'radha-krishna': '|| Shri Radhe Krishna ||',
+    balaji: '|| Om Namo Venkatesaya ||',
+    'ek-onkar': 'Ik Onkar Satnam',
+    bismillah: 'Bismillah-ir-Rahman-ir-Rahim',
+    floral: '',
+  },
+  shlok: 'Vakratunda Mahakaya Suryakoti Samaprabha\nNirvighnam Kuru Me Deva Sarva-Kaaryeshu Sarvada',
+  titles: {
+    'save-the-date': 'Save the Date',
+    ring: 'Ring Ceremony',
+    haldi: 'Haldi Ceremony',
+    mehendi: 'Mehendi Ceremony',
+    sangeet: 'Sangeet Night',
+    wedding: 'Shubh Vivah',
+    reception: 'Grand Reception',
+  },
+  hostLine: {
+    'save-the-date': 'Kindly save the date for the wedding of',
+    ring: 'We joyfully invite you to the ring ceremony of',
+    haldi: 'Join us for a morning of turmeric and laughter with',
+    mehendi: 'Join us for an afternoon of henna, music and colour with',
+    sangeet: 'Join us for an evening of music and dance celebrating',
+    wedding: 'Mrs. Sunita & Mr. Rajesh Sharma cordially invite you to the wedding of their beloved daughter',
+    reception: 'The Sharma and Mehta families request the pleasure of your company at the reception of',
+  },
+  bride: ['Ananya', 'D/o Mrs. Sunita & Mr. Rajesh Sharma'],
+  groom: ['Arjun', 'S/o Mrs. Neeta & Mr. Vikram Mehta'],
+  joiner: 'with',
+  date: {
+    'save-the-date': '22 . 11 . 2026',
+    ring: 'Sunday, 15th November 2026',
+    haldi: 'Saturday, 21st November 2026',
+    mehendi: 'Saturday, 21st November 2026',
+    sangeet: 'Saturday, 21st November 2026',
+    wedding: 'Sunday, 22nd November 2026',
+    reception: 'Monday, 23rd November 2026',
+  },
+  time: {
+    'save-the-date': 'Formal invitation to follow',
+    ring: '6:30 PM onwards',
+    haldi: '10:00 AM onwards',
+    mehendi: '3:00 PM onwards',
+    sangeet: '7:30 PM onwards',
+    wedding: 'Baraat at 7:00 PM | Pheras at 9:30 PM',
+    reception: '8:00 PM onwards',
+  },
+  venue: 'The Leela Palace',
+  address: 'Lake Pichola, Udaipur, Rajasthan',
+  rsvpTitle: 'RSVP',
+  rsvp: 'Sharma & Mehta Families\n+91 98765 43210',
+  functions: {
+    title: 'Auspicious Beginnings',
+    sections: [
+      ['Mandap Muhurat', 'Saturday, 21st November 2026\n3:00 PM\nMrs. Kavita & Mr. Anil Sharma\nPoolside Lawns, The Leela Palace'],
+      ['Garba Night', 'Saturday, 21st November 2026\n8:00 PM onwards\nMrs. Rekha & Mr. Suresh Mehta\nDurbar Hall, The Leela Palace'],
+      ['A note from the little ones', 'Drums are beating, the shehnai sings,\nour aunt is getting married, come early and dance with us!\n- Aarav, Diya, Kabir, Myra'],
+    ],
+  },
+  ceremonies: {
+    title: 'The Golden Day',
+    sections: [
+      ['Baraat Arrival', 'Sunday, 22nd November 2026\n6:00 PM'],
+      ['Hast Melap', '7:30 PM\nPheras under the mandap'],
+      ['Wedding Dinner', '8:30 PM onwards\nYou are invited *with family*'],
+      ['Wedding Venue', 'The Leela Palace\nLake Pichola, Udaipur'],
+    ],
+  },
+  letter: {
+    title: 'Parinayotsav',
+    body: 'Dear friends and family,\nBy the grace of God and the blessings of our elders,\nwe are delighted to announce the wedding of our daughter\n*Ananya*\nwith\n*Arjun*\nson of Mrs. Neeta & Mr. Vikram Mehta,\non Sunday, 22nd November 2026.\nPlease join us with your family and bless the couple.',
+  },
+  family: {
+    title: 'Eagerly Awaiting You',
+    sections: [
+      ['With love from', 'Mr. Rajesh Sharma\nMr. Anil Sharma\nMr. Suresh Sharma\nMr. Mahesh Sharma\nMr. Vikram Mehta\nMr. Rakesh Mehta\nMr. Nikhil Mehta\nMr. Rohan Mehta'],
+      ['Maternal family', 'Mr. Vijay Kapoor & family'],
+      ['Our dear daughters', 'Mrs. Neha Saxena\nMrs. Pooja Joshi'],
+    ],
+  },
+  message: {
+    title: 'A Digital Invitation',
+    body: 'Please accept this digital card as our personal invitation.\nKindly reply *OK* once you have read it.\n*The Sharma Family*\nwelcomes you with love.',
+  },
+}
