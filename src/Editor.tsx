@@ -12,7 +12,7 @@ import { track } from './analytics'
 
 type Props = { invite: Invite; setInvite: Dispatch<SetStateAction<Invite | null>>; onBack: () => void }
 
-const inputCls = 'mt-1 w-full rounded-lg border border-stone-400 bg-white px-3 py-2 text-base outline-none focus:border-maroon focus:ring-2 focus:ring-maroon/20'
+const inputCls = 'mt-1.5 w-full rounded-md border border-wine/20 bg-paper px-3.5 py-2.5 text-base outline-none transition-colors hover:border-wine/40 focus:border-wine focus:ring-2 focus:ring-zari/40'
 const stripIds = (pages: Page[]) => JSON.stringify(pages.map(({ id: _id, ...rest }) => rest))
 
 export default function Editor({ invite, setInvite, onBack }: Props) {
@@ -141,142 +141,159 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
     }
   }
 
-  const btn = 'inline-flex items-center justify-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-60'
+  const btn = 'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-medium disabled:opacity-60'
   const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
   return (
     // Families' names, dates and venues never reach Clarity recordings; clicks and layout still do.
     <div className="min-h-screen" data-clarity-mask="true">
-      <header className="sticky top-0 z-20 bg-wine text-rose shadow-md">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
-          <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-rose/85 hover:text-rose">
-            <ArrowLeft className="size-4" aria-hidden /> Back to templates
+      <header className="velvet sticky top-0 z-20 text-rose shadow-[0_8px_24px_-12px_rgba(10,0,4,0.6)]">
+        <div className="flex items-center gap-x-4 px-4 py-3 sm:px-6">
+          <button onClick={onBack} className="inline-flex shrink-0 items-center gap-1.5 py-2 text-[15px] text-rose/80 hover:text-rose">
+            <ArrowLeft className="size-4" aria-hidden /> <span className="hidden sm:inline">All designs</span>
+            <span className="sm:hidden">Back</span>
           </button>
-          <span className="hidden sm:inline">
+          <span className="hidden lg:inline">
             <Wordmark />
           </span>
-          <div className="ml-auto flex flex-wrap gap-2">
-            <button onClick={() => run('png')} disabled={!!busy} className={`${btn} bg-zari text-wine-deep hover:bg-zari-light`}>
-              {busy === 'png' ? <Loader2 className="size-4 animate-spin" /> : <ImageDown className="size-4" />} Download PNG
+          <div className="ml-auto flex gap-2">
+            <button onClick={() => run('png')} disabled={!!busy} className={`${btn} zari-button text-wine-deep`}>
+              {busy === 'png' ? <Loader2 className="size-4 animate-spin" /> : <ImageDown className="size-4" />}
+              <span>
+                Download <span className="hidden sm:inline">image</span>
+              </span>
             </button>
-            <button onClick={() => run('pdf')} disabled={!!busy} className={`${btn} border border-zari/80 text-rose hover:bg-white/10`}>
-              {busy === 'pdf' ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />} PDF ({invite.pages.length})
+            <button onClick={() => run('pdf')} disabled={!!busy} className={`${btn} border border-zari/70 text-rose hover:bg-white/10`}>
+              {busy === 'pdf' ? <Loader2 className="size-4 animate-spin" /> : <FileDown className="size-4" />} PDF
+              <span className="hidden sm:inline">({invite.pages.length} {invite.pages.length === 1 ? 'page' : 'pages'})</span>
             </button>
             {canShare && (
-              <button onClick={() => run('share')} disabled={!!busy} className={`${btn} border border-zari/80 text-rose hover:bg-white/10`}>
-                {busy === 'share' ? <Loader2 className="size-4 animate-spin" /> : <Share2 className="size-4" />} Share
+              <button onClick={() => run('share')} disabled={!!busy} aria-label="Share" className={`${btn} border border-zari/70 text-rose hover:bg-white/10`}>
+                {busy === 'share' ? <Loader2 className="size-4 animate-spin" /> : <Share2 className="size-4" />}
+                <span className="hidden sm:inline">Share</span>
               </button>
             )}
           </div>
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,500px)]">
-        <div className="min-w-0 space-y-8">
-          <section className="space-y-4">
-            <h1 className="font-display text-3xl">{t.name}</h1>
-            <div className="flex flex-wrap items-end gap-x-6 gap-y-4">
-              <label className="block">
-                <span className="text-[13px] text-stone-600">Card language</span>
-                <select value={L} onChange={(e) => changeLang(e.target.value as Lang)} className={`${inputCls} w-auto`}>
-                  {LANG_IDS.map((l) => (
-                    <option key={l} value={l}>
-                      {l === 'en' ? 'English' : `${LANGS[l].name} (${LANGS[l].native})`}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <Control label="Card shape">
-                <Segmented<Format>
-                  label="Card shape"
-                  value={invite.format}
-                  onChange={(format) => set({ format })}
-                  options={[
-                    { id: 'story', label: 'Phone 9:16' },
-                    { id: 'print', label: 'Print 5:7' },
-                  ]}
-                />
-              </Control>
-              <Control label="Text size">
-                <Segmented<FontScale>
-                  label="Text size"
-                  value={invite.scale}
-                  onChange={(scale) => set({ scale })}
-                  options={[
-                    { id: 's', label: 'S' },
-                    { id: 'm', label: 'M' },
-                    { id: 'l', label: 'L' },
-                  ]}
-                />
-              </Control>
-            </div>
-            {L !== 'en' && (
-              <label className="flex items-start gap-2 text-[15px] text-stone-700">
-                <input type="checkbox" checked={phonetic} onChange={(e) => setPhonetic(e.target.checked)} className="mt-1 size-4 accent-maroon" />
-                <span>
-                  Type in English letters and get {LANGS[L].native}. Press space to accept a word, Esc to keep English.
-                  <span className="block text-[13px] text-stone-500">Each word you type is sent to Google's transliteration service.</span>
-                </span>
-              </label>
-            )}
-          </section>
+      {/* An ivory workbench on the left, and the card on a velvet display on the right. */}
+      <main className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,min(46vw,640px))]">
+        <div className="min-w-0 px-4 pb-16 pt-8 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-2xl space-y-12">
+            <section className="space-y-6">
+              <h1 className="font-display text-[34px] leading-tight tracking-[-0.015em] sm:text-[42px]">{t.name}</h1>
+              <Step n={1} title="Card settings" />
+              <div className="flex flex-wrap items-end gap-x-8 gap-y-5">
+                <label className="block">
+                  <span className="text-[13px] text-ink/65">Card language</span>
+                  <select value={L} onChange={(e) => changeLang(e.target.value as Lang)} className={`${inputCls} select-chevron w-auto pr-10`}>
+                    {LANG_IDS.map((l) => (
+                      <option key={l} value={l}>
+                        {l === 'en' ? 'English' : `${LANGS[l].name} (${LANGS[l].native})`}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <Control label="Card shape">
+                  <Segmented<Format>
+                    label="Card shape"
+                    value={invite.format}
+                    onChange={(format) => set({ format })}
+                    options={[
+                      { id: 'story', label: 'Phone 9:16' },
+                      { id: 'print', label: 'Print 5:7' },
+                    ]}
+                  />
+                </Control>
+                <Control label="Text size">
+                  <Segmented<FontScale>
+                    label="Text size"
+                    value={invite.scale}
+                    onChange={(scale) => set({ scale })}
+                    options={[
+                      { id: 's', label: 'S' },
+                      { id: 'm', label: 'M' },
+                      { id: 'l', label: 'L' },
+                    ]}
+                  />
+                </Control>
+              </div>
+              {L !== 'en' && (
+                <label className="flex items-start gap-3 rounded-md bg-wine/[0.04] p-4 text-[15px] text-ink/85 ring-1 ring-wine/10">
+                  <input type="checkbox" checked={phonetic} onChange={(e) => setPhonetic(e.target.checked)} className="mt-1 size-4 accent-wine" />
+                  <span>
+                    Type in English letters and get {LANGS[L].native}. Press space to accept a word, Esc to keep English.
+                    <span className="mt-1 block text-[13px] text-ink/55">Each word you type is sent to Google's transliteration service.</span>
+                  </span>
+                </label>
+              )}
+            </section>
 
-          <section className="space-y-3 border-t border-zari/50 pt-6">
-            <div className="flex flex-wrap items-center gap-2">
-              <h2 className="mr-2 font-display text-xl">Pages</h2>
-              {invite.pages.map((p, i) => (
-                <button
-                  key={p.id}
-                  onClick={() => setCurrent(p.id)}
-                  aria-current={p.id === page.id}
-                  className={`max-w-[11rem] truncate rounded-full px-3.5 py-1.5 text-sm ${p.id === page.id ? 'bg-maroon text-white' : 'bg-white text-stone-700 ring-1 ring-stone-300'}`}
-                >
-                  {i + 1}. {(p.kind === 'cover' ? p.title : p.title) || 'Untitled'}
+            <section className="space-y-5">
+              <Step n={2} title="Pages" />
+              <ol className="flex flex-wrap gap-2">
+                {invite.pages.map((p, i) => (
+                  <li key={p.id}>
+                    <button
+                      onClick={() => setCurrent(p.id)}
+                      aria-current={p.id === page.id}
+                      className={`flex max-w-[13rem] items-center gap-2 rounded-full py-2 pl-2 pr-4 text-sm transition-colors ${p.id === page.id ? 'bg-wine text-rose' : 'bg-paper text-ink/80 ring-1 ring-wine/15 hover:ring-wine/40'}`}
+                    >
+                      <span className={`grid size-6 shrink-0 place-items-center rounded-full font-display text-[13px] italic ${p.id === page.id ? 'bg-zari text-wine-deep' : 'bg-wine/[0.07]'}`}>{i + 1}</span>
+                      <span className="truncate">{p.title || 'Untitled'}</span>
+                    </button>
+                  </li>
+                ))}
+              </ol>
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="mr-1 text-ink/60">This page:</span>
+                <button onClick={() => move(-1)} disabled={index === 0} className={iconBtn} aria-label="Move page earlier">
+                  <ArrowUp className="size-4" />
                 </button>
-              ))}
-            </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              <button onClick={() => move(-1)} disabled={index === 0} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Move page earlier">
-                <ArrowUp className="size-4" />
-              </button>
-              <button onClick={() => move(1)} disabled={index === invite.pages.length - 1} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Move page later">
-                <ArrowDown className="size-4" />
-              </button>
-              <button onClick={remove} disabled={invite.pages.length < 2} className="inline-flex size-10 items-center justify-center rounded-full ring-1 ring-stone-300 disabled:opacity-30" aria-label="Delete page">
-                <Trash2 className="size-4" />
-              </button>
-              <span className="ml-2 text-stone-500">Add page:</span>
-              {PAGE_KINDS.map((k) => (
-                <button key={k.label} onClick={() => addPage(k.make)} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-maroon ring-1 ring-maroon/40 hover:bg-maroon/5">
-                  <Plus className="size-3.5" aria-hidden /> {k.label}
+                <button onClick={() => move(1)} disabled={index === invite.pages.length - 1} className={iconBtn} aria-label="Move page later">
+                  <ArrowDown className="size-4" />
                 </button>
-              ))}
-            </div>
-          </section>
+                <button onClick={remove} disabled={invite.pages.length < 2} className={iconBtn} aria-label="Delete page">
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 text-sm">
+                <span className="mr-1 text-ink/60">Add a page:</span>
+                {PAGE_KINDS.map((k) => (
+                  <button key={k.label} onClick={() => addPage(k.make)} className="inline-flex items-center gap-1 rounded-full px-3.5 py-2 text-wine ring-1 ring-wine/25 hover:bg-wine/5 hover:ring-wine/50">
+                    <Plus className="size-3.5" aria-hidden /> {k.label}
+                  </button>
+                ))}
+              </div>
+            </section>
 
-          <section ref={formRef} className="scroll-mt-28 space-y-4 border-t border-zari/50 pt-6">
-            <p className="text-[13px] text-stone-600">
-              Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour.
-            </p>
-            {page.kind === 'cover' ? (
-              <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
-            ) : (
-              <SectionsForm p={page} on={editSections} lang={L} phonetic={phonetic} />
-            )}
-            <button onClick={reset} className="inline-flex items-center gap-1.5 text-sm text-stone-600 hover:text-maroon">
-              <RotateCcw className="size-4" aria-hidden /> Reset to sample text
-            </button>
-          </section>
+            <section ref={formRef} className="scroll-mt-24 space-y-5">
+              <Step n={3} title={`Words on page ${index + 1}`} />
+              <p className="text-[14px] leading-relaxed text-ink/65">
+                Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour.
+              </p>
+              {page.kind === 'cover' ? (
+                <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
+              ) : (
+                <SectionsForm p={page} on={editSections} lang={L} phonetic={phonetic} />
+              )}
+              <button onClick={reset} className="inline-flex items-center gap-1.5 pt-2 text-sm text-ink/60 hover:text-wine">
+                <RotateCcw className="size-4" aria-hidden /> Reset every page to the sample text
+              </button>
+            </section>
+          </div>
         </div>
 
-        <aside ref={asideRef} className="min-w-0 scroll-mt-28">
-          <div className="space-y-3 lg:sticky lg:top-24">
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-stone-600">
+        <aside ref={asideRef} className="velvet min-w-0 scroll-mt-16 text-rose">
+          <div className="flex flex-col lg:sticky lg:top-[66px] lg:h-[calc(100svh-66px)]">
+            <div className="flex items-center justify-between px-5 pb-3 pt-5 sm:px-8">
+              <p className="text-sm text-rose/70">
                 Page {index + 1} of {invite.pages.length}
               </p>
               <Segmented<'fit' | '100'>
                 label="Zoom"
+                dark
                 value={zoom}
                 onChange={setZoom}
                 options={[
@@ -286,7 +303,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
               />
             </div>
             {/* Every page in one scrollable column, like a PDF viewer. Click a page to edit it. */}
-            <div ref={previewRef} className="relative max-h-[80vh] space-y-5 overflow-auto rounded-lg bg-stone-200/50 p-4 ring-1 ring-stone-300 lg:max-h-[calc(100vh-9rem)]">
+            <div ref={previewRef} className="relative max-h-[85svh] min-h-0 flex-1 space-y-8 overflow-auto px-5 pb-10 pt-4 sm:px-8 lg:max-h-none">
               {invite.pages.map((p, i) => (
                 <button
                   key={p.id}
@@ -297,16 +314,16 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                   }}
                   aria-label={`Edit page ${i + 1}`}
                   aria-current={p.id === page.id}
-                  className={`mx-auto block rounded-sm ${p.id === page.id ? 'ring-2 ring-maroon ring-offset-4 ring-offset-stone-100' : ''}`}
-                  style={zoom === 'fit' ? { width: '100%', maxWidth: invite.format === 'story' ? 380 : 460 } : { width: w }}
+                  className={`mx-auto block transition-[outline-color] ${p.id === page.id ? 'outline outline-1 outline-offset-[7px] outline-zari' : 'opacity-80 hover:opacity-100'}`}
+                  style={zoom === 'fit' ? { width: '100%', maxWidth: invite.format === 'story' ? 400 : 480 } : { width: w }}
                 >
                   <div className="pointer-events-none">
                     {zoom === 'fit' ? (
-                      <ScaledCard w={w} h={h}>
+                      <ScaledCard w={w} h={h} className="shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)]">
                         <CardPage invite={invite} page={p} />
                       </ScaledCard>
                     ) : (
-                      <div className="shadow-xl">
+                      <div className="shadow-[0_30px_60px_-20px_rgba(0,0,0,0.8)]">
                         <CardPage invite={invite} page={p} />
                       </div>
                     )}
@@ -332,14 +349,14 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
         <button
           type="button"
           onClick={() => asideRef.current?.scrollIntoView({ behavior: 'smooth' })}
-          className="fixed bottom-5 right-4 z-30 inline-flex items-center gap-2 rounded-full bg-maroon px-5 py-3 text-sm font-medium text-white shadow-xl lg:hidden"
+          className="zari-button fixed bottom-5 right-4 z-30 inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-medium text-wine-deep lg:hidden"
         >
           <Eye className="size-4" aria-hidden /> Preview page {index + 1}
         </button>
       )}
 
       {toast && (
-        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-rose shadow-xl">
+        <div role="status" className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full bg-wine-deep px-5 py-3 text-sm text-rose shadow-xl ring-1 ring-zari/40">
           <Check className="size-4 text-zari" aria-hidden /> {toast}
         </div>
       )}
@@ -355,9 +372,19 @@ function save(file: File) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000)
 }
 
+const iconBtn = 'inline-flex size-10 items-center justify-center rounded-full bg-paper text-ink/80 ring-1 ring-wine/15 hover:text-wine hover:ring-wine/40 disabled:opacity-30'
+
+// The editor is a sequence (settings, pages, words), so its sections carry their step number.
+const Step = ({ n, title }: { n: number; title: string }) => (
+  <h2 className="flex items-baseline gap-3 border-b border-zari/40 pb-3 font-display text-2xl">
+    <span className="font-display text-xl italic text-zari">{n}</span>
+    {title}
+  </h2>
+)
+
 const Control = ({ label, children }: { label: string; children: ReactNode }) => (
   <div>
-    <span className="mb-1 block text-[13px] text-stone-600">{label}</span>
+    <span className="mb-1.5 block text-[13px] text-ink/65">{label}</span>
     {children}
   </div>
 )
@@ -367,7 +394,7 @@ type FieldProps = { label: string; value: string; onChange: (v: string) => void;
 function Field({ label, value, onChange, lang, phonetic, multiline, rows = 3 }: FieldProps) {
   return (
     <label className="block">
-      <span className="text-[13px] text-stone-600">{label}</span>
+      <span className="text-[13px] text-ink/65">{label}</span>
       <TransliterateInput lang={lang} enabled={phonetic} value={value} onChange={onChange} multiline={multiline} rows={multiline ? rows : undefined} className={inputCls} />
     </label>
   )
@@ -379,7 +406,7 @@ function CoverForm({ p, on, lang, phonetic }: { p: CoverPage; on: (patch: Partia
   )
   const person = (who: 'bride' | 'groom', title: string) => (
     <fieldset className="space-y-3">
-      <legend className="mb-1 font-display text-lg">{title}</legend>
+      <legend className="mb-1 font-display text-xl italic">{title}</legend>
       <Field label="Name" value={p[who].name} onChange={(name) => on({ [who]: { ...p[who], name } })} lang={lang} phonetic={phonetic} />
       <Field label="Parents (optional)" value={p[who].parents} onChange={(parents) => on({ [who]: { ...p[who], parents } })} lang={lang} phonetic={phonetic} />
     </fieldset>
@@ -416,14 +443,14 @@ function SectionsForm({ p, on, lang, phonetic }: { p: SectionsPage; on: (fn: (p:
     <div className="space-y-5">
       <Field label="Page title" value={p.title} onChange={(title) => on((q) => ({ ...q, title }))} lang={lang} phonetic={phonetic} />
       {p.sections.map((s, i) => (
-        <fieldset key={i} className="space-y-3 rounded-xl bg-white/60 p-4 ring-1 ring-stone-300">
+        <fieldset key={i} className="space-y-3 rounded-md bg-paper/70 p-4 ring-1 ring-wine/10">
           <div className="flex items-end gap-2">
             <div className="flex-1">
               <Field label={`Section ${i + 1} heading (optional)`} value={s.heading} onChange={(heading) => setSection(i, { heading })} lang={lang} phonetic={phonetic} />
             </div>
             <button
               onClick={() => on((q) => ({ ...q, sections: q.sections.filter((_, j) => j !== i) }))}
-              className="mb-0.5 inline-flex size-10 items-center justify-center rounded-full text-stone-500 ring-1 ring-stone-300 hover:text-maroon"
+              className="mb-0.5 inline-flex size-11 items-center justify-center rounded-full text-ink/60 ring-1 ring-wine/15 hover:text-wine hover:ring-wine/40"
               aria-label={`Remove section ${i + 1}`}
             >
               <Trash2 className="size-4" />
@@ -434,7 +461,7 @@ function SectionsForm({ p, on, lang, phonetic }: { p: SectionsPage; on: (fn: (p:
       ))}
       <button
         onClick={() => on((q) => ({ ...q, sections: [...q.sections, { heading: '', body: '' }] }))}
-        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm text-maroon ring-1 ring-maroon/40 hover:bg-maroon/5"
+        className="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-sm text-wine ring-1 ring-wine/25 hover:bg-wine/5 hover:ring-wine/50"
       >
         <Plus className="size-4" aria-hidden /> Add section
       </button>
