@@ -98,6 +98,10 @@ function save(key: string, value: unknown) {
   }
 }
 
+const icsTime = (d: Date) => `${d.toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`
+// Event times are written in IST; UTC needs no VTIMEZONE block (a bare TZID breaks Outlook).
+const fromIst = (t: string) => icsTime(new Date(t.replace(/(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)/, '$1-$2-$3T$4:$5:$6+05:30')))
+
 function downloadIcs(e: WeddingEvent) {
   const ics = [
     'BEGIN:VCALENDAR',
@@ -105,9 +109,9 @@ function downloadIcs(e: WeddingEvent) {
     'PRODID:-//ShaadiDraft//Sample//EN',
     'BEGIN:VEVENT',
     `UID:${e.id}-ananya-arjun@shaadidraft`,
-    `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
-    `DTSTART;TZID=Asia/Kolkata:${e.start}`,
-    `DTEND;TZID=Asia/Kolkata:${e.end}`,
+    `DTSTAMP:${icsTime(new Date())}`,
+    `DTSTART:${fromIst(e.start)}`,
+    `DTEND:${fromIst(e.end)}`,
     `SUMMARY:${e.name}: Ananya and Arjun`,
     `LOCATION:${VENUE.replace(/,/g, '\\,')}`,
     'END:VEVENT',
@@ -147,13 +151,13 @@ function useScroll(fn: () => void) {
 /* ---------- photo wall: columns of sharp arched portraits drifting at different speeds ---------- */
 
 const COL_SPEED = [0.5, -0.35, 0.7, -0.55, 0.3]
-function PhotoWall({ tone, offset = 0, y }: { tone: 'dark' | 'light'; offset?: number; y?: number }) {
+function PhotoWall({ tone, offset = 0, y, rate = 0.35 }: { tone: 'dark' | 'light'; offset?: number; y?: number; rate?: number }) {
   const ref = useRef<HTMLDivElement>(null)
-  // Without an explicit y, the wall drifts with its own position on screen.
+  // Without an explicit y, the wall drifts with its own position on screen (written straight to the DOM, no re-render).
   useScroll(() => {
     if (y !== undefined || reducedMotion() || !ref.current) return
     const r = ref.current.getBoundingClientRect()
-    if (r.bottom > 0 && r.top < innerHeight) ref.current.style.setProperty('--wall-y', `${r.top * 0.35}px`)
+    if (r.bottom > 0 && r.top < innerHeight) ref.current.style.setProperty('--wall-y', `${r.top * rate}px`)
   })
   return (
     <div
@@ -199,8 +203,6 @@ function Hero() {
   const [open, setOpen] = useState(false)
   const [petals, setPetals] = useState(false)
   const origin = useRef(0)
-  const [wallY, setWallY] = useState(0)
-  useScroll(() => setWallY(reducedMotion() ? 0 : -scrollY * 0.6))
 
   const lift = (dir = 1) => {
     setOpen(true)
@@ -230,7 +232,7 @@ function Hero() {
 
   return (
     <header className="relative h-svh min-h-[560px] overflow-hidden bg-(--ov-ink)" data-open={open || undefined}>
-      <PhotoWall tone="dark" y={wallY} />
+      <PhotoWall tone="dark" rate={0.6} />
       <div className="relative flex h-full items-center justify-center px-4 pb-28 pt-12">
         <figure className="ov-arch ov-hero-arch aspect-[634/930] h-[min(64svh,600px)] max-w-[78vw] shadow-2xl">
           <img src={PHOTOS.couple.src} alt={PHOTOS.couple.alt} fetchPriority="high" className="h-full w-full object-cover" />
@@ -518,7 +520,10 @@ function RsvpForm() {
     const f = new FormData(e.currentTarget)
     const name = String(f.get('name')).trim()
     const events = f.getAll('events').map(String)
-    if (!name) return setError('Add your name so the families know who is coming.')
+    if (!name) {
+      ;(e.currentTarget.elements.namedItem('name') as HTMLInputElement).focus()
+      return setError('Add your name so the families know who is coming.')
+    }
     const r: Rsvp = { name, side: String(f.get('side')), events, party, note: String(f.get('note')).trim() }
     save(RSVP_KEY, r)
     setSaved(r)
@@ -607,7 +612,7 @@ function RsvpForm() {
             </div>
             <label className="block">
               <span className="text-sm font-semibold">Anything the hosts should know?</span>
-              <input name="note" defaultValue={saved?.note} placeholder="Vegetarian, arriving from Delhi on the 13th" className={field} />
+              <input name="note" defaultValue={saved?.note} placeholder="Vegetarian, arriving from Delhi on the 20th" className={field} />
             </label>
             <button type="submit" className="ov-press rounded-full bg-(--ov-ink) px-8 py-3.5 font-semibold text-(--ov-white) hover:bg-(--ov-ink)/90">
               Send reply

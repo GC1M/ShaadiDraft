@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowLeft, ArrowUp, Check, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { Wordmark } from './App'
@@ -23,6 +23,16 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const [toast, setToast] = useState('')
   const exportRef = useRef<HTMLDivElement>(null)
   const previewRef = useRef<HTMLDivElement>(null)
+  const formRef = useRef<HTMLElement>(null)
+  const asideRef = useRef<HTMLElement>(null)
+  // Phones stack the preview under the form; a floating button jumps to it while it's out of view.
+  const [previewSeen, setPreviewSeen] = useState(false)
+  useEffect(() => {
+    const io = new IntersectionObserver(([e]) => setPreviewSeen(e.isIntersecting))
+    io.observe(asideRef.current!)
+    return () => io.disconnect()
+  }, [])
+  const stacked = () => !matchMedia('(min-width: 1024px)').matches
 
   const page = invite.pages.find((p) => p.id === current) ?? invite.pages[0]
   const index = invite.pages.indexOf(page)
@@ -240,7 +250,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
             </div>
           </section>
 
-          <section className="space-y-4 border-t border-zari/50 pt-6">
+          <section ref={formRef} className="scroll-mt-28 space-y-4 border-t border-zari/50 pt-6">
             <p className="text-[13px] text-stone-600">
               Press Enter for a new line. Wrap a word in stars, like *Sajode*, to print it in the accent colour.
             </p>
@@ -255,7 +265,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
           </section>
         </div>
 
-        <aside className="min-w-0">
+        <aside ref={asideRef} className="min-w-0 scroll-mt-28">
           <div className="space-y-3 lg:sticky lg:top-24">
             <div className="flex items-center justify-between">
               <p className="text-sm text-stone-600">
@@ -277,7 +287,10 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                 <button
                   key={p.id}
                   data-page={p.id}
-                  onClick={() => setCurrent(p.id)}
+                  onClick={() => {
+                    setCurrent(p.id)
+                    if (stacked()) formRef.current?.scrollIntoView({ behavior: 'smooth' })
+                  }}
                   aria-label={`Edit page ${i + 1}`}
                   aria-current={p.id === page.id}
                   className={`mx-auto block rounded-sm ${p.id === page.id ? 'ring-2 ring-maroon ring-offset-4 ring-offset-stone-100' : ''}`}
@@ -309,6 +322,16 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
             </div>
           ))}
         </div>
+      )}
+
+      {!previewSeen && !toast && (
+        <button
+          type="button"
+          onClick={() => asideRef.current?.scrollIntoView({ behavior: 'smooth' })}
+          className="fixed bottom-5 right-4 z-30 inline-flex items-center gap-2 rounded-full bg-maroon px-5 py-3 text-sm font-medium text-white shadow-xl lg:hidden"
+        >
+          <Eye className="size-4" aria-hidden /> Preview page {index + 1}
+        </button>
       )}
 
       {toast && (
