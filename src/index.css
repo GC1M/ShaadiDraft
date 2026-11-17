@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Cinzel", serif;
+  --font-serif: "Cormorant Garamond", Georgia, serif;
+  --font-script: "Great Vibes", cursive;
+  --font-deva: "Noto Sans Devanagari", sans-serif;
+  --color-ivory: #fbf6ec;
+  --color-maroon: #7a1f1f;
+  --color-gold: #b8860b;
+  --color-marigold: #f08a00;
+}
+
+body {
+  background: var(--color-ivory);
+  color: #2b1d14;
+}
