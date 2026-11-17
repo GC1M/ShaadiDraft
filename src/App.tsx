@@ -1,5 +1,5 @@
 import { ArrowRight, Pencil } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { CardPage, SIZES } from './card/Card'
 import Editor from './Editor'
 import OrganzaVeilSite from './site/OrganzaVeil'
@@ -8,9 +8,15 @@ import { loadInvite, newInvite, saveInvite, TEMPLATES, type Template } from './t
 import { EVENT_IDS, LANG_IDS, SYMBOL_IDS, type EventType, type Invite, type Lang, type SymbolId } from './types'
 import { ScaledCard } from './ui'
 
-// Hash routes: #edit (editor), #/ananya-arjun (sample couple website), else the gallery.
+// Hash routes: #edit (editor), #/ananya-arjun (sample couple website), #/ananya-arjun/walk|lake|garden (the
+// same site as a 3D journey, loaded on demand so three.js stays out of the main bundle), else the gallery.
 const isEditor = () => location.hash === '#edit'
-const isSite = () => location.hash === '#/ananya-arjun'
+const JOURNEYS: Record<string, ReturnType<typeof lazy>> = {
+  '#/ananya-arjun/walk': lazy(() => import('./site/journey/PalaceWalk')),
+  '#/ananya-arjun/lake': lazy(() => import('./site/journey/LakeRide')),
+  '#/ananya-arjun/garden': lazy(() => import('./site/journey/GardenNight')),
+}
+const isSite = () => (location.hash === '#/ananya-arjun' || location.hash in JOURNEYS ? location.hash : '')
 
 export default function App() {
   const [invite, setInvite] = useState<Invite | null>(loadInvite)
@@ -38,6 +44,14 @@ export default function App() {
     location.hash = 'edit'
   }
 
+  if (inSite in JOURNEYS) {
+    const Journey = JOURNEYS[inSite]
+    return (
+      <Suspense fallback={<div className="min-h-svh bg-[#140d10]" />}>
+        <Journey />
+      </Suspense>
+    )
+  }
   if (inSite) return <OrganzaVeilSite />
   if (inEditor && invite) return <Editor invite={invite} setInvite={setInvite} onBack={() => (location.hash = '')} />
   return <Gallery onOpen={open} draft={invite} />
@@ -74,6 +88,9 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           <nav className="flex gap-5 text-sm">
             <a href="#/ananya-arjun" className="text-rose/85 underline-offset-4 hover:text-rose hover:underline">
               Sample wedding website
+            </a>
+            <a href="#/ananya-arjun/walk" className="text-rose/85 underline-offset-4 hover:text-rose hover:underline">
+              3D walk-through samples
             </a>
             {draft && (
               <a href="#edit" className="text-rose/85 underline-offset-4 hover:text-rose hover:underline">
