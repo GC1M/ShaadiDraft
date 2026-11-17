@@ -282,7 +282,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
         </div>
 
         <aside ref={asideRef} className="velvet min-w-0 scroll-mt-16 text-rose">
-          <div className="flex flex-col lg:sticky lg:top-16 lg:h-[calc(100svh-4rem)]">
+          <div className="flex flex-col lg:sticky lg:top-[66px] lg:h-[calc(100svh-66px)]">
             <div className="flex items-center justify-between px-5 pb-3 pt-5 sm:px-8">
               <p className="text-sm text-rose/70">
                 Page {index + 1} of {invite.pages.length}
