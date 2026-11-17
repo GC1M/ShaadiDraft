@@ -34,12 +34,14 @@ export function initAnalytics() {
     const denied = { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' }
     window.gtag('consent', 'default', { ...denied, region: CONSENT_REGIONS })
     window.gtag('js', new Date())
-    // Page views are sent by hand below so hash routes (#edit, #/ananya-arjun/...) count as separate pages.
-    window.gtag('config', GA, { send_page_view: false })
+    // GA sends the first page view itself (it ignored send_page_view: false and double-counted every load).
+    // Hash routes (#edit, #/ananya-arjun/...) don't count as page changes to GA, so those are sent by hand.
+    window.gtag('config', GA, { page_location: location.href })
     load(`https://www.googletagmanager.com/gtag/js?id=${GA}`)
-    const pageView = () => track('page_view', { page_location: location.href, page_title: document.title })
-    pageView()
-    addEventListener('hashchange', pageView)
+    addEventListener('hashchange', () => {
+      window.gtag!('set', { page_location: location.href })
+      track('page_view', { page_location: location.href, page_title: document.title })
+    })
   }
   if (CLARITY) {
     window.clarity = function () {
