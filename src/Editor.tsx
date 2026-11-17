@@ -40,7 +40,7 @@ function Field(props: { label: string; value: string; onChange: (v: string) => v
 export default function Editor({ data, setData }: Props) {
   const [tab, setTab] = useState<'edit' | 'preview'>('edit')
   const [page, setPage] = useState<PageId>('cover')
-  const [downloading, setDownloading] = useState(false)
+  const [exporting, setExporting] = useState<ExportKind | null>(null)
 
   const pages: PageId[] = ['cover', ...data.pages.filter((p) => p.enabled).map((p) => p.id)]
   const current = pages.includes(page) ? page : 'cover'
@@ -85,19 +85,19 @@ export default function Editor({ data, setData }: Props) {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-stone-200 bg-ivory/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl items-center gap-2 px-4 py-3">
-          <a href="#" className="font-display font-bold tracking-widest text-maroon">
+          <a href="#" className="font-display text-sm font-bold tracking-wider text-maroon sm:text-base sm:tracking-widest">
             ShaadiDraft
           </a>
           <div className="ml-auto flex gap-2">
             <button
               onClick={() => setData((d) => sampleInvite(d.themeId, d.pages))}
-              className="rounded-full border border-maroon px-3 py-1.5 text-sm font-medium text-maroon hover:bg-maroon/5"
+              className="whitespace-nowrap rounded-full border border-maroon px-2.5 py-1.5 text-xs sm:px-3 sm:text-sm font-medium text-maroon hover:bg-maroon/5"
             >
-              Quick Sample Fill
+              <span className="hidden sm:inline">Quick </span>Sample Fill
             </button>
             <button
-              onClick={() => setDownloading(true)}
-              className="rounded-full bg-maroon px-4 py-1.5 text-sm font-semibold text-white hover:bg-[#5f1717]"
+              onClick={() => setExporting('pdf')}
+              className="whitespace-nowrap rounded-full bg-maroon px-3 py-1.5 text-xs sm:px-4 sm:text-sm font-semibold text-white hover:bg-[#5f1717]"
             >
               Download PDF
             </button>
@@ -118,7 +118,7 @@ export default function Editor({ data, setData }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]">
+      <main className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,460px)]">
         {/* ---------- Form ---------- */}
         <div className={`space-y-6 ${tab === 'edit' ? '' : 'hidden'} lg:block`}>
           <section className="space-y-4 rounded-xl bg-white p-5 shadow-sm ring-1 ring-stone-200">
@@ -207,10 +207,16 @@ export default function Editor({ data, setData }: Props) {
 
           <div className="flex flex-wrap gap-3">
             <button
-              onClick={() => setDownloading(true)}
+              onClick={() => setExporting('pdf')}
               className="rounded-full bg-maroon px-6 py-2.5 text-sm font-semibold text-white hover:bg-[#5f1717]"
             >
               Download PDF ({pages.length} {pages.length === 1 ? 'page' : 'pages'})
+            </button>
+            <button
+              onClick={() => setExporting('images')}
+              className="rounded-full border border-maroon px-6 py-2.5 text-sm font-semibold text-maroon hover:bg-maroon/5"
+            >
+              Images for WhatsApp
             </button>
             <button
               onClick={() => confirm('Clear all details and start over?') && setData((d) => defaultInvite(d.themeId))}
@@ -244,35 +250,76 @@ export default function Editor({ data, setData }: Props) {
             <ScaledCard>
               <RoyalMarigoldPage data={data} page={current} />
             </ScaledCard>
+            <div className="flex justify-center gap-2">
+              <button
+                onClick={() => setExporting('pdf')}
+                className="rounded-full bg-maroon px-5 py-2 text-sm font-semibold text-white hover:bg-[#5f1717]"
+              >
+                Download PDF
+              </button>
+              <button
+                onClick={() => setExporting('images')}
+                className="rounded-full border border-maroon px-5 py-2 text-sm font-semibold text-maroon hover:bg-maroon/5"
+              >
+                Images for WhatsApp
+              </button>
+            </div>
           </div>
         </div>
       </main>
 
-      {downloading && <DownloadModal data={data} pages={pages} onClose={() => setDownloading(false)} />}
+      {exporting && <DownloadModal kind={exporting} data={data} pages={pages} onClose={() => setExporting(null)} />}
     </div>
   )
 }
 
-function DownloadModal({ data, pages, onClose }: { data: WeddingInviteData; pages: PageId[]; onClose: () => void }) {
+type ExportKind = 'pdf' | 'images'
+
+function saveFile(file: File) {
+  const a = document.createElement('a')
+  a.href = URL.createObjectURL(file)
+  a.download = file.name
+  a.click()
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000)
+}
+
+function DownloadModal({
+  kind,
+  data,
+  pages,
+  onClose,
+}: {
+  kind: ExportKind
+  data: WeddingInviteData
+  pages: PageId[]
+  onClose: () => void
+}) {
   const exportRef = useRef<HTMLDivElement>(null)
   const [error, setError] = useState('')
+  const [files, setFiles] = useState<File[] | null>(null)
+  const slug =
+    [data.cover.bride.name, data.cover.groom.name]
+      .map((n) => n.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, ''))
+      .filter(Boolean)
+      .join('-') || 'wedding'
 
   useEffect(() => {
     let cancelled = false
-    const slug = [data.cover.bride.name, data.cover.groom.name]
-      .map((n) => n.trim().split(/\s+/)[0]?.toLowerCase().replace(/[^a-z0-9]/g, ''))
-      .filter(Boolean)
-      .join('-')
+    const work = import('./pdf').then(async (m) => {
+      if (kind === 'images') return m.buildImages(exportRef.current!, `${slug}-invitation`)
+      return (await m.buildPdf(exportRef.current!)).output('blob')
+    })
     // Hold the modal for at least 3s so the ad zone gets a fair impression.
-    Promise.all([import('./pdf').then((m) => m.buildPdf(exportRef.current!)), new Promise((r) => setTimeout(r, 3000))])
-      .then(([pdf]) => {
+    Promise.all([work, new Promise((r) => setTimeout(r, 3000))])
+      .then(([result]) => {
         if (cancelled) return
-        pdf.save(`${slug || 'wedding'}-invitation.pdf`)
+        if (Array.isArray(result)) return setFiles(result)
+        saveFile(new File([result], `${slug}-invitation.pdf`, { type: 'application/pdf' }))
         onClose()
       })
       .catch((e) => {
         console.error(e)
-        if (!cancelled) setError('Something went wrong while creating the PDF. Please try again.')
+        if (!cancelled) setError('Something went wrong while creating your invitation. Please try again.')
       })
     return () => {
       cancelled = true
@@ -280,29 +327,62 @@ function DownloadModal({ data, pages, onClose }: { data: WeddingInviteData; page
     // Runs once per modal open; data is a snapshot of that moment.
   }, [])
 
+  // navigator.share needs a fresh user tap, so it runs from a button once images are ready.
+  const canShare = !!files && !!navigator.canShare?.({ files })
+  const share = () =>
+    navigator.share({ files: files!, title: 'Wedding Invitation' }).catch((e) => {
+      if (e.name !== 'AbortError') setError('Sharing failed. Use "Save images" instead.')
+    })
+
+  const btn = 'w-full rounded-full px-5 py-2.5 text-sm font-semibold'
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true">
       <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 text-center shadow-2xl">
         {error ? (
           <>
             <p className="text-sm text-red-700">{error}</p>
-            <button onClick={onClose} className="rounded-full bg-maroon px-5 py-2 text-sm font-semibold text-white">
+            <button onClick={onClose} className={`${btn} bg-maroon text-white`}>
               Close
             </button>
+          </>
+        ) : files ? (
+          <>
+            <p className="font-display font-bold text-maroon">Your invitation images are ready</p>
+            <p className="text-xs text-stone-500">
+              {files.length} {files.length === 1 ? 'image' : 'images'} · ready to send on WhatsApp
+            </p>
+            <div className="space-y-2">
+              {canShare && (
+                <button onClick={share} className={`${btn} bg-[#1f8f4e] text-white hover:bg-[#187040]`}>
+                  Share to WhatsApp
+                </button>
+              )}
+              <button
+                onClick={() => files.forEach(saveFile)}
+                className={`${btn} ${canShare ? 'border border-maroon text-maroon' : 'bg-maroon text-white'}`}
+              >
+                Save images
+              </button>
+              <button onClick={onClose} className="text-sm text-stone-500 hover:text-maroon">
+                Close
+              </button>
+            </div>
           </>
         ) : (
           <>
             <div className="mx-auto size-10 animate-spin rounded-full border-4 border-gold/30 border-t-maroon" />
-            <p className="font-display font-bold text-maroon">Preparing your high-resolution PDF...</p>
+            <p className="font-display font-bold text-maroon">
+              {kind === 'pdf' ? 'Preparing your high-resolution PDF...' : 'Preparing your invitation images...'}
+            </p>
             <p className="text-xs text-stone-500">
-              {pages.length} {pages.length === 1 ? 'page' : 'pages'} · A5 · print-ready
+              {pages.length} {pages.length === 1 ? 'page' : 'pages'} · {kind === 'pdf' ? 'A5 · print-ready' : 'JPEG · WhatsApp-ready'}
             </p>
           </>
         )}
         <AdSlot slot="download-modal" className="min-h-[250px]" />
       </div>
 
-      {/* Full-size, unscaled pages captured for the PDF. Off-screen but rendered (not display:none). */}
+      {/* Full-size, unscaled pages captured for export. Off-screen but rendered (not display:none). */}
       <div ref={exportRef} aria-hidden className="pointer-events-none fixed top-0" style={{ left: -100000 }}>
         {pages.map((id) => (
           <div key={id}>
