@@ -202,8 +202,14 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       }
     }
     fit()
-    document.fonts?.ready.then(fit)
-  })
+    // Re-fit once web fonts arrive; skipped once they're loaded so typing doesn't queue extra passes.
+    let live = true
+    if (document.fonts && document.fonts.status !== 'loaded') document.fonts.ready.then(() => live && fit())
+    return () => {
+      live = false
+    }
+    // Only pages whose content or look changed re-fit; untouched pages keep their object identity.
+  }, [page, base, invite.scale, invite.lang, invite.templateId])
 
   return (
     <div className="relative overflow-hidden" style={{ width: w, height: h, background: d.sky, color: d.colors.text, fontFamily: x.f.body }}>

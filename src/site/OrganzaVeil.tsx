@@ -109,7 +109,7 @@ function downloadIcs(e: WeddingEvent) {
   a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
   a.download = `${e.id}-ananya-arjun.ics`
   a.click()
-  URL.revokeObjectURL(a.href)
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000) // Safari/Firefox fetch the blob after click returns
 }
 
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -308,7 +308,10 @@ function Pheras() {
     }
     onScroll()
     addEventListener('scroll', onScroll, { passive: true })
-    return () => removeEventListener('scroll', onScroll)
+    return () => {
+      removeEventListener('scroll', onScroll)
+      cancelAnimationFrame(raf)
+    }
   }, [])
   const step = Math.min(6, Math.floor(p * 7))
   // Two threads, zari and rose, wind toward each other and meet in a knot at the seventh round.
@@ -365,7 +368,7 @@ function RsvpForm() {
     const name = String(f.get('name')).trim()
     const events = f.getAll('events').map(String)
     if (!name) return setError('Add your name so the families know who is coming.')
-    const r: Rsvp = { name, side: String(f.get('side')), events, party: Number(f.get('party')) || 1, note: String(f.get('note')).trim() }
+    const r: Rsvp = { name, side: String(f.get('side')), events, party: Math.min(8, Math.max(1, Math.round(Number(f.get('party')) || 1))), note: String(f.get('note')).trim() }
     save(RSVP_KEY, r)
     setSaved(r)
     setEditing(false)
@@ -485,8 +488,8 @@ function Blessings() {
         </form>
         {list.length > 0 && (
           <ul className="mt-16 gap-6 sm:columns-2 lg:columns-3">
-            {list.map((b) => (
-              <li key={b.at} className="ov-sheer mb-6 break-inside-avoid border border-(--ov-zari)/40 p-6">
+            {list.map((b, i) => (
+              <li key={`${b.at}-${i}`} className="ov-sheer mb-6 break-inside-avoid border border-(--ov-zari)/40 p-6">
                 <p className="ov-display text-xl leading-snug">{b.text}</p>
                 <p className="mt-4 text-sm font-semibold text-(--ov-rose)">{b.name}</p>
               </li>

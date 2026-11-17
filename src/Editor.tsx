@@ -1,4 +1,5 @@
 import { ArrowDown, ArrowLeft, ArrowUp, Check, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { Wordmark } from './App'
 import { CardPage, SIZES } from './card/Card'
@@ -46,8 +47,8 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const editCover = (patch: Partial<CoverPage>) => editPage((p) => ({ ...(p as CoverPage), ...patch }))
   const editSections = (fn: (p: SectionsPage) => SectionsPage) => editPage((p) => fn(p as SectionsPage))
 
-  const untouched = stripIds(invite.pages) === stripIds(samplePages(t, invite.lang))
   const changeLang = (lang: Lang) => {
+    const untouched = stripIds(invite.pages) === stripIds(samplePages(t, invite.lang))
     if (untouched || confirm(`Replace your text with the ${LANGS[lang].name} sample text? Choose Cancel to keep your text and only switch fonts and typing.`)) {
       const pages = samplePages(t, lang)
       set({ lang, pages })
@@ -91,16 +92,16 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const cover = invite.pages.find((p) => p.kind === 'cover') as CoverPage | undefined
   const slug =
     [cover?.bride.name, cover?.groom.name]
-      .map((n) => (n ?? '').toLowerCase().replace(/[^a-z0-9]+/g, ''))
+      .map((n) => (n ?? '').toLowerCase().replace(/[^\p{L}\p{M}\p{N}]+/gu, '')) // keeps Indic names
       .filter(Boolean)
-      .join('-') || 'wedding'
+      .join('-') || t.id
 
   // Renders pages off-screen at full size, then captures them.
   const [exportPages, setExportPages] = useState<Page[] | null>(null)
   const run = async (kind: 'png' | 'pdf' | 'share') => {
     setBusy(kind)
-    setExportPages(kind === 'png' ? [page] : invite.pages)
-    await new Promise((r) => setTimeout(r, 60)) // let the off-screen pages mount
+    // Mount the off-screen pages (and run their auto-fit layout effects) before capturing.
+    flushSync(() => setExportPages(kind === 'png' ? [page] : invite.pages))
     try {
       const m = await import('./pdf')
       const el = exportRef.current!
