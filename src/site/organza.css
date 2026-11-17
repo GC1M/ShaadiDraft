@@ -1,35 +1,106 @@
-/* Organza Veil: sample couple website. Scoped under .ov so it never leaks into the card editor. */
+/* Organza Veil: sample couple website. Scoped under .ov so it never leaks into the card editor.
+   Night palette: kohl black, zari gold, mogra ivory, with photographs carrying the colour. */
 .ov {
-  --ov-white: #fbfaf8; /* chikankari white */
-  --ov-sage: #c9d1c3; /* mist sage */
-  --ov-rose: #c98f8f; /* dusty rose */
-  --ov-zari: #a88a4e; /* antique zari gold */
-  --ov-ink: #3b2433; /* ink plum */
-  background: var(--ov-white);
-  color: var(--ov-ink);
-  font-family: var(--font-mulish);
+  --ov-kohl: #1e1519; /* kohl, warm near-black */
+  --ov-smoke: #2a1f24; /* raised kohl */
+  --ov-zari: #c9a15b; /* zari gold */
+  --ov-zari-deep: #8a6a2f; /* zari on ivory */
+  --ov-mogra: #f3ece3; /* mogra ivory */
+  --ov-gulab: #d7a79e; /* gulab rose */
+  --ov-sindoor: #8f1d2f; /* sindoor red */
+  background: var(--ov-kohl);
+  color: var(--ov-mogra);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+.ov ::selection {
+  background: var(--ov-zari);
+  color: var(--ov-kohl);
 }
 .ov :focus-visible {
-  outline: 2px solid var(--ov-zari);
-  outline-offset: 3px;
+  outline: 1.5px solid var(--ov-zari);
+  outline-offset: 4px;
 }
 .ov-display {
-  font-family: var(--font-bodoni);
+  font-family: var(--font-serif);
+  font-weight: 300;
+  letter-spacing: -0.015em;
+}
+.ov-amp {
   font-style: italic;
-  font-weight: 400;
-  letter-spacing: -0.01em;
+  color: var(--ov-zari);
+  padding: 0 0.04em;
+}
+.ov-meta {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.28em;
 }
 
-/* ---------- The veil: sheer organza with chikan buti, zari kinari edges, a slow sheen ---------- */
+/* ---------- Hero: the varmala photograph, slowly drifting, under a candlelit vignette ---------- */
+.ov-kenburns {
+  transform: scale(1.12);
+  animation: ov-kenburns 26s ease-out forwards;
+}
+@keyframes ov-kenburns {
+  to {
+    transform: scale(1) translate3d(0, -1.5%, 0);
+  }
+}
+.ov-vignette {
+  background:
+    radial-gradient(120% 80% at 50% 30%, transparent 40%, rgb(30 21 25 / 0.4) 80%, rgb(30 21 25 / 0.8) 100%),
+    linear-gradient(to top, rgb(30 21 25 / 0.9) 0%, rgb(30 21 25 / 0.4) 28%, transparent 55%);
+}
+/* Hero text rises once the veil is lifted. */
+.ov-rise-in {
+  opacity: 0;
+  filter: blur(10px);
+  transform: translateY(28px);
+  transition:
+    opacity 1400ms ease,
+    filter 1400ms ease,
+    transform 1600ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+[data-open] .ov-rise-in {
+  opacity: 1;
+  filter: none;
+  transform: none;
+}
+.ov-cue {
+  width: 1px;
+  height: 64px;
+  background: linear-gradient(to bottom, var(--ov-zari), transparent);
+  transform-origin: top;
+}
+[data-open] .ov-cue {
+  animation: ov-cue 2.6s 3s ease-in-out infinite;
+}
+@keyframes ov-cue {
+  0% {
+    transform: scaleY(0);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
+}
+
+/* ---------- The veil: ivory organza with zari buti, kinari edges, a slow sheen ---------- */
 .ov-veil {
   position: absolute;
   inset: 0 -24px; /* overhang so the kinari border sits just off-screen until dragged */
   z-index: 10;
   touch-action: pan-y;
   cursor: grab;
-  background-color: rgb(251 250 248 / 0.8);
-  backdrop-filter: blur(16px) saturate(0.7);
-  -webkit-backdrop-filter: blur(16px) saturate(0.7);
+  background-color: rgb(243 236 227 / 0.82);
+  backdrop-filter: blur(16px) saturate(0.6);
+  -webkit-backdrop-filter: blur(16px) saturate(0.6);
   transform-origin: 50% 0;
   will-change: transform;
 }
@@ -37,19 +108,17 @@
   cursor: grabbing;
 }
 .ov-veil::before {
-  /* chikankari buti: five-petal flower with stem dots, tone-on-tone */
   content: '';
   position: absolute;
   inset: 0;
-  opacity: 0.55;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23a88a4e' stroke-width='.7' stroke-opacity='.55'%3E%3Cg transform='translate(16 16)'%3E%3Cellipse rx='2.2' ry='5' cy='-5'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(72)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(144)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(216)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(288)'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23a88a4e' fill-opacity='.4'%3E%3Ccircle cx='48' cy='48' r='1.2'/%3E%3Ccircle cx='43' cy='52' r='.8'/%3E%3Ccircle cx='53' cy='44' r='.8'/%3E%3C/g%3E%3C/svg%3E");
+  opacity: 0.6;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72' viewBox='0 0 72 72'%3E%3Cg fill='none' stroke='%23b08a45' stroke-width='.7' stroke-opacity='.6'%3E%3Cg transform='translate(18 18)'%3E%3Cellipse rx='2.2' ry='5' cy='-5'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(72)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(144)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(216)'/%3E%3Cellipse rx='2.2' ry='5' cy='-5' transform='rotate(288)'/%3E%3C/g%3E%3C/g%3E%3Cg fill='%23b08a45' fill-opacity='.45'%3E%3Ccircle cx='54' cy='54' r='1.2'/%3E%3Ccircle cx='49' cy='58' r='.8'/%3E%3Ccircle cx='59' cy='50' r='.8'/%3E%3C/g%3E%3C/svg%3E");
 }
 .ov-veil::after {
-  /* light catching the weave */
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(100deg, transparent 38%, rgb(255 255 255 / 0.5) 50%, transparent 62%);
+  background: linear-gradient(100deg, transparent 38%, rgb(255 255 255 / 0.55) 50%, transparent 62%);
   background-size: 260% 100%;
   animation: ov-sheen 9s ease-in-out infinite;
   pointer-events: none;
@@ -62,7 +131,7 @@
   background:
     repeating-linear-gradient(0deg, var(--ov-zari) 0 2px, transparent 2px 9px) center / 6px 100% no-repeat,
     linear-gradient(90deg, transparent 2px, var(--ov-zari) 2px 3px, transparent 3px 19px, var(--ov-zari) 19px 20px, transparent 20px);
-  opacity: 0.85;
+  opacity: 0.9;
 }
 @keyframes ov-sheen {
   0%,
@@ -73,29 +142,7 @@
     background-position: -10% 0;
   }
 }
-
-/* Mughal arch window for the story photographs */
-.ov-arch {
-  border-radius: 999px 999px 6px 6px;
-  overflow: hidden;
-  outline: 1px solid var(--ov-zari);
-  outline-offset: 8px;
-}
-
-/* Sheer panel used over event photographs */
-.ov-sheer {
-  background: rgb(251 250 248 / 0.8);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.ov-fade {
-  transition: opacity 900ms ease;
-}
-
-/* ---------- motion ---------- */
-
-/* The veil breathes while it waits to be lifted. `translate` composes with the inline transform. */
+/* The veil breathes while it waits. `translate` composes with the inline transform. */
 .ov-sway {
   animation: ov-sway 5.5s ease-in-out infinite;
 }
@@ -105,28 +152,132 @@
   }
 }
 
-/* Names arrive letter by letter once the veil is gone. */
-.ov-letter {
-  display: inline-block;
-  opacity: 0;
-  filter: blur(8px);
-  transform: translateY(0.35em);
+/* ---------- Buttons and links ---------- */
+.ov-btn-veil,
+.ov-btn-gold,
+.ov-btn-line {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 2rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.24em;
+  border-radius: 999px;
+  cursor: pointer;
+}
+.ov-btn-veil {
+  background: var(--ov-kohl);
+  color: var(--ov-mogra);
+  border: 1px solid var(--ov-kohl);
+}
+.ov-btn-veil:hover {
+  background: var(--ov-sindoor);
+  border-color: var(--ov-sindoor);
+}
+.ov-btn-gold {
+  background: var(--ov-zari);
+  color: var(--ov-kohl);
+  border: 1px solid var(--ov-zari);
+}
+.ov-btn-gold:hover {
+  background: var(--ov-mogra);
+  border-color: var(--ov-mogra);
+}
+.ov-btn-line {
+  border: 1px solid rgb(243 236 227 / 0.45);
+  color: var(--ov-mogra);
+}
+.ov-btn-line:hover {
+  border-color: var(--ov-zari);
+  color: var(--ov-zari);
+}
+.ov-link {
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--ov-zari);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 1px;
+}
+.ov-press {
   transition:
-    opacity 900ms ease,
-    filter 900ms ease,
-    transform 900ms cubic-bezier(0.22, 0.8, 0.2, 1);
+    transform 160ms ease,
+    background-color 250ms ease,
+    border-color 250ms ease,
+    color 250ms ease;
 }
-[data-open] .ov-letter {
+.ov-press:active {
+  transform: scale(0.96);
+}
+
+/* ---------- Nav ---------- */
+.ov-monogram {
+  font-family: var(--font-serif);
+  font-weight: 300;
+  font-size: 1.6rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+.ov-monogram i {
+  color: var(--ov-zari);
+  padding: 0 0.08em;
+}
+.ov-nav a {
+  font-size: 0.74rem;
+  font-weight: 500;
+  letter-spacing: 0.2em;
+  white-space: nowrap;
+  color: rgb(243 236 227 / 0.75);
+  transition: color 250ms ease;
+}
+.ov-nav a:hover {
+  color: var(--ov-zari);
+}
+
+/* ---------- Story: Mughal arch window with a gold outline ---------- */
+.ov-arch {
+  border-radius: 999px 999px 4px 4px;
+  overflow: hidden;
+  outline: 1px solid rgb(201 161 91 / 0.7);
+  outline-offset: 10px;
+}
+.ov-story-img {
+  opacity: 0;
+  transform: scale(1.12);
+  transition:
+    opacity 1100ms ease,
+    transform 6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.ov-story-img.is-active {
   opacity: 1;
-  filter: none;
   transform: none;
 }
-.ov-hero-arch {
-  transform: scale(0.94);
-  transition: transform 1600ms cubic-bezier(0.22, 0.8, 0.2, 1);
+.ov-chapter {
+  opacity: 0.28;
+  transition: opacity 800ms ease;
 }
-[data-open] .ov-hero-arch {
-  transform: none;
+.ov-chapter.is-active {
+  opacity: 1;
+}
+
+/* ---------- Events ---------- */
+.ov-event-shade {
+  background:
+    linear-gradient(to top, rgb(30 21 25 / 0.94) 0%, rgb(30 21 25 / 0.6) 38%, rgb(30 21 25 / 0.1) 70%),
+    linear-gradient(to right, rgb(30 21 25 / 0.5), transparent 60%);
+}
+
+.ov-vow {
+  animation: ov-vow 900ms cubic-bezier(0.22, 0.8, 0.2, 1);
+}
+@keyframes ov-vow {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateY(14px);
+  }
 }
 
 .ov-petal {
@@ -145,72 +296,90 @@
   }
 }
 
-/* Story: the active photo settles in from a slow zoom; other chapters step back. */
-.ov-story-img {
-  opacity: 0;
-  transform: scale(1.12);
-  transition:
-    opacity 1000ms ease,
-    transform 6s cubic-bezier(0.2, 0.7, 0.2, 1);
+/* ---------- Forms: underlined fields on dark, gold chips ---------- */
+.ov-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: var(--ov-gulab);
 }
-.ov-story-img.is-active {
-  opacity: 1;
-  transform: none;
+.ov-field {
+  display: block;
+  width: 100%;
+  margin-top: 0.6rem;
+  padding: 0.6rem 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid rgb(243 236 227 / 0.3);
+  color: var(--ov-mogra);
+  font-family: var(--font-serif);
+  font-size: 1.6rem;
+  font-weight: 300;
+  transition: border-color 250ms ease;
 }
-.ov-chapter {
-  opacity: 0.3;
-  transition: opacity 700ms ease;
+.ov-field::placeholder {
+  color: rgb(243 236 227 / 0.3);
+  font-style: italic;
 }
-.ov-chapter.is-active {
-  opacity: 1;
+.ov-field:focus {
+  outline: none;
+  border-bottom-color: var(--ov-zari);
 }
-
-.ov-vow {
-  animation: ov-vow 800ms cubic-bezier(0.22, 0.8, 0.2, 1);
+.ov-field[aria-invalid='true'] {
+  border-bottom-color: var(--ov-gulab);
 }
-@keyframes ov-vow {
-  from {
-    opacity: 0;
-    filter: blur(10px);
-    transform: translateY(14px);
-  }
+.ov-error {
+  display: block;
+  min-height: 1.4em;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ov-gulab);
 }
-
-.ov-press {
-  transition:
-    transform 160ms ease,
-    background-color 200ms ease,
-    border-color 200ms ease;
-}
-.ov-press:active {
-  transform: scale(0.96);
-}
-
 .ov-chip {
   display: inline-flex;
   cursor: pointer;
   align-items: center;
+  min-height: 44px;
   border-radius: 999px;
-  border: 1px solid rgb(59 36 51 / 0.25);
-  padding: 0.55rem 1.1rem;
-  background: rgb(251 250 248 / 0.6);
+  border: 1px solid rgb(201 161 91 / 0.5);
+  padding: 0 1.2rem;
+  font-size: 0.92rem;
   transition:
     background-color 250ms ease,
     color 250ms ease,
     border-color 250ms ease,
     transform 160ms ease;
 }
+.ov-chip:hover {
+  border-color: var(--ov-zari);
+}
 .ov-chip:active {
   transform: scale(0.95);
 }
 .ov-chip:has(:checked) {
-  border-color: var(--ov-ink);
-  background: var(--ov-ink);
-  color: var(--ov-white);
+  border-color: var(--ov-zari);
+  background: var(--ov-zari);
+  color: var(--ov-kohl);
 }
 .ov-chip:has(:focus-visible) {
-  outline: 2px solid var(--ov-zari);
-  outline-offset: 3px;
+  outline: 1.5px solid var(--ov-zari);
+  outline-offset: 4px;
+}
+.ov-round {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 999px;
+  border: 1px solid rgb(201 161 91 / 0.6);
+  color: var(--ov-zari);
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.ov-round:hover {
+  background: var(--ov-zari);
+  color: var(--ov-kohl);
 }
 
 .ov-tick {
@@ -222,7 +391,6 @@
     opacity: 0.3;
   }
 }
-
 .ov-rise {
   animation: ov-rise 900ms cubic-bezier(0.22, 0.8, 0.2, 1);
 }
@@ -243,7 +411,7 @@
   animation: ov-draw 1400ms cubic-bezier(0.6, 0, 0.2, 1) forwards;
 }
 .ov-knot .ov-knot-rose {
-  stroke: var(--ov-rose);
+  stroke: var(--ov-gulab);
   animation-delay: 200ms;
 }
 .ov-knot circle {
@@ -263,30 +431,33 @@
   }
 }
 
+/* Blessing preview: a card of mogra paper the guest's words appear on. */
 .ov-preview {
-  border: 1px solid rgb(168 138 78 / 0.5);
-  background: rgb(251 250 248 / 0.92);
-  padding: 2rem;
-  rotate: -1.5deg;
-  box-shadow: 0 30px 60px -30px rgb(59 36 51 / 0.45);
-  transition:
-    rotate 500ms ease,
-    opacity 400ms ease;
+  border: 1px solid rgb(201 161 91 / 0.45);
+  outline: 1px solid rgb(201 161 91 / 0.25);
+  outline-offset: -10px;
+  background: rgb(42 31 36 / 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 2.5rem 2.25rem;
+  transition: opacity 400ms ease;
 }
 .ov-preview[data-empty] {
-  opacity: 0.6;
-}
-.ov-preview:not([data-empty]) {
-  rotate: 0deg;
+  opacity: 0.55;
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ov-veil::after,
   .ov-sway,
+  .ov-kenburns,
+  .ov-cue,
   .ov-vow,
   .ov-tick,
   .ov-rise {
-    animation: none;
+    animation: none !important;
+  }
+  .ov-kenburns {
+    transform: none;
   }
   .ov-knot path,
   .ov-knot circle {
@@ -294,9 +465,7 @@
     animation-delay: 0ms;
   }
   .ov-veil,
-  .ov-fade,
-  .ov-letter,
-  .ov-hero-arch,
+  .ov-rise-in,
   .ov-story-img,
   .ov-chapter {
     transition: none !important;
