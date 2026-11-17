@@ -8,6 +8,7 @@ import { samplePages, sectionsPage, templateById } from './templates'
 import { TransliterateInput } from './transliterate'
 import { LANG_IDS, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type SectionsPage } from './types'
 import { ScaledCard, Segmented } from './ui'
+import { track } from './analytics'
 
 type Props = { invite: Invite; setInvite: Dispatch<SetStateAction<Invite | null>>; onBack: () => void }
 
@@ -129,8 +130,10 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
           setToast(files.length > 1 ? `${files.length} images downloaded` : 'Image downloaded')
         }
       }
+      track('export', { kind, format: invite.format, pages: invite.pages.length, template: invite.templateId })
     } catch (e) {
       console.error(e)
+      track('export_failed', { kind, format: invite.format, error: String(e).slice(0, 150) })
       setToast('Could not create the file. Please try again.')
     } finally {
       setBusy('')
@@ -142,7 +145,8 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const canShare = typeof navigator !== 'undefined' && !!navigator.share
 
   return (
-    <div className="min-h-screen">
+    // Families' names, dates and venues never reach Clarity recordings; clicks and layout still do.
+    <div className="min-h-screen" data-clarity-mask="true">
       <header className="sticky top-0 z-20 bg-wine text-rose shadow-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
           <button onClick={onBack} className="inline-flex items-center gap-1.5 text-sm text-rose/85 hover:text-rose">

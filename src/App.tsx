@@ -7,6 +7,7 @@ import { loadInvite, newInvite, saveInvite, TEMPLATES, type Template } from './t
 import { EVENT_IDS, LANG_IDS, SYMBOL_IDS, type EventType, type Invite, type Lang, type SymbolId } from './types'
 import { PAGES } from './site/pages'
 import { ScaledCard } from './ui'
+import { track } from './analytics'
 
 // Hash routes: #edit (editor), the sample couple website in each version (site/pages.ts: a film, and walks through
 // real 3D scans), else the gallery. Sites load on demand to keep the main bundle small.
@@ -41,6 +42,7 @@ export default function App() {
   const open = (t: Template) => {
     // Re-opening the template you were editing keeps your text.
     if (invite?.templateId !== t.id) setInvite(newInvite(t))
+    track('template_open', { template: t.id, lang: t.lang, event: t.event })
     location.hash = 'edit'
   }
 
