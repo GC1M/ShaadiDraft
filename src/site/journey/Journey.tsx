@@ -7,7 +7,7 @@ import {
   EVENTS,
   PhotoCredits,
   RsvpForm,
-  SHOTS,
+  STORY,
   VENUE,
   clamp01,
   downloadIcs,
@@ -29,21 +29,9 @@ import type { V3 } from './parts'
 
 export type Stop = { kicker: string; place: string; title: string; body: string; photo: Photo; event?: WeddingEvent }
 const ev = (id: string) => EVENTS.find((e) => e.id === id)!
+// The first and third chapters of the couple's story, then the three ceremonies.
 export const STOPS: Stop[] = [
-  {
-    place: '2016',
-    kicker: '2016, Pune',
-    title: 'A borrowed umbrella',
-    body: 'First week of college, the monsoon came early, and Arjun had the only umbrella at the bus stop. Ananya kept it for a month.',
-    photo: SHOTS.beach,
-  },
-  {
-    place: '2025',
-    kicker: '2025, Lake Pichola',
-    title: 'The question',
-    body: 'A boat, a sunset and a ring that nearly went overboard. She said yes before he finished asking.',
-    photo: SHOTS.engaged,
-  },
+  ...[STORY[0], STORY[2]].map((s) => ({ place: s.year, kicker: s.year, title: s.title, body: s.body, photo: s.photo })),
   ...['mehendi', 'haldi', 'pheras'].map((id) => {
     const e = ev(id)
     return { place: e.name, kicker: e.date, title: e.name, body: `${e.time}. ${e.note}`, photo: e.photo, event: e }
@@ -67,6 +55,15 @@ const settle = (f: number) => {
 }
 
 function Rig({ places, progress, bob }: { places: Place[]; progress: RefObject<number>; bob?: boolean }) {
+  // Parallax follows the mouse only: on touch, R3F's pointer sticks at the last touch and would skew the view.
+  const mouse = useRef({ x: 0, y: 0 })
+  useEffect(() => {
+    const on = (e: PointerEvent) => {
+      if (e.pointerType === 'mouse') mouse.current = { x: (e.clientX / innerWidth) * 2 - 1, y: 1 - (e.clientY / innerHeight) * 2 }
+    }
+    addEventListener('pointermove', on)
+    return () => removeEventListener('pointermove', on)
+  }, [])
   const [pos, look] = useMemo(() => [places.map((p) => p.cam), places.map((p) => p.look)].map((v) => new CatmullRomCurve3(v.map((x) => new Vector3(...x)), false, 'catmullrom', 0.35)), [places])
   const p = useMemo(() => new Vector3(), [])
   const l = useMemo(() => new Vector3(), [])
@@ -80,8 +77,8 @@ function Rig({ places, progress, bob }: { places: Place[]; progress: RefObject<n
     look.getPoint(t, l)
     const still = reducedMotion()
     if (!still) {
-      p.x += state.pointer.x * 0.25
-      p.y += state.pointer.y * 0.12
+      p.x += mouse.current.x * 0.25
+      p.y += mouse.current.y * 0.12
     }
     const time = state.clock.elapsedTime
     if (bob && !still) p.y += Math.sin(time * 1.1) * 0.05
@@ -134,7 +131,8 @@ export default function Journey({ title, intro, labels, finale, places, bg, bob,
     return () => removeEventListener('resize', on)
   }, [])
   const route = useMemo(() => places(narrow), [places, narrow])
-  const [dpr, setDpr] = useState(() => Math.min(devicePixelRatio, narrow ? 1.5 : 2))
+  const [slow, setSlow] = useState(false)
+  const dpr = slow ? 1 : Math.min(devicePixelRatio, narrow ? 1.5 : 2)
   const last = route.length - 1
   const names = [labels[0], ...STOPS.map((s) => s.place), labels[1]]
 
@@ -152,7 +150,7 @@ export default function Journey({ title, intro, labels, finale, places, bg, bob,
     const sec = section.current!
     scrollToY(sec.offsetTop + (k / last) * (sec.offsetHeight - innerHeight))
   }
-  const toRsvp = (e: MouseEvent) => jump(e, 'rsvp')
+  const toRsvp = (e: MouseEvent) => jump(e, 'rsvp', 0)
 
   return (
     <div className="ov">
@@ -166,7 +164,7 @@ export default function Journey({ title, intro, labels, finale, places, bg, bob,
           >
             <color attach="background" args={[bg]} />
             {/* Drop resolution on devices that can't keep up. */}
-            <PerformanceMonitor onDecline={() => setDpr(1)} />
+            <PerformanceMonitor onDecline={() => setSlow(true)} onIncline={() => setSlow(false)} />
             <Rig places={route} progress={progress} bob={bob} />
             <Suspense fallback={null}>{children}</Suspense>
           </Canvas>

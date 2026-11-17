@@ -41,7 +41,7 @@ export const SHOTS = {
   courtyard: commons('3/38/Mor_chowk%2C_City_Palace%2C_Udaipur.jpg', 3072, 'The peacock courtyard of the City Palace, Udaipur', 'nborun', 'CC BY 2.0'),
 }
 
-const STORY: { year: string; title: string; body: string; photo: Photo }[] = [
+export const STORY: { year: string; title: string; body: string; photo: Photo }[] = [
   {
     year: '2016',
     title: 'A borrowed umbrella',
@@ -754,8 +754,11 @@ export default function OrganzaVeilSite() {
         </span>
         <p className="mt-8">
           A sample wedding website made with ShaadiDraft. The couple and their story are fictional.{' '}
-          <a href="#/ananya-arjun/walk" className="underline underline-offset-4 hover:text-(--ov-zari)">See it as a palace walk</a>
-          {' or '}
+          See it in 3D as a{' '}
+          <a href="#/ananya-arjun/walk" className="underline underline-offset-4 hover:text-(--ov-zari)">palace walk</a>,{' '}
+          <a href="#/ananya-arjun/lake" className="underline underline-offset-4 hover:text-(--ov-zari)">boat ride</a> or{' '}
+          <a href="#/ananya-arjun/garden" className="underline underline-offset-4 hover:text-(--ov-zari)">garden at night</a>
+          {', or '}
           <a href="#" className="underline underline-offset-4 hover:text-(--ov-zari)">make your own</a>.
         </p>
         <PhotoCredits />
@@ -771,10 +774,11 @@ export function scrollToY(y: number) {
 }
 
 // Section links must not overwrite the sample site's route hash.
-export function jump(e: MouseEvent, id: string) {
+// offset clears the classic site's sticky nav; pages without it pass 0.
+export function jump(e: MouseEvent, id: string, offset = id === 'events' ? 0 : -56) {
   e.preventDefault()
   const el = document.getElementById(id)
   if (!el) return
-  if (lenis) lenis.scrollTo(el, { offset: id === 'events' ? 0 : -56, duration: 1.6 })
+  if (lenis) lenis.scrollTo(el, { offset, duration: 1.6 })
   else el.scrollIntoView()
 }

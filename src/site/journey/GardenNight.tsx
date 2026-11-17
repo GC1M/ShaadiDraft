@@ -26,6 +26,7 @@ const places = (narrow: boolean): Place[] => [
 ]
 
 const MARIGOLD = ['#f39a1d', '#ffc531', '#f39a1d', '#e8730c', '#ffc531', '#b3202e']
+const BULB = ['#ffe3a3']
 
 // Marigold toranas: a curved crossbar of flowers with strands hanging from it, highest at the ends.
 const TORANA_Z = [...STOPS.map((_, i) => zStop(i) + 2.5), END + 1.2]
@@ -169,7 +170,7 @@ function Garden() {
       <Diyas at={channel} bob />
 
       <Cypresses />
-      <Beads at={BULBS} colors={['#ffe3a3']} r={0.035} basic />
+      <Beads at={BULBS} colors={BULB} r={0.035} basic />
       <Beads at={FLOWERS} colors={MARIGOLD} r={0.085} />
       {TORANA_Z.map((z) => (
         <group key={z} position-z={z}>
