@@ -17,6 +17,7 @@
   --color-ivory: #f7edea;
   --color-maroon: #6b1428;
   --color-gold: #9a7330;
+  --color-paper: #fffaf6;
 }
 
 body {
@@ -40,4 +41,56 @@ body {
 .hero-card { animation: settle 900ms cubic-bezier(.2,.7,.2,1) both; }
 @media (prefers-reduced-motion: reduce) {
   .hero-card { animation: none; }
+  .zari-button, .event-tab::after, .design-card, .design > div { transition: none !important; }
 }
+
+/* Velvet: two soft pools of light on wine, with a fine grain so large areas don't look flat. */
+.velvet {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(70% 90% at 78% 30%, #6e1a2d 0%, transparent 65%),
+    radial-gradient(60% 80% at 0% 100%, #2c0710 0%, transparent 70%),
+    var(--color-wine);
+}
+.velvet :focus-visible { outline-color: var(--color-zari); }
+
+/* Metallic zari: a foil gradient that catches light when hovered. */
+.zari-button {
+  background: linear-gradient(180deg, #f0d595 0%, #c9a45c 48%, #b48c45 52%, #d8b56c 100%);
+  background-size: 100% 200%;
+  box-shadow: 0 1px 0 rgba(255, 240, 200, .6) inset, 0 14px 30px -12px rgba(10, 0, 4, .7);
+  transition: background-position .4s ease;
+}
+.zari-button:hover { background-position: 0 100%; }
+
+.select-chevron {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%234a0e1c' stroke-width='1.5'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+}
+
+/* Event tabs: a gold thread under the chosen one. */
+.event-tab::after {
+  content: '';
+  position: absolute;
+  inset: auto 0.875rem -1px;
+  height: 2px;
+  background: var(--color-zari);
+  transform: scaleX(0);
+  transition: transform .3s ease;
+}
+.event-tab[aria-pressed='true']::after { transform: scaleX(1); }
+
+/* Gallery cards: a gold hairline frame appears around the card you're about to open. */
+.design-card {
+  box-shadow: 0 18px 40px -18px rgba(43, 20, 24, .55);
+  outline: 1px solid transparent;
+  outline-offset: 6px;
+  transition: outline-color .3s ease, box-shadow .5s ease;
+}
+.design:hover .design-card, .design:focus-visible .design-card {
+  outline-color: var(--color-zari);
+  box-shadow: 0 28px 50px -20px rgba(43, 20, 24, .6);
+}
+.design:focus-visible { outline: none; }
