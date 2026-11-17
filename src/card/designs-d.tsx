@@ -630,12 +630,13 @@ const chinar: Design = {
 // Gujarati Sandhya kankotri: the couple's own pink dusk artwork, one painted scene per page,
 // with the printed text removed (titles kept) so every language can be typed over it.
 // Text band under each page's printed calligraphy title, in story px. Order follows the Gujarati page titles.
-const SANDHYA_PAGES: [top: number, bottom: number][] = [[330, 380], [295, 320], [275, 275], [345, 292], [272, 310], [258, 420], [320, 370]]
+const SANDHYA_PAGES: [top: number, bottom: number][] = [[350, 380], [295, 320], [285, 275], [345, 292], [272, 310], [258, 420], [320, 370]]
 const sandhya: Design = {
   id: 'sandhya',
   sky: '#f1c4cf',
-  colors: { title: '#3d5a2a', heading: '#3d5a2a', text: '#5b1f3c', accent: '#d0312d', muted: '#7a4560' },
+  colors: { title: '#3d5a2a', heading: '#3d5a2a', text: '#5b1f3c', accent: '#d0312d', muted: '#7a4560', names: '#7e224a' },
   fonts: { title: '"Pinyon Script"', heading: '"Marcellus"', body: serif, names: '"Pinyon Script"' },
+  script: { gu: { title: '"Sandhya Gujarati Bold"', body: '"Sandhya Gujarati"' } },
   Top: () => null,
   Bottom: () => null,
   pages: SANDHYA_PAGES.map(([top, bottom], i) => ({ src: `${import.meta.env.BASE_URL}templates/sandhya/${i + 1}.jpg`, top, bottom, head: true })),

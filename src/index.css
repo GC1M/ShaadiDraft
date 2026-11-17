@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+/* Sandhya kankotri: Hind Vadodara as printed on the original card, medium body and bold names. */
+@font-face {
+  font-family: "Sandhya Gujarati";
+  font-weight: 400;
+  font-display: swap;
+  src: url("../node_modules/@fontsource/hind-vadodara/files/hind-vadodara-gujarati-500-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Sandhya Gujarati";
+  font-weight: 700;
+  font-display: swap;
+  src: url("../node_modules/@fontsource/hind-vadodara/files/hind-vadodara-gujarati-700-normal.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Sandhya Gujarati Bold";
+  font-display: swap;
+  src: url("../node_modules/@fontsource/hind-vadodara/files/hind-vadodara-gujarati-700-normal.woff2") format("woff2");
+}
+
 @theme {
   --font-display: "Bodoni Moda", "Didot", serif;
   --font-sans: "Jost", system-ui, sans-serif;

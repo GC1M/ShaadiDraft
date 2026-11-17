@@ -1,4 +1,5 @@
 import type { FC, ReactNode } from 'react'
+import type { Lang } from '../types'
 import {
   ArchFrame,
   Diya,
@@ -30,8 +31,9 @@ import { designs as batchD } from './designs-d'
 export interface Design {
   id: string
   sky: string // CSS background of the whole card
-  colors: { title: string; heading: string; text: string; accent: string; muted: string }
+  colors: { title: string; heading: string; text: string; accent: string; muted: string; names?: string } // names default to heading
   fonts: { title: string; heading: string; body: string; names: string } // Latin faces
+  script?: Partial<Record<Lang, { title: string; body: string }>> // replaces the app-wide face for a script
   Top: FC // full-width top decoration, natural height
   Bottom: FC // 540 x 340 scene anchored to the bottom (print crops its sky)
   Overlay?: FC<{ h: number }> // full-card frame, h in 540-wide units

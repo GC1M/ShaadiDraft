@@ -23,7 +23,7 @@ interface Look {
 }
 
 function look(design: Design, lang: Lang): Look {
-  const L = LANGS[lang]
+  const L = { ...LANGS[lang], ...design.script?.[lang] }
   const pick = (latin: string, indic: string) => `${indic ? indic + ', ' : ''}${latin}, ${SCRIPTS}`
   return {
     d: design,
@@ -72,7 +72,7 @@ const P = ({ show, style, children }: { show: boolean; style: CSSProperties; chi
 
 function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId; head: boolean }) {
   const c = x.d.colors
-  const name: CSSProperties = { fontFamily: x.f.names, color: c.heading, fontSize: '1.95em', lineHeight: 1.2 }
+  const name: CSSProperties = { fontFamily: x.f.names, color: c.names ?? c.heading, fontSize: '1.95em', lineHeight: 1.2 }
   return (
     <>
       <P show={!head && !!p.invocation} style={{ fontSize: '0.92em', color: c.heading, fontWeight: 600 }}>
