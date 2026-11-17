@@ -211,6 +211,13 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
 
       <footer className="border-t border-stone-300/70 px-4 py-8 text-center text-sm text-stone-600">
         Your invitation is saved in this browser only. Phonetic typing sends single words to Google to convert them.
+        <nav className="mt-3 flex flex-wrap justify-center gap-x-5 gap-y-1">
+          {[['About', 'about.html'], ['Contact', 'contact.html'], ['Privacy', 'privacy.html'], ['Terms', 'terms.html'], ['Refunds', 'refund.html']].map(([label, href]) => (
+            <a key={href} href={href} className="underline underline-offset-4 hover:text-maroon">
+              {label}
+            </a>
+          ))}
+        </nav>
       </footer>
     </div>
   )
