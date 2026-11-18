@@ -37,6 +37,11 @@ export default function App() {
   useEffect(() => {
     scrollTo(0, 0)
   }, [inEditor, inSite])
+  // The static guide, FAQ and footer in index.html belong to the gallery only.
+  const view = inSite ? 'site' : inEditor && invite ? 'editor' : 'home'
+  useEffect(() => {
+    document.documentElement.dataset.view = view
+  }, [view])
 
   const open = (t: Template) => {
     // Re-opening the template you were editing keeps your text.
@@ -228,19 +233,6 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
       </section>
 
       <ZariBorder />
-      <footer className="velvet px-4 py-10 text-center text-sm text-rose/70">
-        <Wordmark />
-        <p className="mx-auto mt-4 max-w-xl leading-relaxed">
-          Your invitation is saved in this browser only. Phonetic typing sends single words to Google to convert them.
-        </p>
-        <nav className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-1">
-          {[['About', 'about.html'], ['Contact', 'contact.html'], ['Privacy', 'privacy.html'], ['Terms', 'terms.html'], ['Refunds', 'refund.html']].map(([label, href]) => (
-            <a key={href} href={href} className="underline underline-offset-4 hover:text-rose">
-              {label}
-            </a>
-          ))}
-        </nav>
-      </footer>
     </div>
   )
 }
