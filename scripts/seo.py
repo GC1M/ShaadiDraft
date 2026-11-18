@@ -196,8 +196,8 @@ def head_block(path, page):
              '<meta name="twitter:card" content="summary_large_image" />']
     graph = structured(path, page, url, title, desc, image, cards)
     if graph:
-        ld = json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, separators=(',', ':'))
-        tags.append(f'<script type="application/ld+json">{ld.replace("</", "<\\/")}</script>')
+        ld = json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, separators=(',', ':')).replace('</', '<\\/')
+        tags.append(f'<script type="application/ld+json">{ld}</script>')
     # Every card preview the page shows, for the image sitemap.
     shown = re.findall(r'src="[^"]*?(previews/[^"]+\.webp)"', page)
     return tags, url, [f'{SITE}/templates/{i}' for i in dict.fromkeys(shown)]

@@ -3,7 +3,8 @@
     python3 scripts/previews.py gulabi-kankotri anand-karaj ...
 
 For each template id it writes public/templates/previews/<id>.webp (540x960 cover, used by the gallery and hubs)
-and public/templates/previews/pages/<id>-<n>.webp (1080x1920, every page, used by the design pages).
+and, when the template has a design page (public/templates/<id>.html), public/templates/previews/pages/<id>-<n>.webp
+(1080x1920, every page).
 Needs Pillow, Playwright for Python and Google Chrome.
 """
 
@@ -33,12 +34,14 @@ def main(ids):
             page.wait_for_load_state('networkidle')
             page.wait_for_timeout(800)
             cards = page.locator('[data-page] .pointer-events-none > div')
-            for n in range(cards.count()):
+            design_page = (OUT.parent / f'{tid}.html').exists()
+            for n in range(cards.count() if design_page else 1):
                 card = cards.nth(n)
                 card.scroll_into_view_if_needed()
                 page.wait_for_timeout(200)
                 img = Image.open(io.BytesIO(card.screenshot())).convert('RGB')
-                img.resize((1080, 1920), Image.LANCZOS).save(OUT / 'pages' / f'{tid}-{n + 1}.webp', quality=80, method=6)
+                if design_page:
+                    img.resize((1080, 1920), Image.LANCZOS).save(OUT / 'pages' / f'{tid}-{n + 1}.webp', quality=80, method=6)
                 if n == 0:
                     img.resize((540, 960), Image.LANCZOS).save(OUT / f'{tid}.webp', quality=82, method=6)
             print(tid, cards.count(), 'pages')

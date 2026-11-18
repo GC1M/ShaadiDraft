@@ -99,8 +99,8 @@ function Preview({ t }: { t: Template }) {
         <CardPage invite={inv} page={inv.pages[0]} />
       </ScaledCard>
     )
-  const alt = `${t.name}: ${EVENTS[t.event]} invitation in ${LANGS[t.lang].name}`
-  return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt={alt} onError={() => setLive(true)} className="design-card h-auto w-full" />
+  // alt is empty: the card's name and details are already in the button's heading and caption.
+  return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt="" onError={() => setLive(true)} className="design-card h-auto w-full" />
 }
 
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
