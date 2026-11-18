@@ -20,7 +20,7 @@ async function suggest(word: string, lang: Lang): Promise<string[]> {
 
 const LATIN_TAIL = /[A-Za-z]+$/
 
-// Kankotris in these scripts print native numerals (૨૨/૧૧/૨૦૨૬), matching the sample text.
+// Kankotris in these scripts print native numerals (૨૧/૧૧/૨૦૨૭), matching the sample text.
 // Hindi, Punjabi and Tamil samples use 0-9, so those stay as typed.
 const ZERO: Partial<Record<Lang, number>> = { gu: 0x0ae6, mr: 0x0966 }
 const nativeDigits = (v: string, lang: Lang) => {

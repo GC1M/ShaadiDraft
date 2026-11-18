@@ -4,7 +4,7 @@
 
 For each template id it writes public/templates/previews/<id>.webp (540x960 cover, used by the gallery and hubs)
 and, when the template has a design page (public/templates/<id>.html), public/templates/previews/pages/<id>-<n>.webp
-(1080x1920, every page).
+(1080x1920, every page, plus a 720px copy for srcset).
 Needs Pillow, Playwright for Python and Google Chrome.
 """
 
@@ -43,6 +43,7 @@ def main(ids):
                 img = Image.open(io.BytesIO(card.screenshot())).convert('RGB')
                 if design_page:
                     img.resize((1080, 1920), Image.LANCZOS).save(OUT / 'pages' / f'{tid}-{n + 1}.webp', quality=80, method=6)
+                    img.resize((720, 1280), Image.LANCZOS).save(OUT / 'pages' / f'{tid}-{n + 1}-720.webp', quality=80, method=6)
                 if n == 0:
                     img.resize((540, 960), Image.LANCZOS).save(OUT / f'{tid}.webp', quality=82, method=6)
             print(tid, cards.count(), 'pages')

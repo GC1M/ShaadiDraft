@@ -652,8 +652,110 @@ const sandhya: Design = {
 export const designs: Design[] = [shubho, kasavu, pelli, jainLagna, chapel, parsiLagan, chinar, sandhya]
 
 export const templates: Template[] = [
-  { id: 'shubho-bibaho', name: 'Shubho Bibaho Alpana Red', design: 'shubho', lang: 'en', symbol: 'ganesha', event: 'wedding' },
-  { id: 'kerala-kasavu', name: 'Kerala Kasavu Gold Border', design: 'kasavu', lang: 'en', symbol: 'floral', event: 'wedding' },
+  {
+    id: 'shubho-bibaho',
+    name: 'Shubho Bibaho Alpana Red',
+    design: 'shubho',
+    lang: 'en',
+    symbol: 'ganesha',
+    event: 'wedding',
+    // A Bengali wedding: Aiburobhaat, Gaye Holud and an evening lagna instead of baraat and pheras.
+    override: {
+      title: 'Shubho Bibaho',
+      hostLine: 'Smt. Sharmila & Sri Subhash Chatterjee request the pleasure of your company at the wedding of their daughter',
+      bride: ['Ishita', 'D/o Smt. Sharmila & Sri Subhash Chatterjee'],
+      groom: ['Sayan', 'S/o Smt. Mitali & Sri Debashis Banerjee'],
+      time: 'Lagna at 8:15 PM | Dinner from 9:00 PM',
+      venue: 'Anandam Banquet Hall',
+      address: 'Salt Lake, Sector V, Kolkata',
+      rsvp: 'Chatterjee & Banerjee Families\n+91 98765 43210',
+      functions: {
+        title: 'Before the Lagna',
+        sections: [
+          ['Aiburobhaat', "Friday, 19/11/2027\n8:00 PM\nThe bride's farewell feast with the family\nAt the bride's home"],
+          ['Gaye Holud', "Sunday, 21/11/2027\n9:00 AM\nTurmeric sent from the groom's home\nAt the bride's home"],
+          ['A note from the little ones', 'The shankh will sound and the ulu will ring,\nour didi is getting married, come early and join us!\n- Rishi, Mohor, Tuhin, Pupu'],
+        ],
+      },
+      ceremonies: {
+        title: 'The Wedding Night',
+        sections: [
+          ['Bor Jatri Arrival', 'Sunday, 21/11/2027\n6:30 PM'],
+          ['Lagna', '8:15 PM\nShubho Drishti, Mala Badal and Sampradan'],
+          ['Dinner', '9:00 PM onwards\nYou are invited *with family*'],
+          ['Wedding Venue', 'Anandam Banquet Hall\nSalt Lake, Kolkata'],
+        ],
+      },
+      letter: {
+        title: 'Amontron',
+        body: 'Dear friends and family,\nWith the blessings of our elders,\nwe request your presence at the wedding of our daughter\n*Ishita*\nwith\n*Sayan*\nson of Smt. Mitali & Sri Debashis Banerjee,\non Sunday, 21/11/2027.\nYour blessings will make the day complete.',
+      },
+      family: {
+        title: 'With Love From',
+        sections: [
+          ['The families', 'Sri Subhash Chatterjee\nSri Prasanta Chatterjee\nSri Debashis Banerjee\nSri Amitava Banerjee'],
+          ['Grandparents', 'Smt. Gita & Sri Haripada Chatterjee'],
+          ['From Mamar Bari', 'Sri Partha Mukherjee & family'],
+        ],
+      },
+      message: {
+        title: 'A Digital Invitation',
+        body: 'Please accept this digital card as our personal invitation.\nKindly reply *OK* once you have read it.\n*The Chatterjee Family*\nwelcomes you with love.',
+      },
+    },
+  },
+  {
+    id: 'kerala-kasavu',
+    name: 'Kerala Kasavu Gold Border',
+    design: 'kasavu',
+    lang: 'en',
+    symbol: 'floral',
+    event: 'wedding',
+    // A Malayali wedding: a morning muhurtham with thalikettu and a sadya lunch instead of baraat and pheras.
+    override: {
+      title: 'Vivaham',
+      hostLine: 'Smt. Sreelatha & Sri Gopakumar Nair request the pleasure of your company at the wedding of their daughter',
+      bride: ['Devika', 'D/o Smt. Sreelatha & Sri Gopakumar Nair'],
+      groom: ['Vishnu', 'S/o Smt. Beena & Sri Rajendran Menon'],
+      time: 'Muhurtham between 10:30 and 11:15 AM',
+      venue: 'Sree Lakshmi Auditorium',
+      address: 'East Nada, Guruvayur, Thrissur',
+      rsvp: 'Nair & Menon Families\n+91 98765 43210',
+      functions: {
+        title: 'Before the Muhurtham',
+        sections: [
+          ['Wedding Eve Dinner', "Saturday, 20/11/2027\n7:00 PM\nWith the bride's family\nAt the bride's home, Thrissur"],
+          ['Ayaniyoonu', "Saturday, 20/11/2027\n7:30 PM\nThe groom's feast on the eve of the wedding\nAt the groom's home"],
+          ['A note from the little ones', 'The chenda will play and the nadaswaram will sing,\nour chechi is getting married, come early and join us!\n- Aadi, Gauri, Kannan, Ammu'],
+        ],
+      },
+      ceremonies: {
+        title: 'The Wedding Day',
+        sections: [
+          ['Muhurtham', 'Sunday, 21/11/2027\n10:30 to 11:15 AM\nThalikettu and pudava kodukkal'],
+          ['Sadya', '12:00 noon onwards\nYou are invited *with family*'],
+          ['Reception', '6:30 PM\nAt the same venue'],
+          ['Wedding Venue', 'Sree Lakshmi Auditorium\nGuruvayur, Thrissur'],
+        ],
+      },
+      letter: {
+        title: 'With Joy',
+        body: 'Dear friends and family,\nWith the blessings of our elders,\nwe are delighted to invite you to the wedding of our daughter\n*Devika*\nwith\n*Vishnu*\nson of Smt. Beena & Sri Rajendran Menon,\non Sunday, 21/11/2027.\nPlease join us with your family and bless the couple.',
+      },
+      family: {
+        title: 'With Love From',
+        sections: [
+          ['The families', 'Sri Gopakumar Nair\nSri Unnikrishnan Nair\nSri Rajendran Menon\nSri Suresh Menon'],
+          ['Grandparents', 'Smt. Kamalakshi Amma & Sri Madhavan Nair'],
+          ['Brothers and sisters', 'Sri Hari Gopakumar\nSmt. Lakshmi Pradeep'],
+        ],
+      },
+      message: {
+        title: 'A Digital Invitation',
+        body: 'Please accept this digital card as our personal invitation.\nKindly reply *OK* once you have read it.\n*The Nair Family*\nwelcomes you with love.',
+      },
+    },
+  },
   {
     id: 'pelli-patrika',
     name: 'Pelli Patrika Turmeric Mandapam',
@@ -674,15 +776,15 @@ export const templates: Template[] = [
       functions: {
         title: 'Before the Muhurtham',
         sections: [
-          ['Pellikuthuru', "Saturday, 21/11/2026\n9:00 AM\nThe bride's turmeric and blessing ceremony\nAt the bride's home"],
-          ['Pellikoduku', "Saturday, 21/11/2026\n11:00 AM\nThe groom's turmeric and blessing ceremony\nAt the groom's home"],
+          ['Pellikuthuru', "Saturday, 20/11/2027\n9:00 AM\nThe bride's turmeric and blessing ceremony\nAt the bride's home"],
+          ['Pellikoduku', "Saturday, 20/11/2027\n11:00 AM\nThe groom's turmeric and blessing ceremony\nAt the groom's home"],
           ['A note from the little ones', 'The nadaswaram will play and the talambralu will fly,\nour aunt is getting married, come early and join us!\n- Aadya, Ishaan, Charan, Meghana'],
         ],
       },
       ceremonies: {
         title: 'The Wedding Day',
         sections: [
-          ['Snathakam and Kasi Yatra', 'Sunday, 22/11/2026\n6:30 AM'],
+          ['Snathakam and Kasi Yatra', 'Sunday, 21/11/2027\n6:30 AM'],
           ['Sumuhurtham', '10:24 AM\nJeelakarra Bellam and Mangalya Dharanam'],
           ['Talambralu and Lunch', '11:30 AM onwards\nYou are invited *with family*'],
           ['Wedding Venue', 'Sri Venkateswara Kalyana Mandapam\nBanjara Hills, Hyderabad'],
@@ -690,7 +792,7 @@ export const templates: Template[] = [
       },
       letter: {
         title: 'Subhalekha',
-        body: 'Dear friends and family,\nWith the blessings of Lord Venkateswara and our elders,\nwe are delighted to invite you to the wedding of our daughter\n*Sravani*\nwith\n*Karthik*\nson of Smt. Padma & Sri Srinivasa Rao,\non Sunday, 22/11/2026.\nPlease join us with your family and bless the couple.',
+        body: 'Dear friends and family,\nWith the blessings of Lord Venkateswara and our elders,\nwe are delighted to invite you to the wedding of our daughter\n*Sravani*\nwith\n*Karthik*\nson of Smt. Padma & Sri Srinivasa Rao,\non Sunday, 21/11/2027.\nPlease join us with your family and bless the couple.',
       },
       family: {
         title: 'Eagerly Awaiting You',
@@ -727,15 +829,15 @@ export const templates: Template[] = [
       functions: {
         title: 'Before the Big Day',
         sections: [
-          ['Bridal Shower', "Friday, 20/11/2026\n6:00 PM\nHosted by the bridesmaids\nAt the bride's home, Bandra"],
-          ['Roce', "Saturday, 21/11/2026\n4:00 PM\nCoconut milk blessing for the bride and groom\nAt both family homes"],
+          ['Bridal Shower', "Friday, 19/11/2027\n6:00 PM\nHosted by the bridesmaids\nAt the bride's home, Bandra"],
+          ['Roce', "Saturday, 20/11/2027\n4:00 PM\nCoconut milk blessing for the bride and groom\nAt both family homes"],
           ['A note from the little ones', 'The bells will ring and we will carry the rings,\nour aunt is getting married, come early and sing with us!\n- Aaron, Tanya, Ryan, Mia'],
         ],
       },
       ceremonies: {
         title: 'The Wedding Day',
         sections: [
-          ['Nuptial Mass', "Sunday, 22/11/2026\n4:00 PM\nSt. Andrew's Church"],
+          ['Nuptial Mass', "Sunday, 21/11/2027\n4:00 PM\nSt. Andrew's Church"],
           ['Reception', '7:30 PM\nToast, cake and first dance'],
           ['Dinner and Dance', '8:30 PM onwards\nYou are invited *with family*'],
           ['Reception Venue', "Taj Lands End\nBandstand, Bandra West, Mumbai"],
@@ -743,7 +845,7 @@ export const templates: Template[] = [
       },
       letter: {
         title: 'With Joy',
-        body: "Dear friends and family,\nWith thanks to God for His many blessings,\nwe joyfully invite you to the marriage of our daughter\n*Anita*\nwith\n*Joel*\nson of Mrs. Mary & Mr. Peter Fernandes,\non Sunday, 22/11/2026.\nPlease join us in prayer and celebration.",
+        body: "Dear friends and family,\nWith thanks to God for His many blessings,\nwe joyfully invite you to the marriage of our daughter\n*Anita*\nwith\n*Joel*\nson of Mrs. Mary & Mr. Peter Fernandes,\non Sunday, 21/11/2027.\nPlease join us in prayer and celebration.",
       },
       family: {
         title: 'With Love From',
@@ -759,7 +861,58 @@ export const templates: Template[] = [
       },
     },
   },
-  { id: 'parsi-lagan', name: 'Parsi Lagan Pastel Chalk', design: 'parsi-lagan', lang: 'gu', symbol: 'floral', event: 'wedding' },
+  {
+    id: 'parsi-lagan',
+    name: 'Parsi Lagan Pastel Chalk',
+    design: 'parsi-lagan',
+    lang: 'gu',
+    symbol: 'floral',
+    event: 'wedding',
+    // A Parsi wedding in Gujarati: madhavsaro, adarni, nahan and the evening ashirvad, then the lagan nu bhonu.
+    override: {
+      title: 'શુભ લગન',
+      hostLine: 'શ્રી તથા શ્રીમતી દારા બરૂચા પોતાની દીકરીના શુભ લગનમાં આપને પ્રેમભર્યું આમંત્રણ આપે છે',
+      bride: ['ઝરીન', 'શ્રી તથા શ્રીમતી દારા બરૂચાની દીકરી'],
+      groom: ['કૈઝાદ', 'શ્રી તથા શ્રીમતી રુસ્તમ ઈરાનીનો દીકરો'],
+      time: 'આશીર્વાદ: સાંજે ૬:૩૦ | ભોણું: રાત્રે ૮:૦૦ કલાકે',
+      venue: 'ઍલબ્લેસ બાગ',
+      address: 'ચર્ની રોડ, મુંબઈ',
+      rsvp: 'બરૂચા તથા ઈરાની પરિવાર\nમો. ૯૮૭૬૫ ૪૩૨૧૦',
+      functions: {
+        title: 'લગન પહેલાંના અવસરો',
+        sections: [
+          ['માદાવ સરો', 'તા. ૧૭/૧૧/૨૦૨૭ ને બુધવાર\nસવારે ૧૦:૦૦ કલાકે\nઆંબાનો રોપ વાવી અવસરની શરૂઆત\nસ્થળ: બરૂચા નિવાસ'],
+          ['આદરણી', 'તા. ૧૮/૧૧/૨૦૨૭ ને ગુરુવાર\nસાંજે ૬:૦૦ કલાકે\nવરના પરિવાર તરફથી કન્યાને ભેટ\nસ્થળ: બરૂચા નિવાસ'],
+          ['ટહુકો', 'ઢોલ વાગશે ને આંગણે ચોક પુરાશે,\nઅમારી આન્ટીના લગન છે, વહેલા વહેલા આવજો!\n- ફરઝાદ, શિરીન, ડેલના, ઝુબીન'],
+        ],
+      },
+      ceremonies: {
+        title: 'લગનનો દિવસ',
+        sections: [
+          ['નાહણ', 'તા. ૨૧/૧૧/૨૦૨૭ ને રવિવાર\nબપોરે ૩:૦૦ કલાકે'],
+          ['આશીર્વાદ', 'સાંજે ૬:૩૦ કલાકે'],
+          ['લગનનું ભોણું', 'રાત્રે ૮:૦૦ કલાકે\nઆપશ્રી *કુટુંબ સાથે* પધારજો'],
+          ['લગન સ્થળ', 'ઍલબ્લેસ બાગ\nચર્ની રોડ, મુંબઈ'],
+        ],
+      },
+      letter: {
+        title: 'આમંત્રણ',
+        body: 'વહાલાં સગાંવહાલાં અને મિત્રો,\nઅમને જણાવતાં આનંદ થાય છે કે અમારી દીકરી\n*ઝરીન*\nના લગન\n*કૈઝાદ*\n(શ્રી તથા શ્રીમતી રુસ્તમ ઈરાનીનો દીકરો) સાથે\nતા. ૨૧/૧૧/૨૦૨૭ ને રવિવારે છે.\nઆ ખુશીના અવસરે નવદંપતીને આશીર્વાદ આપવા જરૂર પધારજો.',
+      },
+      family: {
+        title: 'સ્નેહબંધન',
+        sections: [
+          ['આપના', 'શ્રી દારા બરૂચા\nશ્રી હોમી બરૂચા\nશ્રી રુસ્તમ ઈરાની\nશ્રી જમશેદ ઈરાની'],
+          ['દાદા-દાદી', 'શ્રીમતી ફ્રેની તથા શ્રી કેકી બરૂચા'],
+          ['મામા', 'શ્રી સાયરસ મિસ્ત્રી અને પરિવાર'],
+        ],
+      },
+      message: {
+        title: 'ડિજિટલ આમંત્રણ',
+        body: 'આ ડિજિટલ કાર્ડને રૂબરૂ આમંત્રણ સમજી\nઅમારા ખુશીના અવસરમાં જરૂર પધારજો.\nકાર્ડ વાંચીને *OK* નો મેસેજ કરવા વિનંતી.\n*બરૂચા પરિવાર*\nઆપનું હાર્દિક સ્વાગત કરે છે.',
+      },
+    },
+  },
   { id: 'kashmiri-chinar', name: 'Kashmiri Chinar & Shikara', design: 'chinar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
   { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding', also: ['shiva', 'gel-mataji', 'swaminarayan'], featured: true },
 ]
