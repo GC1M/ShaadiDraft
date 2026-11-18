@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, lazy, Suspense, type CSSProperties, useEffect, useMemo, useRef, useState } from 'react'
 import { CardPage, SIZES } from './card/Card'
 import Editor from './Editor'
 import { EVENTS, LANGS, SYMBOLS } from './i18n'
@@ -85,6 +85,66 @@ export const Wordmark = () => (
   </span>
 )
 
+// Gold line-art mandap, viewBox 1200x820, drawn in stages: platform, pillars, beam, domes,
+// drapes, then marigold strings and diyas. Left-hand parts are drawn once and mirrored.
+const g = (d: number, dur = 1.6) => ({ '--d': `${d}s`, '--dur': `${dur}s` }) as CSSProperties
+const cusps = (n: number, w: number, h: number) => Array(n).fill(`q${w / 2} ${h} ${w} 0`).join(' ')
+const Side = () => (
+  <>
+    <g style={g(0.4)}>
+      <path d="M196 760V732H264V760M204 732V718H256V732" pathLength={1} />
+      <path d="M212 718V344M248 718V344M212 650H248M212 570H248M212 490H248M212 410H248" pathLength={1} />
+      <path d="M230 600l9 10-9 10-9-10zM230 520l9 10-9 10-9-10zM230 440l9 10-9 10-9-10z" pathLength={1} />
+      <path d="M212 344Q212 332 202 328H258Q248 332 248 344M194 328V314H266V328" pathLength={1} />
+    </g>
+    <g style={g(1.5, 1.8)}>
+      <path d="M182 288V274H278V288M188 274C178 238 206 214 230 188C254 214 282 238 272 274M230 188V172" pathLength={1} />
+      <circle cx="230" cy="166" r="4" pathLength={1} />
+    </g>
+    <g style={g(2)}>
+      <path d="M266 330C318 392 296 470 262 520C296 566 300 640 276 704M282 336C322 400 304 470 270 516" pathLength={1} />
+      <circle cx="263" cy="520" r="6" pathLength={1} />
+    </g>
+    <g style={g(2.5, 1.2)}>
+      <path d="M158 314V500M176 314V440" pathLength={1} />
+      {[...Array(9)].map((_, i) => <circle key={`a${i}`} cx="158" cy={334 + i * 20} r="6" pathLength={1} />)}
+      {[...Array(6)].map((_, i) => <circle key={`b${i}`} cx="176" cy={334 + i * 20} r="5" pathLength={1} />)}
+      <path d="M130 748Q150 768 170 748Z" pathLength={1} />
+      <path className="flame" d="M150 744Q142 730 150 712Q158 730 150 744Z" />
+    </g>
+  </>
+)
+function Mandap() {
+  return (
+    <svg className="mandap" viewBox="0 0 1200 820" aria-hidden>
+      <g style={g(0, 1.4)}>
+        <path d="M120 760H1080M90 760H1110V786H90ZM60 786H1140V812H60Z" pathLength={1} />
+        <path d={Array.from({ length: 25 }, (_, i) => `M${114 + i * 40} 773l6-6 6 6-6 6z`).join('')} pathLength={1} />
+      </g>
+      <g style={g(1, 1.4)}>
+        <path d="M140 314H1060M140 300H1060V314M140 300V314M128 300V288H1072V300" pathLength={1} />
+        <path d={`M264 314${cusps(8, 84, 34)}`} pathLength={1} />
+        <path d={Array.from({ length: 7 }, (_, i) => `M${348 + i * 84} 314v12m-4 0h8l-4 10z`).join('')} pathLength={1} />
+      </g>
+      <g style={g(1.5, 1.8)}>
+        <path d={`M420 288V268H780V288M430 268${cusps(10, 34, -16)}`} pathLength={1} />
+        <path d="M462 268C440 206 500 168 600 120C700 168 760 206 738 268" pathLength={1} />
+        <path d="M434 268C404 196 480 150 600 92C720 150 796 196 766 268M600 92C556 150 532 210 540 268M600 92C644 150 668 210 660 268M600 92V78M586 78Q600 58 614 78ZM600 58V40" pathLength={1} />
+        <circle cx="600" cy="34" r="6" pathLength={1} />
+      </g>
+      <g style={g(2)}>
+        <path d="M264 330Q432 398 600 330Q768 398 936 330" pathLength={1} />
+      </g>
+      <Side />
+      <g transform="matrix(-1 0 0 1 1200 0)">
+        <Side />
+      </g>
+    </svg>
+  )
+}
+
+const GREETINGS = ['Shubh Vivah', 'शुभ विवाह', 'શુભ લગ્ન', 'ਸ਼ੁਭ ਵਿਆਹ', 'சுப முகூர்த்தம்', 'शुभमंगल सावधान', 'Save the Date']
+
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
   const [lang, setLang] = useState<Lang | 'all'>('all')
   const [symbol, setSymbol] = useState<SymbolId | 'all'>('all')
@@ -101,7 +161,6 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
     setEvent('all')
   }
   const story = SIZES.story
-  const hero = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram'].map((id) => previews[id])
   const draftName = draft && TEMPLATES.find((t) => t.id === draft.templateId)?.name
   // When a filter changes, bring the top of the grid back into view and fade the new set in.
   const top = useRef<HTMLDivElement>(null)
@@ -117,6 +176,7 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
 
   return (
     <div className="min-h-screen">
+      <div className="scroll-progress" aria-hidden />
       <div className="velvet text-rose">
         <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6">
           <a href="#" aria-label="ShaadiTemplate home">
@@ -131,46 +191,56 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           </nav>
         </header>
 
-        <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pb-20 pt-6 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-28 lg:pt-14">
-          <div className="min-w-0">
-            <h1 className="font-display text-[44px] leading-[1.02] tracking-[-0.02em] sm:text-[68px] lg:text-[80px]">
-              Invitations as grand as the wedding
-            </h1>
-            <p className="mt-8 max-w-md text-[18px] leading-relaxed text-rose/85">
-              Type your families' names in English or your own script, then download images for WhatsApp or a PDF for the press.
-            </p>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-              <a href="#templates" className="zari-button inline-block rounded-full px-8 py-4 text-[15px] font-medium text-wine-deep">
-                Choose a design
-              </a>
-              {draftName && (
-                <a href="#edit" className="text-[15px] text-rose underline decoration-zari/70 underline-offset-[6px] hover:decoration-zari">
-                  Continue {draftName}
-                </a>
-              )}
-            </div>
-            <p className="mt-8 text-sm text-rose/60">Free, with no login. English, हिन्दी, मराठी, ગુજરાતી, ਪੰਜਾਬੀ and தமிழ்.</p>
-          </div>
-          <div className="relative order-first mx-auto h-[320px] w-full max-w-[460px] sm:h-[470px] lg:order-none" aria-hidden>
-            {hero.map((inv, i) => (
-              <div
-                key={inv.templateId}
-                className="hero-card absolute top-2 w-[46%]"
-                style={{ left: `${3 + i * 24}%`, rotate: `${(i - 1) * 7}deg`, zIndex: i === 1 ? 2 : 1, animationDelay: `${i * 120}ms` }}
-              >
-                <ScaledCard w={story.w} h={story.h} className="shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]">
-                  <CardPage invite={inv} page={inv.pages[0]} />
-                </ScaledCard>
-              </div>
+      {/* Hero: a gold mandap draws itself, and the headline stands in its opening. */}
+      <section className="hero mandap-hero">
+        <Mandap />
+        <div className="hero-copy">
+          <h1 className="font-display text-[40px] leading-[1.04] tracking-[-0.02em] [text-wrap:balance] sm:text-[56px] lg:text-[64px]">
+            {'Invitations as grand as the wedding'.split(' ').map((w, i) => (
+              <Fragment key={i}>
+                {i > 0 && ' '}
+                <span className="intro inline-block" style={{ animationDelay: `${900 + i * 70}ms` }}>
+                  {w}
+                </span>
+              </Fragment>
             ))}
+          </h1>
+          <p className="intro mx-auto mt-6 max-w-md text-[17px] leading-relaxed text-rose/85">
+            Type your families' names in English or your own script, then download images for WhatsApp or a PDF for the press.
+          </p>
+          <div className="intro mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
+            <a href="#templates" className="zari-button shine relative inline-block overflow-hidden rounded-full px-8 py-4 text-[15px] font-medium text-wine-deep">
+              Choose a design
+            </a>
+            {draftName && (
+              <a href="#edit" className="text-[15px] text-rose underline decoration-zari/70 underline-offset-[6px] hover:decoration-zari">
+                Continue {draftName}
+              </a>
+            )}
           </div>
-        </section>
+          <p className="intro mt-6 text-sm text-rose/60">Free, with no login. English, हिन्दी, मराठी, ગુજરાતી, ਪੰਜਾਬੀ and தமிழ்.</p>
+        </div>
+      </section>
       </div>
       <ZariBorder />
 
+      {/* A slow ribbon of the greeting in every script the maker supports. */}
+      <div className="overflow-hidden border-b border-wine/10 py-5" aria-hidden>
+        <div className="ribbon flex w-max whitespace-nowrap font-display text-[26px] italic text-wine/70 sm:text-[32px]">
+          {[0, 1].map((k) =>
+            GREETINGS.map((g, i) => (
+              <span key={`${k}-${i}`} className="flex items-center gap-10 pr-10">
+                {g}
+                <span className="text-[18px] not-italic text-zari">✦</span>
+              </span>
+            )),
+          )}
+        </div>
+      </div>
+
       <section id="templates" className="mx-auto max-w-6xl scroll-mt-2 px-4 pb-24 pt-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
-          <h2 className="font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>
+          <h2 className="reveal font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>
           <div className="grid w-full grid-cols-2 items-center gap-3 sm:flex sm:w-auto sm:flex-wrap">
             <select aria-label="Language" value={lang} onChange={(e) => setLang(e.target.value as Lang | 'all')} className={select}>
               <option value="all">Any language</option>

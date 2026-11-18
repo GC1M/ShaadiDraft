@@ -13,7 +13,8 @@
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6402221374419167" crossorigin="anonymous"></script>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- min-height keeps #site-info below the fold until React fills #root. -->
+    <div id="root" style="min-height: 100vh"></div>
 
     <!-- Plain HTML so crawlers and no-JS visitors see real text. App.tsx hides it outside the gallery view. -->
     <section id="site-info" class="bg-paper text-ink">
