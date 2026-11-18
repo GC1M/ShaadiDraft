@@ -3,7 +3,7 @@ import { templates as batchB } from './card/designs-b'
 import { templates as batchC } from './card/designs-c'
 import { templates as batchD } from './card/designs-d'
 import { SAMPLES } from './i18n'
-import type { CoverPage, EventType, Invite, Lang, Page, SectionsPage, SymbolId } from './types'
+import type { CoverPage, EventType, Invite, Lang, Page, SampleText, SectionsPage, SymbolId } from './types'
 
 export interface Template {
   id: string
@@ -14,8 +14,9 @@ export interface Template {
   event: EventType
   also?: SymbolId[] // other sacred figures in the artwork, so the symbol filter finds the card under each
   featured?: true // starred: shown first in the gallery with a badge
-  // Replaces sample fields when the card is in the template's own language (e.g. a Nikkah couple).
-  override?: Partial<Pick<CoverPage, 'title' | 'hostLine' | 'joiner' | 'rsvp'>> & { bride?: [string, string]; groom?: [string, string] }
+  // Replaces sample fields when the card is in the template's own language (e.g. a Nikkah couple, a church wedding).
+  override?: Partial<Pick<CoverPage, 'title' | 'hostLine' | 'joiner' | 'time' | 'venue' | 'address' | 'rsvp'>> &
+    Partial<Pick<SampleText, 'functions' | 'ceremonies' | 'letter' | 'family' | 'message'>> & { bride?: [string, string]; groom?: [string, string] }
 }
 
 export const TEMPLATES: Template[] = [
@@ -84,20 +85,21 @@ export function samplePages(t: Template, lang: Lang): Page[] {
     groom: { name: groom[0], parents: lineage ? groom[1] : '' },
     joiner: o.joiner ?? s.joiner,
     date: s.date[e],
-    time: s.time[e],
-    venue: e === 'save-the-date' ? '' : s.venue,
-    address: s.address,
+    time: o.time ?? s.time[e],
+    venue: e === 'save-the-date' ? '' : (o.venue ?? s.venue),
+    address: o.address ?? s.address,
     rsvpTitle: s.rsvpTitle,
     rsvp: o.rsvp ?? s.rsvp,
   }
   if (e !== 'wedding') return [cover]
+  const { functions, ceremonies, letter, family, message } = { ...s, ...o }
   return [
     cover,
-    sectionsPage(s.functions.title, s.functions.sections),
-    sectionsPage(s.ceremonies.title, s.ceremonies.sections),
-    sectionsPage(s.letter.title, [['', s.letter.body]]),
-    sectionsPage(s.family.title, s.family.sections),
-    sectionsPage(s.message.title, [['', s.message.body]]),
+    sectionsPage(functions.title, functions.sections),
+    sectionsPage(ceremonies.title, ceremonies.sections),
+    sectionsPage(letter.title, [['', letter.body]]),
+    sectionsPage(family.title, family.sections),
+    sectionsPage(message.title, [['', message.body]]),
   ]
 }
 

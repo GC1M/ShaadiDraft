@@ -6,6 +6,8 @@ export const mr: SampleText = {
     'radha-krishna': '॥ श्री राधे कृष्ण ॥',
     shiva: '॥ ॐ नमः शिवाय ॥',
     balaji: '॥ ॐ नमो वेंकटेशाय ॥',
+    'gel-mataji': '॥ जय गेल माताजी ॥',
+    swaminarayan: '॥ जय श्री स्वामिनारायण ॥',
     'ek-onkar': 'ੴ ਸਤਿ ਨਾਮੁ',
     bismillah: 'بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
     jain: '॥ णमो अरिहंताणं ॥',

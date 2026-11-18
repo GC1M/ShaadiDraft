@@ -52,13 +52,15 @@ Submit to Search Console now. Nothing blocks indexing (every sitemap URL returns
 
 Not measured: Lighthouse and CrUX (PageSpeed API was rate-limited, no field data yet), keyword volumes and backlinks (no paid tools). Re-run PageSpeed with an API key once the site has traffic.
 
-### Content issues found while writing pages (not SEO, owner to decide)
+### Content issues found while writing pages
 
-- **Sandhya labels are incomplete.** Its painted inner pages show ॥ જય ગેલ માતાજી ॥ with a goddess image (page 3) and ॥ જય શ્રી સ્વામિનારાયણ ॥ with a Swaminarayan figure (page 4), but the template is tagged only Ganesha and Shiva. CLAUDE.md requires a symbol option for each, which means new symbol ids, labels, invocations and emblems in `src/`.
-- **Printer watermark in Sandhya artwork.** `public/templates/sandhya/6.jpg` has a printer's mark with a phone number painted in. It should probably be removed from the artwork.
-- **White Chapel and Pelli Patrika use the shared English wedding wording** (Shubh Vivah, baraat, pheras), which does not fit a church wedding or a Telugu card. The pages tell families to edit it; better sample wording per template would fix it at the source.
-- **`src/samples/hi.ts` times disagree** between the cover (बारात सायं 7 बजे, फेरे रात्रि 9:30) and the ceremonies page (6 बजे, 7:30).
-- **`src/samples/ta.ts` uses மஞ்சள் நீராட்டு for Haldi**, a term many Tamil families use for a girl's coming-of-age ceremony. மங்கள ஸ்நானம் is safer.
+All fixed in the same PR:
+
+- **Sandhya labels.** Its painted inner pages show ॥ જય ગેલ માતાજી ॥ with a goddess image (page 3) and ॥ જય શ્રી સ્વામિનારાયણ ॥ with a Swaminarayan figure (page 4). Added Gel Mataji and Swaminarayan as symbol options (ids, labels, invocations in every sample, emblems) and tagged Sandhya with both.
+- **Printer watermark.** Removed the printer's mark and phone number from `public/templates/sandhya/6.jpg`.
+- **White Chapel and Pelli Patrika wording.** Each now opens with its own English sample: a church wedding (Holy Matrimony, nuptial mass, roce, reception) and a Telugu wedding (Shubha Vivaham, pellikuthuru, muhurtham with jeelakarra bellam, talambralu). Template `override` can now replace the time, venue, address and the five inner pages.
+- **Hindi and English times.** The cover now matches the ceremonies page (baraat 6 pm, hast melap 7:30 pm).
+- **Tamil Haldi title.** Changed மஞ்சள் நீராட்டு to மங்கள ஸ்நானம்.
 
 ## Information architecture
 

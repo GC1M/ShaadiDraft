@@ -495,6 +495,26 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
         <path d="M78 38 C 86 40 88 50 82 56 C 78 60 72 58 72 52 C 72 46 76 44 78 38 Z" fill={color} />
       </g>
     )
+  else if (symbol === 'gel-mataji')
+    inner = (
+      <g>
+        {/* Mataji's shrine with a red dhaja flying from the kalash */}
+        <path d="M32 66 Q36 46 50 36 Q64 46 68 66 Z" fill={color} />
+        <rect x="28" y="66" width="44" height="16" rx="1.5" fill={color} />
+        <path d="M44 82 L44 74 Q50 68 56 74 L56 82 Z" fill={accent} />
+        <circle cx="50" cy="34" r="3" fill={accent} />
+        <rect x="49" y="14" width="2" height="20" fill={color} />
+        <path d="M51 14 L72 19 L51 25 Z" fill="#d32f2f" />
+      </g>
+    )
+  else if (symbol === 'swaminarayan')
+    inner = (
+      <g>
+        {/* Tilak-chandlo: saffron U-shaped tilak with a round red chandlo */}
+        <path d="M36 20 L36 58 Q50 82 64 58 L64 20 L57 20 L57 56 Q50 68 43 56 L43 20 Z" fill={accent} stroke={color} strokeWidth="1.4" />
+        <circle cx="50" cy="48" r="7" fill="#d32f2f" stroke={color} strokeWidth="1" />
+      </g>
+    )
   else if (symbol === 'jain')
     inner = (
       <g>
