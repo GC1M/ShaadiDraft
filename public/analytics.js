@@ -2,6 +2,13 @@
 // measured. Same IDs and consent defaults as src/analytics.ts, which covers the app. Only runs on the live domain.
 ;(function () {
   if (location.hostname !== 'shaaditemplate.com') return
+  // ?notrack turns analytics off in this browser, ?track turns it back on (same flag as src/analytics.ts).
+  try {
+    var q = new URLSearchParams(location.search)
+    if (q.has('notrack')) localStorage.setItem('notrack', '1')
+    if (q.has('track')) localStorage.removeItem('notrack')
+    if (localStorage.getItem('notrack') === '1') return
+  } catch (e) {}
   var GA = 'G-H76T6YKFL2'
   var CLARITY = 'zfac15p6dl'
   var load = function (src) {
