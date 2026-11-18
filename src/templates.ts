@@ -21,6 +21,9 @@ export interface Template {
     Partial<Pick<SampleText, 'functions' | 'ceremonies' | 'letter' | 'family' | 'message'>> & { bride?: [string, string]; groom?: [string, string] }
   // The printed card's own words, page by page, used as is when the card is in the template's language.
   pages?: { title: string; sections: Section[] }[]
+  // The same pages in every other language: the same pages and sections in the same order, only the words change
+  // (sizes come from pages). scripts/languages-check.mjs fails CI when a language is missing or its shape differs.
+  tr?: Partial<Record<Lang, { title: string; sections: Pick<Section, 'heading' | 'body'>[] }[]>>
 }
 
 export const TEMPLATES: Template[] = [
@@ -74,7 +77,15 @@ export function sectionsPage(title: string, sections: [string, string][]): Secti
 
 // Sample pages for a template in a language. Weddings get the full kankotri set; other events are one card.
 export function samplePages(t: Template, lang: Lang): Page[] {
-  if (t.pages && lang === t.lang) return t.pages.map((p) => ({ id: uid(), kind: 'sections', title: p.title, sections: p.sections.map((x) => ({ ...x })) }))
+  if (t.pages) {
+    const words = lang === t.lang ? t.pages : (t.tr?.[lang] ?? t.pages)
+    return t.pages.map((p, i) => ({
+      id: uid(),
+      kind: 'sections',
+      title: words[i].title,
+      sections: p.sections.map((x, j) => ({ ...x, heading: words[i].sections[j].heading, body: words[i].sections[j].body })),
+    }))
+  }
   const s = SAMPLES[lang]
   const e = t.event
   const o = lang === t.lang ? (t.override ?? {}) : {}

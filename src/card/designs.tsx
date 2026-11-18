@@ -55,7 +55,8 @@ export interface Design {
   // (a print-shaped page stretched to 9:16, whose text was spaced down the whole page). x: left/right text margin in % of width where the page's
   // frame is off-centre. cols: up to this many headed sections share a row. photo: a see-through window in the
   // artwork, [x, y, w, h] in story px, filled with the couple's own photo (or the sample src) under the art; fade: the photo melts into the page at
-  // its bottom instead of ending on a hard edge.
+  // its bottom instead of ending on a hard edge. plain: the same artwork with its painted words (title, invocation) removed,
+  // used in every language but the template's own, with its own text band top; the page title is then typed.
   pages?: {
     src: string
     top: number
@@ -68,12 +69,17 @@ export interface Design {
     x?: [number, number]
     cols?: number
     photo?: { box: [number, number, number, number]; src: string; fade?: boolean }
+    plain?: { src: string; top: number }
   }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }
 type Box = { top: number; bottom: number; x: number }
-export type Ornaments = Record<string, { src: string; w: number }>
+// Cut-outs for [[name]] in text, w in em. lang: the cut-out carries words painted in that language, so in any other
+// language it is swapped for plain (the same piece without the words, if there is one) and the words typed after the
+// | in [[name|words]] are shown instead: over the plain piece, or under or above it (at).
+export type Ornament = { src: string; w: number; lang?: Lang; plain?: string; at?: 'below' | 'above' }
+export type Ornaments = Record<string, Ornament>
 
 const SAFE: Design['safe'] = { story: { top: 170, bottom: 250, x: 34 }, print: { top: 128, bottom: 160, x: 28 } }
 

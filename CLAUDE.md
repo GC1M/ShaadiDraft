@@ -13,6 +13,14 @@ Customers find designs only through the gallery filters (event, language, God or
 
 See `doc/SEO.md` for the plan (the `doc/` folder is private and gitignored; it lives in the main checkout). After adding or editing anything in `public/*.html` or `index.html`, run `python3 scripts/seo.py` to refresh head tags, share images and the sitemap. A new template needs its cover preview at `public/templates/previews/<id>.webp` (540x960); render it with `python3 scripts/previews.py <id>` while `npm run dev` runs. Re-render whenever a template's sample text, design or artwork changes: CI runs `node scripts/previews-check.mjs` and fails on stale previews.
 
+## Switching language (strict)
+
+Changing a card's language must keep its format exactly the same: the same pages, the same sections in the same order, the same sizes, artwork and ornaments. Only the words change. Every template added from now on must hold to this.
+
+- A template with its own `pages` (a copied printed card) needs `tr` with every other language in `LANG_IDS`, page for page and section for section, in `src/card/tr/<id>.ts`. Keep every mark (`*`, `**`, `~`, `<<`, `>>`, `<>`, `___`) and every `[[ornament]]` name; translate only the words.
+- Artwork with words painted on it (a lettered title, a ribbon, a label under joined hands) must not show those words in other languages. Mark the cut-out with `gujarati()` in `src/card/designs-f.tsx` and give it its words as `[[name|words]]`; if the piece has a part worth keeping without the words, save it as `<name>-plain.png` and list it with where the words go (`over`, `below` or `above`). A whole page with painted words gets a `plain` page artwork (see Sandhya).
+- Run `node scripts/languages-check.mjs` (CI runs it) and look at the card in every language before calling it done.
+
 ## Adding or removing a template (same PR)
 
 A template change is not done until its SEO surface matches it, in the same PR. When a template is added, removed, renamed or relabeled, also update:

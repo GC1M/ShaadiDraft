@@ -47,28 +47,48 @@ function look(design: Design, lang: Lang): Look {
 }
 
 // The design's artwork icons, for [[name]] in text.
-const Art = createContext<Ornaments>({})
+const Art = createContext<{ orn: Ornaments; lang?: Lang }>({ orn: {} })
 
 // "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold, ~words~ = the
 // design's names font in the accent colour (a wedding script for the couple's names),
 // [[name]] = artwork icon, [[name|words]] = words written on that artwork (a ribbon plate), ___ = a rule to write on, and a line starting << or >> leans left or right.
-function Rich({ text, accent, big }: { text: string; accent: string; big: string }) {
-  const art = useContext(Art)
+function Rich({ text, accent, big, inline }: { text: string; accent: string; big: string; inline?: boolean }) {
+  const { orn, lang } = useContext(Art)
   return (
     <>
       {text.split('\n').map((raw, i) => {
         const lean = raw.startsWith('<<') ? 'left' : raw.startsWith('>>') ? 'right' : undefined
         const line = lean ? raw.slice(2) : raw
         const pad = lean === 'left' ? { paddingLeft: '14%' } : lean === 'right' ? { paddingRight: '14%' } : {}
+        // "left <> middle <> right": spread across the line (corner blessings such as || Shubh || and || Labh ||).
+        if (!inline && line.includes('<>'))
+          return (
+            <span key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              {line.split('<>').map((p, k) => <span key={k}><Rich inline text={p.trim()} accent={accent} big={big} /></span>)}
+            </span>
+          )
         return (
-        <span key={i} style={{ display: 'block', minHeight: '1em', textAlign: lean, ...pad }}>
+        <span key={i} style={inline ? undefined : { display: 'block', minHeight: '1em', textAlign: lean, ...pad, whiteSpace: line.includes('[[') ? 'nowrap' : undefined }}>
           {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|~[^~]+~|_{3,})/).map((part, j) => {
-            const [icon, words] = /^\[\[.+\]\]$/.test(part) ? part.slice(2, -2).split('|') : []
-            const a = icon !== undefined ? art[icon] : undefined
-            return a ? (
+            const [icon, words] = /^\[\[.+\]\]$/.test(part) ? part.slice(2, -2).split(/\|(.*)/s) : []
+            const a = icon !== undefined ? orn[icon] : undefined
+            // A cut-out painted with another language's words: its plain piece, or just the typed words.
+            const lettered = !!a?.lang && a.lang !== lang
+            const src = lettered ? a?.plain : a?.src
+            const say = words && (lettered || !a?.lang) ? <Rich inline text={words} accent={accent} big={big} /> : null
+            // Words alone stand in for painted lettering: sized to take about the width the lettering took.
+            const fill = words ? Math.min(1.6, Math.max(0.8, (a?.w ?? 0) * 0.85 / (words.replace(/[*~]/g, '').length * 0.55 * (/^\*\*[^*]/.test(words) ? 1.6 : 1)))) : 1
+            return a && !src ? (
+              <span key={j} style={{ fontSize: `${fill.toFixed(2)}em` }}>{say}</span>
+            ) : a && say && a.at ? (
+              <span key={j} style={{ display: 'inline-flex', flexDirection: a.at === 'below' ? 'column' : 'column-reverse', alignItems: 'center', verticalAlign: 'middle' }}>
+                <img src={src} alt="" style={{ display: 'block', width: `${a.w}em` }} />
+                {say}
+              </span>
+            ) : a ? (
               <span key={j} style={{ position: 'relative', display: 'inline-block', width: `${a.w}em`, verticalAlign: 'middle' }}>
-                <img src={a.src} alt="" style={{ display: 'block', width: '100%' }} />
-                {words && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>{words}</span>}
+                <img src={src} alt="" style={{ display: 'block', width: '100%' }} />
+                {say && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap', fontSize: '0.68em', textShadow: '0 0 3px rgba(0,0,0,.45)' }}>{say}</span>}
               </span>
             ) : /^_{3,}$/.test(part) ? (
               <span key={j} style={{ display: 'inline-block', width: `${part.length * 0.45}em`, borderBottom: '1px solid currentColor', marginLeft: '0.2em' }} />
@@ -307,9 +327,12 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const base0 = DESIGNS[t.design]
   const { w, h } = SIZES[invite.format]
   // Painted templates: each page has its own artwork and its own text band, scaled from story px.
-  const art = base0.pages?.[Math.max(0, invite.pages.indexOf(page)) % base0.pages.length]
+  const own = base0.pages?.[Math.max(0, invite.pages.indexOf(page)) % base0.pages.length]
+  // In another language a page with painted words uses its plain artwork, and its title is typed instead.
+  const art = own?.plain && invite.lang !== t.lang ? { ...own, ...own.plain, head: false } : own
   const d = art?.colors ? { ...base0, colors: { ...base0.colors, ...art.colors } } : base0
-  const head = art?.head === 'lang' ? invite.lang === t.lang : !!art?.head
+  // 'lang': the template's own pages type their title in the text, in its language and in every translation (tr).
+  const head = art?.head === 'lang' ? invite.lang === t.lang || !!t.tr?.[invite.lang] : !!art?.head
   const k = w / 540
   const crop = (960 * k - h) / 2
   const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
@@ -330,7 +353,8 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       if (!b || !el) return
       let k = SCALE[invite.scale] * (art?.size ?? d.type?.grow ?? 1)
       el.style.fontSize = `${base * k}px`
-      while (el.scrollHeight > b.clientHeight + 1 && k > 0.5) {
+      // Also shrink when a line is wider than the band (a long name in another script, a row with an ornament).
+      while ((el.scrollHeight > b.clientHeight + 1 || b.scrollWidth > b.clientWidth + 1) && k > 0.5) {
         k -= 0.03
         el.style.fontSize = `${base * k}px`
       }
@@ -385,7 +409,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             fontSize: base,
           }}
         >
-          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} cols={art?.cols} />}</Art.Provider>
+          <Art.Provider value={{ orn: d.ornaments ?? {}, lang: invite.lang }}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} cols={art?.cols} />}</Art.Provider>
         </div>
       </div>
     </div>

@@ -26,5 +26,7 @@ jobs:
       - run: npm audit --omit=dev --audit-level=high
       # Fails when a template changed but its gallery preview was not re-rendered (scripts/previews.py).
       - run: node scripts/previews-check.mjs
+      # Fails when switching a template's language would change its layout (pages, sections, ornaments).
+      - run: node scripts/languages-check.mjs
       # Type-checks (tsc -b) and builds exactly as the Pages deploy does.
       - run: npm run build -- --base=./
