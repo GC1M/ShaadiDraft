@@ -197,7 +197,8 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
 
 // Name list as two centred tables whose words line up, the way kankotri family lists are typeset.
 function Table({ lines, accent, big }: { lines: string[]; accent: string; big: string }) {
-  const half = Math.ceil(lines.length / 2)
+  // Long rows (five-word names) stay one table; shorter ones split into two side by side.
+  const half = Math.max(...lines.map((l) => l.length)) > 33 ? lines.length : Math.ceil(lines.length / 2)
   return (
     <div style={{ display: 'flex', justifyContent: 'center', gap: '1.6em' }}>
       {[lines.slice(0, half), lines.slice(half)].map((col, k) => {
@@ -258,8 +259,16 @@ function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
                 {s.heading}
               </Heading>
               {/* columnCount only for real lists: a one-column multicol box with a fixed height pushes overflow into an invisible extra column on export. */}
-              <div style={{ fontSize: `${ty.body ?? 0.88}em`, lineHeight: 1.5, columnCount: list(s.body) && !ty.lists ? 2 : undefined, columnGap: '1.2em' }}>
-                {list(s.body) && ty.lists ? <Table lines={s.body.split('\n')} accent={c.accent} big={c.heading} /> : <Rich text={s.body} accent={c.accent} big={c.heading} />}
+              <div
+                style={{
+                  fontSize: `${(ty.body ?? 0.88) * (s.size ?? 1)}em`,
+                  lineHeight: 1.5,
+                  columnCount: list(s.body) && ty.lists !== 'left' ? 2 : undefined,
+                  columnGap: '1.2em',
+                  textAlign: list(s.body) && ty.lists === 'right' ? 'right' : undefined,
+                }}
+              >
+                {list(s.body) && ty.lists === 'left' ? <Table lines={s.body.split('\n')} accent={c.accent} big={c.heading} /> : <Rich text={s.body} accent={c.accent} big={c.heading} />}
               </div>
             </div>
           ))}
@@ -271,10 +280,12 @@ function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
 
 export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const t = templateById(invite.templateId)
-  const d = DESIGNS[t.design]
+  const base0 = DESIGNS[t.design]
   const { w, h } = SIZES[invite.format]
   // Painted templates: each page has its own artwork and its own text band, scaled from story px.
-  const art = d.pages?.[Math.max(0, invite.pages.indexOf(page)) % d.pages.length]
+  const art = base0.pages?.[Math.max(0, invite.pages.indexOf(page)) % base0.pages.length]
+  const d = art?.colors ? { ...base0, colors: { ...base0.colors, ...art.colors } } : base0
+  const head = art?.head === 'lang' ? invite.lang === t.lang : !!art?.head
   const k = w / 540
   const crop = (960 * k - h) / 2
   const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
@@ -300,7 +311,13 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
     fit()
     // Re-fit whenever a web font finishes loading (faces load lazily on first use), not on every keystroke.
     document.fonts?.addEventListener('loadingdone', fit)
-    return () => document.fonts?.removeEventListener('loadingdone', fit)
+    // Ornament images (painted cut-outs) load after the first fit and grow the text block, so fit again.
+    const el = inner.current
+    el?.addEventListener('load', fit, true)
+    return () => {
+      document.fonts?.removeEventListener('loadingdone', fit)
+      el?.removeEventListener('load', fit, true)
+    }
     // Only pages whose content or look changed re-fit; untouched pages keep their object identity.
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
@@ -327,12 +344,12 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             justifyContent: 'center',
             alignItems: 'center',
             textAlign: 'center',
-            gap: '0.55em',
+            gap: `${art?.gap ?? 0.55}em`,
             lineHeight: 1.3,
             fontSize: base,
           }}
         >
-          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={!!art?.head} /> : <Sections x={x} p={page} head={!!art?.head} />}</Art.Provider>
+          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} />}</Art.Provider>
         </div>
       </div>
     </div>
