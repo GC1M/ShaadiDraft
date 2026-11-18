@@ -62,7 +62,7 @@ export default function App() {
     if (!linked) return
     const t = linked
     linked = undefined
-    history.replaceState(null, '', location.pathname) // cancelling the draft prompt leaves a clean gallery URL
+    history.replaceState(null, '', location.pathname + location.search) // cancelling the draft prompt leaves a clean gallery URL
     open(t)
   }, [])
 
