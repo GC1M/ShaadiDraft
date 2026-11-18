@@ -37,7 +37,7 @@ Submit to Search Console now. Nothing blocks indexing (every sitemap URL returns
 | M3 | Guides had no author; About says who but not why | Partly done: bylines on every guide link to an author section on About, and Article JSON-LD names the author. Owner: add a true sentence or two about your own background with wedding cards (do not invent credentials) |
 | M4 | Homepage H1 was JS-only with no keyword | Done: static H1 "Free Indian wedding invitation maker" |
 | M5 | Hub titles lacked search words | Done: per-page titles with card, free, templates, WhatsApp |
-| M6 | Designs had no URLs of their own | Partly done: 10 design pages (every page of the card at 1080px, sample wording, details) and 5 language hubs. The other 36 follow in batches (Phase 3) |
+| M6 | Designs had no URLs of their own | Done: all 46 designs have a page (every page of the card at 1080px with a 720px srcset copy, sample wording, details), plus 5 language hubs. Hubs and guides link each design name to its page |
 | M7 | Images not set up for Google Images | Done: descriptive alt text, image sitemap entries for every preview a page shows, 1080px page images on design pages |
 | M8 | Sitemap had no lastmod | Done: generated sitemap with lastmod from git (date of last real change) |
 | M9 | `/guides/` and `/templates/` index pages were thin | Done: both list and describe their child pages, including the new guides, language hubs and design pages |
@@ -51,6 +51,24 @@ Submit to Search Console now. Nothing blocks indexing (every sitemap URL returns
 | (new) | Static pages overflowed sideways on phones: footer links had no wrap point | Done: footer and nav wrap |
 
 Not measured: Lighthouse and CrUX (PageSpeed API was rate-limited, no field data yet), keyword volumes and backlinks (no paid tools). Re-run PageSpeed with an API key once the site has traffic.
+
+### Second audit (claude-seo, after PR #23): 79/100
+
+| ID | Finding | Status |
+|---|---|---|
+| F01 | 36 designs still had no page | Done: pages for all 36, written per design from its real sample text and labels |
+| F02 | Homepage LCP 3.9s on a throttled phone | Done: the intro animation starts at opacity .01 instead of 0, since Chrome skips fully transparent text as an LCP candidate. Lab LCP 1.98s mobile (4x CPU, 1.6 Mbps), 0.09s desktop. CLS 0.033 on mobile from the web font swapping in under the intro text; 0 on desktop |
+| F03 | GA4 and Clarity ran only in the app, not on the static pages | Done: `public/analytics.js` (same IDs and EEA consent defaults as `src/analytics.ts`, live domain only), added to every static page by `seo.py` |
+| F04 | 27 titles over 60 characters | Done: all at most 60 |
+| F05 | 2 descriptions over 160 characters | Done |
+| F06 | Design names in hubs and guides linked to hub anchors, not to design pages | Done |
+| F09 | Page images served at 1080px to phones and 230px thumbnails | Done: `srcset` with a 720px copy, added by `seo.py` |
+| F10 | "invitation invitation" typo and alt text over 125 characters | Done |
+| F07 | About has no owner background | Owner (same as M3) |
+| F08, F12 | Search Console and Bing Webmaster Tools not verified | Owner |
+| F13 | No `sameAs` social profiles | Owner: create the Pinterest and Instagram accounts first, then add their URLs to the Organization JSON-LD |
+| F11 | Image sitemap incomplete | Not a bug: every page that shows a design image lists it (23 of 39 URLs; the rest show none) |
+| F18 | IndexNow key missing | Not a bug: the key file is live |
 
 ### Content issues found while writing pages
 
@@ -105,7 +123,7 @@ H1 to H3, M1, M2, M4, M5, M7, M8, L2, L4, L6 and the `lang` fix above.
 
 ### Phase 3: months 2 to 4
 Gate: start only when over 80% of the Phase 1 and 2 pages are indexed.
-- [ ] Remaining 36 design pages in batches of 5 to 10, each batch after the previous one is mostly indexed. Next candidates with distinct demand: parsi-lagan, kerala-kasavu, shubho-bibaho, mangalashtak, nischayathartham, garba-raas-night, gol-dhana, misri-roka, qawwali-mehfil, kashmiri-chinar.
+- [x] Remaining 36 design pages (published together after the second audit rather than in batches; watch indexing in Search Console and improve the thinnest ones first).
 - [ ] Refresh guides with questions seen in Search Console queries; split the general wording guide only if data says so.
 - [ ] A data piece once GA4 has a season of data (for example "share of cards made in each script"), pitched to Indian wedding blogs.
 
@@ -116,7 +134,7 @@ Gate: start only when over 80% of the Phase 1 and 2 pages are indexed.
 ## Maintenance
 
 - New or edited static page: run `python3 scripts/seo.py` (needs Pillow). It rewrites each page's `<!-- seo -->` head block (favicons, OG, Twitter, JSON-LD), draws its share image into `public/og/`, and regenerates `public/sitemap.xml`. Pages titled in an Indian script need an English share-image headline in `HEADLINES` in the script.
-- New design page or new template: with `npm run dev` running, `python3 scripts/previews.py <id>` renders its 540x960 cover preview and every page at 1080x1920 into `public/templates/previews/`. The gallery renders a card live until its preview exists. Re-render when the artwork changes.
-- The hero in `index.html` is a static copy of the one in `src/App.tsx`; change both together.
+- New design page or new template: with `npm run dev` running, `python3 scripts/previews.py <id>` renders its 540x960 cover preview and every page at 1080x1920 (and 720x1280) into `public/templates/previews/`. The gallery renders a card live until its preview exists. Re-render when the artwork changes.
+- The homepage hero comes from `src/Hero.tsx` and is prerendered into `index.html` at build time, so there is one copy to edit.
 - Content rules: written by a fluent speaker, answer first, copyable wording, links to 2 to 5 fitting designs, byline and date. One page per real search intent. No machine translation, no padding, no invented facts.
 - Avoid: paid links, link exchanges, mass directory submissions.

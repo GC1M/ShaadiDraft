@@ -169,6 +169,8 @@ def head_block(path, page):
             f'<link rel="icon" href="{prefix}favicon.ico" sizes="48x48" />',
             f'<link rel="icon" href="{prefix}icon-192.png" type="image/png" sizes="192x192" />',
             f'<link rel="apple-touch-icon" href="{prefix}apple-touch-icon.png" />']
+    if path != ROOT / 'index.html':  # the app loads analytics itself (src/analytics.ts)
+        tags.append(f'<script src="{prefix}analytics.js" defer></script>')
     url = meta(page, r'<link rel="canonical" href="([^"]+)"')
     if not url:
         return tags, None, []
@@ -203,6 +205,17 @@ def head_block(path, page):
     return tags, url, [f'{SITE}/templates/{i}' for i in dict.fromkeys(shown)]
 
 
+def srcset(page):
+    """Full-size page images (1080px) also come at 720px; let phones and the small gallery thumbnails pick that."""
+    def add(m):
+        tag, src = m.group(0), m.group(1)
+        if 'srcset=' in tag or not (PUBLIC / 'templates' / src.replace('.webp', '-720.webp')).exists():
+            return tag
+        sizes = '(max-width: 352px) calc(100vw - 32px), 320px' if 'class="hero"' in tag else '(max-width: 600px) 45vw, 230px'
+        return tag.replace(f'src="{src}"', f'src="{src}" srcset="{src.replace(".webp", "-720.webp")} 720w, {src} 1080w" sizes="{sizes}"')
+    return re.sub(r'<img[^>]*src="(previews/pages/[\w-]+\.webp)"[^>]*>', add, page)
+
+
 def main():
     icons()
     pages = [ROOT / 'index.html'] + sorted(PUBLIC.rglob('*.html'))
@@ -211,6 +224,7 @@ def main():
         page = path.read_text()
         page = re.sub(r'\n?[ \t]*<!-- seo -->.*?<!-- /seo -->', '', page, flags=re.S)
         page = re.sub(r'\n[ \t]*<link rel="(?:icon|apple-touch-icon)"[^>]*>', '', page)  # the block below carries them
+        page = srcset(page)
         tags, url, images = head_block(path, page)
         indent = '    ' if path == ROOT / 'index.html' else ''
         block = '\n'.join(indent + t for t in ['<!-- seo -->', *tags, '<!-- /seo -->'])
