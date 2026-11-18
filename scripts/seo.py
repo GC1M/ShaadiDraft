@@ -1,0 +1,233 @@
+"""Keep the SEO plumbing of the static pages in sync. Run after adding or editing a page in public/ or index.html:
+
+    python3 scripts/seo.py
+
+For every page with a canonical URL it rewrites the block between <!-- seo --> and <!-- /seo --> in <head>
+(favicons, Open Graph and Twitter tags, JSON-LD), draws the page's 1200x630 share image into public/og/, and
+regenerates public/sitemap.xml with lastmod dates and the card previews each page shows. Pages without a
+canonical (404) only get the favicons. Needs Pillow. Safe to run repeatedly.
+"""
+
+import datetime
+import html
+import json
+import re
+import subprocess
+from pathlib import Path
+
+from PIL import Image, ImageDraw, ImageFont
+
+ROOT = Path(__file__).resolve().parent.parent
+PUBLIC = ROOT / 'public'
+SITE = 'https://shaaditemplate.com'
+AUTHOR = 'Ashok Lalakiya'
+ORG = {'@id': f'{SITE}/#org'}
+HOME_CARDS = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']
+FONTS = ROOT / 'node_modules/@fontsource'
+WINE, WINE_DEEP, ZARI, ROSE = (74, 14, 28), (44, 7, 16), (201, 164, 92), (247, 237, 234)
+TODAY = datetime.date.today().isoformat()
+HEADLINES = {
+    'home': 'Free Indian wedding invitation maker',
+    'guides-gujarati-kankotri-lakhan': 'Gujarati kankotri wording (kankotri lakhan)',
+    'guides-hindi-shadi-card-matter': 'Hindi shadi card matter',
+    'guides-marathi-lagna-patrika': 'Marathi lagna patrika wording',
+}
+
+
+def font(name, size):
+    return ImageFont.truetype(str(FONTS / name), size)
+
+
+def icons():
+    """Gold शा on wine: favicon.ico, the 192px icon and the Apple touch icon."""
+    big = Image.new('RGB', (512, 512), WINE)
+    d = ImageDraw.Draw(big)
+    d.text((256, 262), 'शा', font=font('tiro-devanagari-hindi/files/tiro-devanagari-hindi-devanagari-400-normal.woff', 330), fill=ZARI, anchor='mm')
+    big.save(PUBLIC / 'icon-512.png')
+    big.resize((192, 192), Image.LANCZOS).save(PUBLIC / 'icon-192.png')
+    big.resize((180, 180), Image.LANCZOS).save(PUBLIC / 'apple-touch-icon.png')
+    big.save(PUBLIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+
+
+def wrap(draw, text, fnt, width):
+    lines, line = [], ''
+    for word in text.split():
+        trial = f'{line} {word}'.strip()
+        if draw.textlength(trial, font=fnt) <= width or not line:
+            line = trial
+        else:
+            lines.append(line)
+            line = word
+    return lines + [line]
+
+
+def share_image(path, headline, cards):
+    """Headline on the left, up to three card previews fanned on the right."""
+    img = Image.new('RGB', (1200, 630), WINE)
+    d = ImageDraw.Draw(img)
+    d.rectangle((0, 590, 1200, 630), fill=WINE_DEEP)
+    d.line((0, 590, 1200, 590), fill=ZARI, width=3)
+    d.text((64, 70), 'ShaadiTemplate', font=font('bodoni-moda/files/bodoni-moda-latin-400-italic.woff', 40), fill=ROSE)
+    big = font('bodoni-moda/files/bodoni-moda-latin-400-normal.woff', 58)
+    y = 170
+    for line in wrap(d, headline, big, 500)[:4]:
+        d.text((64, y), line, font=big, fill=ROSE)
+        y += 70
+    d.text((64, 520), 'Free · No login · WhatsApp image and print PDF', font=font('bodoni-moda/files/bodoni-moda-latin-400-normal.woff', 24), fill=ZARI)
+    cards = cards[:3]
+    slots = {1: [(0, 0)], 2: [(-1, -5), (1, 5)], 3: [(-1, -7), (0, 0), (1, 7)]}[len(cards)]
+    for i in sorted(range(len(cards)), key=lambda i: slots[i][0] == 0):  # the middle card goes on top
+        card = Image.open(PUBLIC / 'templates/previews' / f'{cards[i]}.webp').convert('RGBA').resize((270, 480), Image.LANCZOS)
+        card = card.rotate(-slots[i][1], expand=True, resample=Image.BICUBIC)
+        img.paste(card, (920 + slots[i][0] * 108 - card.width // 2, 315 - card.height // 2), card)
+    path.parent.mkdir(exist_ok=True)
+    img.save(path, quality=84, optimize=True)
+
+
+def meta(page, pattern):
+    m = re.search(pattern, page, re.S)
+    return html.unescape(m.group(1).strip()) if m else ''
+
+
+def text(fragment):
+    return html.unescape(re.sub(r'<[^>]+>', '', fragment)).strip()
+
+
+def crumbs(*items):
+    return {'@type': 'BreadcrumbList', 'itemListElement': [{'@type': 'ListItem', 'position': i + 1, 'name': n, 'item': u} for i, (n, u) in enumerate(items)]}
+
+
+def last_changed(path):
+    """Commit date while the file matches HEAD, else today."""
+    rel = path.relative_to(ROOT)
+    dirty = subprocess.run(['git', 'status', '--porcelain', '--', rel], cwd=ROOT, capture_output=True, text=True).stdout.strip()
+    if dirty:
+        return TODAY
+    return subprocess.run(['git', 'log', '-1', '--format=%cs', '--', rel], cwd=ROOT, capture_output=True, text=True).stdout.strip() or TODAY
+
+
+def card_ids(page):
+    """Designs a page shows, in order: preview images first, then designs it links to."""
+    ids = re.findall(r'previews/([\w-]+)\.webp', page) + re.findall(r'#template/([\w-]+)', page)
+    known = {p.stem for p in (PUBLIC / 'templates/previews').glob('*.webp')}
+    return list(dict.fromkeys(i for i in ids if i in known))
+
+
+def structured(path, page, url, title, desc, image, cards):
+    rel = path.relative_to(PUBLIC).as_posix() if path.is_relative_to(PUBLIC) else 'index.html'
+    lang = meta(page, r'<html lang="([^"]+)"') or 'en'
+    h1 = text(meta(page, r'<h1[^>]*>(.*?)</h1>')) or title
+    home = ('Home', f'{SITE}/')
+    designs = ('Designs', f'{SITE}/templates/')
+    guides = ('Guides', f'{SITE}/guides/')
+    if rel == 'index.html':
+        return [
+            {'@type': 'Organization', '@id': ORG['@id'], 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'logo': f'{SITE}/icon-512.png', 'email': 'hello@shaaditemplate.com',
+             'founder': {'@type': 'Person', 'name': AUTHOR}, 'address': {'@type': 'PostalAddress', 'addressLocality': 'Surat', 'addressRegion': 'Gujarat', 'addressCountry': 'IN'}},
+            {'@type': 'WebSite', '@id': f'{SITE}/#website', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'inLanguage': 'en', 'publisher': ORG},
+            {'@type': 'WebApplication', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'description': desc, 'applicationCategory': 'DesignApplication', 'operatingSystem': 'Any',
+             'browserRequirements': 'Requires JavaScript', 'isAccessibleForFree': True, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'INR'},
+             'inLanguage': ['en', 'hi', 'mr', 'gu', 'pa', 'ta'], 'image': image, 'publisher': ORG,
+             'featureList': ['Invitations for Save the Date, Ring Ceremony, Haldi, Mehendi, Sangeet, Wedding and Reception', 'English, Hindi, Marathi, Gujarati, Punjabi and Tamil',
+                             'Phonetic typing in Indian scripts', '1080x1920 image for WhatsApp', '5x7 inch print-ready PDF', 'No login']},
+        ]
+    if rel in ('templates/index.html', 'guides/index.html'):
+        return [{'@type': 'CollectionPage', 'name': h1, 'url': url, 'description': desc, 'inLanguage': lang, 'isPartOf': {'@id': f'{SITE}/#website'}},
+                crumbs(home, designs if rel.startswith('templates') else guides)]
+    if rel.endswith('-invitations.html'):  # ceremony and language hubs
+        items = []
+        for sid, body in re.findall(r'<section class="design" id="([\w-]+)">(.*?)</section>', page, re.S):
+            name = text(meta(body, r'<h2>(.*?)</h2>'))
+            own = re.search(r'href="([\w-]+\.html)"', meta(body, r'<h2>(.*?)</h2>') or '')
+            items.append({'@type': 'ListItem', 'position': len(items) + 1, 'item': {'@type': 'CreativeWork', 'name': name,
+                          'url': f'{SITE}/templates/{own.group(1)}' if own else f'{url}#{sid}', 'image': f'{SITE}/templates/previews/{sid}.webp'}})
+        return [{'@type': 'CollectionPage', 'name': h1, 'url': url, 'description': desc, 'inLanguage': lang, 'isPartOf': {'@id': f'{SITE}/#website'},
+                 'mainEntity': {'@type': 'ItemList', 'numberOfItems': len(items), 'itemListElement': items}},
+                crumbs(home, designs, (h1, url))]
+    if rel.startswith('templates/'):  # a single design
+        hub = re.search(r'<a href="([\w-]+-invitations\.html)">([^<]+)</a>\s*›', page)
+        trail = [home, designs] + ([(text(hub.group(2)), f'{SITE}/templates/{hub.group(1)}')] if hub else []) + [(h1, url)]
+        card_lang = meta(page, r'<blockquote lang="([^"]+)"') or lang
+        big = PUBLIC / 'templates/previews/pages' / f'{path.stem}-1.webp'
+        cover = f'{SITE}/templates/previews/' + (f'pages/{big.name}' if big.exists() else f'{path.stem}.webp')
+        return [{'@type': 'CreativeWork', 'name': h1, 'url': url, 'description': desc, 'image': cover, 'inLanguage': card_lang,
+                 'isAccessibleForFree': True, 'publisher': ORG, **({'isPartOf': {'@type': 'CollectionPage', 'url': trail[2][1]}} if hub else {})},
+                crumbs(*trail)]
+    if rel.startswith('guides/'):
+        added = subprocess.run(['git', 'log', '--diff-filter=A', '--format=%cs', '--', path.relative_to(ROOT)], cwd=ROOT, capture_output=True, text=True).stdout.split()
+        return [{'@type': 'Article', 'headline': h1, 'description': desc, 'url': url, 'mainEntityOfPage': url, 'image': image, 'inLanguage': lang,
+                 'datePublished': added[-1] if added else TODAY, 'dateModified': last_changed(path),
+                 'author': {'@type': 'Person', 'name': AUTHOR, 'url': f'{SITE}/about.html'}, 'publisher': ORG},
+                crumbs(home, guides, (h1, url))]
+    if rel == 'about.html':
+        return [{'@type': 'AboutPage', 'name': h1, 'url': url, 'about': ORG}]
+    if rel == 'contact.html':
+        return [{'@type': 'ContactPage', 'name': h1, 'url': url, 'about': ORG}]
+    return []
+
+
+def head_block(path, page):
+    prefix = '/'  # absolute paths work from every directory on the custom domain
+    tags = [f'<link rel="icon" href="{prefix}favicon.ico" sizes="48x48" />',
+            f'<link rel="icon" href="{prefix}icon-192.png" type="image/png" sizes="192x192" />',
+            f'<link rel="apple-touch-icon" href="{prefix}apple-touch-icon.png" />']
+    url = meta(page, r'<link rel="canonical" href="([^"]+)"')
+    if not url:
+        return tags, None, []
+    title = re.sub(r'\s*·\s*ShaadiTemplate$', '', meta(page, r'<title>(.*?)</title>'))
+    desc = meta(page, r'<meta name="description" content="([^"]*)"')
+    slug = url.removeprefix(SITE).strip('/').removesuffix('.html').replace('/', '-') or 'home'
+    image = f'{SITE}/og/{slug}.jpg'
+    cards = card_ids(page) or HOME_CARDS
+    # Share images are drawn in Latin type, so pages titled in an Indian script need an English headline here.
+    headline = HEADLINES.get(slug) or (title if title.isascii() else 'Indian wedding invitation wording')
+    share_image(PUBLIC / 'og' / f'{slug}.jpg', headline, cards)
+    article = path.is_relative_to(PUBLIC / 'guides') and path.name != 'index.html'
+    locale = meta(page, r'<html lang="([^"]+)"') or 'en'
+    e = lambda s: html.escape(s, quote=True)
+    tags += [f'<meta property="og:type" content="{"article" if article else "website"}" />',
+             '<meta property="og:site_name" content="ShaadiTemplate" />',
+             f'<meta property="og:locale" content="{locale}_IN" />',
+             f'<meta property="og:title" content="{e(title)}" />',
+             f'<meta property="og:description" content="{e(desc)}" />',
+             f'<meta property="og:url" content="{url}" />',
+             f'<meta property="og:image" content="{image}" />',
+             '<meta property="og:image:width" content="1200" />',
+             '<meta property="og:image:height" content="630" />',
+             f'<meta property="og:image:alt" content="{e(headline)}: ShaadiTemplate invitation designs" />',
+             '<meta name="twitter:card" content="summary_large_image" />']
+    graph = structured(path, page, url, title, desc, image, cards)
+    if graph:
+        ld = json.dumps({'@context': 'https://schema.org', '@graph': graph}, ensure_ascii=False, separators=(',', ':'))
+        tags.append(f'<script type="application/ld+json">{ld.replace("</", "<\\/")}</script>')
+    # Every card preview the page shows, for the image sitemap.
+    shown = re.findall(r'src="[^"]*?(previews/[^"]+\.webp)"', page)
+    return tags, url, [f'{SITE}/templates/{i}' for i in dict.fromkeys(shown)]
+
+
+def main():
+    icons()
+    pages = [ROOT / 'index.html'] + sorted(PUBLIC.rglob('*.html'))
+    entries = []
+    for path in pages:
+        page = path.read_text()
+        page = re.sub(r'\n?[ \t]*<!-- seo -->.*?<!-- /seo -->', '', page, flags=re.S)
+        tags, url, images = head_block(path, page)
+        indent = '    ' if path == ROOT / 'index.html' else ''
+        block = '\n'.join(indent + t for t in ['<!-- seo -->', *tags, '<!-- /seo -->'])
+        page = page.replace('</head>', block + '\n' + ('  ' if indent else '') + '</head>', 1)
+        path.write_text(page)
+        if url:
+            entries.append((url, last_changed(path), images))
+    entries.sort(key=lambda x: (x[0].count('/'), x[0]))
+    out = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">']
+    for url, mod, images in entries:
+        imgs = ''.join(f'<image:image><image:loc>{i}</image:loc></image:image>' for i in images)
+        out.append(f'  <url><loc>{url}</loc><lastmod>{mod}</lastmod>{imgs}</url>')
+    (PUBLIC / 'sitemap.xml').write_text('\n'.join(out + ['</urlset>']) + '\n')
+    print(f'{len(pages)} pages, {len(entries)} in sitemap')
+
+
+if __name__ == '__main__':
+    main()
