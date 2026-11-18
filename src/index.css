@@ -69,6 +69,9 @@ body {
   font-family: var(--font-sans);
 }
 
+/* Tailwind's reset gives buttons the arrow cursor; every button here is clickable. */
+button:not(:disabled) { cursor: pointer; }
+
 :focus-visible {
   outline: 2px solid var(--color-gold);
   outline-offset: 3px;
@@ -188,6 +191,24 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
   animation: draw var(--dur, 1.6s) cubic-bezier(.32,.72,0,1) calc(var(--d, 0s) + var(--t0, 0ms)) both;
 }
 @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* Flowers: fall outside the pillars, turning as they go, after the mandap is drawn. */
+.mandap .petal {
+  fill: #e9a23b;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: petal var(--fall) linear calc(4s + var(--delay) + var(--t0, 0ms)) infinite;
+}
+.mandap .petal.rose { fill: #e07a8c; }
+.mandap .petal :is(ellipse, circle) { stroke: none; animation: none; }
+.mandap .petal .eye { fill: #a8521c; }
+.mandap .petal.rose .eye { fill: #f0c46a; }
+@keyframes petal {
+  0% { opacity: 0; translate: 0 150px; rotate: 0deg; }
+  10%, 80% { opacity: .9; }
+  50% { translate: 14px 455px; }
+  100% { opacity: 0; translate: -6px 760px; rotate: 360deg; }
+}
 /* Diya flames: filled once the strokes are in, then flicker. */
 .mandap .flame {
   fill: #f0c46a;
@@ -258,5 +279,5 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
 
 @media (prefers-reduced-motion: reduce) {
   .intro, .mandap :is(path, circle), .mandap .flame, .shine::after, .ribbon, .scroll-progress { animation: none; }
-  .scroll-progress { display: none; }
+  .scroll-progress, .mandap .petals { display: none; }
 }

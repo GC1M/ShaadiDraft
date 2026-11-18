@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from 'react'
+import { Fragment, type CSSProperties, type ReactNode } from 'react'
 import { PAGES } from './site/pages'
 
 // The gallery's header and hero. vite.config.ts also renders this into index.html at build time, so crawlers get
@@ -16,59 +16,115 @@ export const Wordmark = () => (
 
 export const preview = (id: string) => `templates/previews/${id}.webp`
 
-// Gold line-art mandap, viewBox 1200x820, drawn in stages: platform, pillars, beam, domes,
-// drapes, then marigold strings and diyas. Left-hand parts are drawn once and mirrored.
+// Gold line-art mandap, viewBox 1200x820, drawn in stages: platform, pillars, beam, crown, drapes, then the side
+// ornaments and diyas.
 const g = (d: number, dur = 1.6) => ({ '--d': `${d}s`, '--dur': `${dur}s` }) as CSSProperties
 const cusps = (n: number, w: number, h: number) => Array(n).fill(`q${w / 2} ${h} ${w} 0`).join(' ')
-const Side = () => (
+const each = (n: number, f: (i: number) => string) => Array.from({ length: n }, (_, i) => f(i)).join('')
+const P = ({ d }: { d: string }) => <path d={d} pathLength={1} />
+// Left-hand parts drawn once and mirrored onto the right pillar.
+const Both = ({ children }: { children: ReactNode }) => (
   <>
-    <g style={g(0.4)}>
-      <path d="M196 760V732H264V760M204 732V718H256V732" pathLength={1} />
-      <path d="M212 718V344M248 718V344M212 650H248M212 570H248M212 490H248M212 410H248" pathLength={1} />
-      <path d="M230 600l9 10-9 10-9-10zM230 520l9 10-9 10-9-10zM230 440l9 10-9 10-9-10z" pathLength={1} />
-      <path d="M212 344Q212 332 202 328H258Q248 332 248 344M194 328V314H266V328" pathLength={1} />
-    </g>
-    <g style={g(1.5, 1.8)}>
-      <path d="M182 288V274H278V288M188 274C178 238 206 214 230 188C254 214 282 238 272 274M230 188V172" pathLength={1} />
-      <circle cx="230" cy="166" r="4" pathLength={1} />
-    </g>
-    <g style={g(2)}>
-      <path d="M266 330C318 392 296 470 262 520C296 566 300 640 276 704M282 336C322 400 304 470 270 516" pathLength={1} />
-      <circle cx="263" cy="520" r="6" pathLength={1} />
-    </g>
-    <g style={g(2.5, 1.2)}>
-      <path d="M158 314V500M176 314V440" pathLength={1} />
-      {[...Array(9)].map((_, i) => <circle key={`a${i}`} cx="158" cy={334 + i * 20} r="6" pathLength={1} />)}
-      {[...Array(6)].map((_, i) => <circle key={`b${i}`} cx="176" cy={334 + i * 20} r="5" pathLength={1} />)}
-      <path d="M130 748Q150 768 170 748Z" pathLength={1} />
-      <path className="flame" d="M150 744Q142 730 150 712Q158 730 150 744Z" />
-    </g>
+    {children}
+    <g transform="matrix(-1 0 0 1 1200 0)">{children}</g>
   </>
 )
+
+// Rajasthani crown: onion dome and chhatris, scalloped valance with tassels, marigold strings.
+const Chhatri = () => (
+  <>
+    <g style={g(1, 1.4)}>
+      <P d={`M264 314${cusps(8, 84, 34)}`} />
+      <P d={each(7, (i) => `M${348 + i * 84} 314v12m-4 0h8l-4 10z`)} />
+    </g>
+    <g style={g(1.5, 1.8)}>
+      <P d={`M420 288V268H780V288M430 268${cusps(10, 34, -16)}`} />
+      <P d="M462 268C440 206 500 168 600 120C700 168 760 206 738 268" />
+      <P d="M434 268C404 196 480 150 600 92C720 150 796 196 766 268M600 92C556 150 532 210 540 268M600 92C644 150 668 210 660 268M600 92V78M586 78Q600 58 614 78ZM600 58V40" />
+      <circle cx="600" cy="34" r="6" pathLength={1} />
+    </g>
+    <g style={g(2)}>
+      <P d="M264 330Q432 398 600 330Q768 398 936 330" />
+    </g>
+    <Both>
+      <g style={g(1.5, 1.8)}>
+        <P d="M182 288V274H278V288M188 274C178 238 206 214 230 188C254 214 282 238 272 274M230 188V172" />
+        <circle cx="230" cy="166" r="4" pathLength={1} />
+      </g>
+      <g style={g(2.5, 1.2)}>
+        <P d="M158 314V500M176 314V440" />
+        {[...Array(9)].map((_, i) => <circle key={`a${i}`} cx="158" cy={334 + i * 20} r="6" pathLength={1} />)}
+        {[...Array(6)].map((_, i) => <circle key={`b${i}`} cx="176" cy={334 + i * 20} r="5" pathLength={1} />)}
+      </g>
+    </Both>
+  </>
+)
+
+// [x, delay after the drawing finishes, fall time, rose?] outside the left pillar; mirrored on the right.
+const FLOWERS: [number, number, number, boolean][] = [
+  [30, 0, 7, false], [70, 2.6, 8, true], [110, 1.2, 6.5, false], [150, 4.1, 7.5, true],
+  [50, 5.2, 8.5, false], [130, 3.3, 7, true], [90, 6.4, 6.5, false],
+]
+// Flowers have five petals around a centre.
+const FLOWER_PETALS = [0, 72, 144, 216, 288]
+
 function Mandap() {
   return (
     <svg className="mandap" viewBox="0 0 1200 820" aria-hidden>
       <g style={g(0, 1.4)}>
-        <path d="M120 760H1080M90 760H1110V786H90ZM60 786H1140V812H60Z" pathLength={1} />
-        <path d={Array.from({ length: 25 }, (_, i) => `M${114 + i * 40} 773l6-6 6 6-6 6z`).join('')} pathLength={1} />
+        <P d="M120 760H1080M90 760H1110V786H90ZM60 786H1140V812H60Z" />
+        <P d={each(25, (i) => `M${114 + i * 40} 773l6-6 6 6-6 6z`)} />
       </g>
       <g style={g(1, 1.4)}>
-        <path d="M140 314H1060M140 300H1060V314M140 300V314M128 300V288H1072V300" pathLength={1} />
-        <path d={`M264 314${cusps(8, 84, 34)}`} pathLength={1} />
-        <path d={Array.from({ length: 7 }, (_, i) => `M${348 + i * 84} 314v12m-4 0h8l-4 10z`).join('')} pathLength={1} />
+        <P d="M140 314H1060M140 300H1060V314M140 300V314M128 300V288H1072V300" />
       </g>
-      <g style={g(1.5, 1.8)}>
-        <path d={`M420 288V268H780V288M430 268${cusps(10, 34, -16)}`} pathLength={1} />
-        <path d="M462 268C440 206 500 168 600 120C700 168 760 206 738 268" pathLength={1} />
-        <path d="M434 268C404 196 480 150 600 92C720 150 796 196 766 268M600 92C556 150 532 210 540 268M600 92C644 150 668 210 660 268M600 92V78M586 78Q600 58 614 78ZM600 58V40" pathLength={1} />
-        <circle cx="600" cy="34" r="6" pathLength={1} />
+      <Both>
+        <g style={g(0.4)}>
+          <P d="M196 760V732H264V760M204 732V718H256V732" />
+          <P d="M212 718V344M248 718V344M212 650H248M212 570H248M212 490H248M212 410H248" />
+          <P d="M230 600l9 10-9 10-9-10zM230 520l9 10-9 10-9-10zM230 440l9 10-9 10-9-10z" />
+          <P d="M212 344Q212 332 202 328H258Q248 332 248 344M194 328V314H266V328" />
+        </g>
+        <g style={g(2)}>
+          <P d="M266 330C318 392 296 470 262 520C296 566 300 640 276 704M282 336C322 400 304 470 270 516" />
+          <circle cx="263" cy="520" r="6" pathLength={1} />
+        </g>
+        <g style={g(2.5, 1.2)}>
+          <P d="M130 748Q150 768 170 748Z" />
+          <path className="flame" d="M150 744Q142 730 150 712Q158 730 150 744Z" />
+        </g>
+      </Both>
+      <Chhatri />
+      {/* Guests outside the pillars, each tossing flowers. */}
+      <g>
+        <Both>
+          <g style={g(2.5, 1.4)}>
+            <P d="M82 604Q76 650 74 700Q72 740 68 758H124Q120 730 116 690Q114 640 110 604ZM110 606Q94 640 76 690M110 608L128 592L136 568" />
+            <circle cx="96" cy="586" r="11" pathLength={1} />
+            <circle cx="85" cy="580" r="5" pathLength={1} />
+            <circle cx="137" cy="564" r="3" pathLength={1} />
+            <P d="M25 608H51L55 700H21ZM27 700L25 758M49 700L51 758M51 612L66 596L72 578M27 590Q27 572 38 570Q50 570 50 588M48 576Q58 572 56 562" />
+            <circle cx="38" cy="592" r="10" pathLength={1} />
+          </g>
+        </Both>
       </g>
-      <g style={g(2)}>
-        <path d="M264 330Q432 398 600 330Q768 398 936 330" pathLength={1} />
-      </g>
-      <Side />
-      <g transform="matrix(-1 0 0 1 1200 0)">
-        <Side />
+      {/* Marigold and rose flowers drifting down outside the pillars once the mandap is drawn, clear of the text. */}
+      <g className="petals">
+        <Both>
+          {FLOWERS.map(([x, delay, dur, rose], i) => (
+            <g key={i} transform={`translate(${x} 0)`}>
+              <g
+                className={rose ? 'petal rose' : 'petal'}
+                style={{ '--delay': `${delay}s`, '--fall': `${dur}s` } as CSSProperties}
+              >
+                {FLOWER_PETALS.map((r) => (
+                  <ellipse key={r} cx="0" cy="-6" rx="4" ry="5.5" transform={`rotate(${r})`} />
+                ))}
+                <circle className="eye" r="3.2" />
+              </g>
+            </g>
+          ))}
+        </Both>
       </g>
     </svg>
   )
