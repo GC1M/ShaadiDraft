@@ -1,2 +1,1 @@
-# After AdSense approval, replace the line below with the one AdSense shows you (it has your pub- ID) and uncomment it.
-# google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0
+google.com, pub-6402221374419167, DIRECT, f08c47fec0942fa0
