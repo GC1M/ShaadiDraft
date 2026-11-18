@@ -28,6 +28,7 @@ import { designs as batchB } from './designs-b'
 import { designs as batchC } from './designs-c'
 import { designs as batchD } from './designs-d'
 import { designs as batchE } from './designs-e'
+import { designs as batchF } from './designs-f'
 
 export interface Design {
   id: string
@@ -50,13 +51,35 @@ export interface Design {
   // size: starting text size for that page, before shrinking to fit (pages differ in density).
   // head 'lang': the page images carry no title, the template's own sample places its cut-out title in the text,
   // so titles are left out only in that language. colors: this page's ink where it differs (a dark page in a light set).
-  // gap: space between text blocks in em (default .55).
-  pages?: { src: string; top: number; bottom: number; head?: boolean | 'lang'; size?: number; colors?: Partial<Design['colors']>; gap?: number }[]
+  // gap: space between text blocks in em (default .55); spread: blocks share out the band's spare height evenly
+  // (a print-shaped page stretched to 9:16, whose text was spaced down the whole page). x: left/right text margin in % of width where the page's
+  // frame is off-centre. cols: up to this many headed sections share a row. photo: a see-through window in the
+  // artwork, [x, y, w, h] in story px, filled with the couple's own photo (or the sample src) under the art; fade: the photo melts into the page at
+  // its bottom instead of ending on a hard edge. plain: the same artwork with its painted words (title, invocation) removed,
+  // used in every language but the template's own, with its own text band top; the page title is then typed.
+  pages?: {
+    src: string
+    top: number
+    bottom: number
+    head?: boolean | 'lang'
+    size?: number
+    colors?: Partial<Design['colors']>
+    gap?: number
+    spread?: boolean
+    x?: [number, number]
+    cols?: number
+    photo?: { box: [number, number, number, number]; src: string; fade?: boolean }
+    plain?: { src: string; top: number }
+  }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }
 type Box = { top: number; bottom: number; x: number }
-export type Ornaments = Record<string, { src: string; w: number }>
+// Cut-outs for [[name]] in text, w in em. lang: the cut-out carries words painted in that language, so in any other
+// language it is swapped for plain (the same piece without the words, if there is one) and the words typed after the
+// | in [[name|words]] are shown instead: over the plain piece, or under or above it (at).
+export type Ornament = { src: string; w: number; lang?: Lang; plain?: string; at?: 'below' | 'above' }
+export type Ornaments = Record<string, Ornament>
 
 const SAFE: Design['safe'] = { story: { top: 170, bottom: 250, x: 34 }, print: { top: 128, bottom: 160, x: 28 } }
 
@@ -807,6 +830,6 @@ const snanam: Design = {
 }
 
 export const DESIGNS: Record<string, Design> = Object.fromEntries(
-  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE].map((d) => [d.id, d]),
+  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF].map((d) => [d.id, d]),
 )
 

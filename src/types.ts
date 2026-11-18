@@ -4,7 +4,7 @@
 export const LANG_IDS = ['en', 'hi', 'mr', 'gu', 'pa', 'ta'] as const
 export type Lang = (typeof LANG_IDS)[number]
 
-export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'shiva', 'balaji', 'gel-mataji', 'swaminarayan', 'ek-onkar', 'bismillah', 'jain', 'christian', 'floral'] as const
+export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'shiva', 'balaji', 'gel-mataji', 'khodiyar', 'bahuchar', 'butbhavani', 'swaminarayan', 'ek-onkar', 'bismillah', 'jain', 'christian', 'floral'] as const
 export type SymbolId = (typeof SYMBOL_IDS)[number]
 
 export const EVENT_IDS = ['save-the-date', 'ring', 'haldi', 'mehendi', 'sangeet', 'wedding', 'reception'] as const
@@ -54,6 +54,17 @@ export interface Invite {
   format: Format
   scale: FontScale
   pages: Page[]
+  // Photo windows, by the index of the design page they belong to: the couple's own photo (src, a JPEG data URL;
+  // none means the sample) and the part of it shown in the frame.
+  photos?: Record<number, Photo>
+}
+
+// x, y: object-position in % (which part of the photo the frame shows); zoom: 1 fills the frame, up to 3.
+export interface Photo {
+  src?: string
+  x: number
+  y: number
+  zoom: number
 }
 
 // Everything a template needs to pre-fill itself in one language. One file per language in src/samples/.

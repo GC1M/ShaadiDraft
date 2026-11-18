@@ -1,13 +1,14 @@
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImagePlus, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { Wordmark } from './Hero'
-import { CardPage, SIZES } from './card/Card'
+import { CardPage, PHOTO_FIT, SIZES, photoStyle } from './card/Card'
+import { DESIGNS } from './card/designs'
 import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
 import { LANGS, SAMPLES } from './i18n'
 import { samplePages, sectionsPage, templateById } from './templates'
 import { TransliterateInput } from './transliterate'
-import { LANG_IDS, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type SectionsPage } from './types'
+import { LANG_IDS, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type Photo, type SectionsPage } from './types'
 import { ScaledCard, Segmented } from './ui'
 import { track } from './analytics'
 
@@ -40,6 +41,27 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const index = invite.pages.indexOf(page)
   const { w, h } = SIZES[invite.format]
   const L = invite.lang
+  // Painted designs with a photo window on this page: index of the design page the photo belongs to.
+  const artPages = DESIGNS[t.design].pages
+  const artIndex = artPages ? index % artPages.length : -1
+  const photoSlot = artPages?.[artIndex]?.photo
+  const fit = { ...PHOTO_FIT, ...invite.photos?.[artIndex] }
+  const ownPhoto = fit.src
+  const setFit = (f: Photo) => set({ photos: { ...invite.photos, [artIndex]: f } })
+  const pickPhoto = async (file?: File) => {
+    if (!file) return
+    try {
+      const url = await shrinkPhoto(file)
+      setFit({ ...PHOTO_FIT, y: 30, src: url })
+      track('photo_upload', { template: invite.templateId })
+    } catch {
+      setToast('Could not read that photo. Please try a JPEG or PNG.')
+    }
+  }
+  const resetPhoto = () => {
+    const { [artIndex]: _gone, ...rest } = invite.photos ?? {}
+    set({ photos: rest })
+  }
 
   useEffect(() => {
     if (!toast) return
@@ -278,9 +300,11 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                     ['*word*', 'Accent colour'],
                     ['**line**', 'Large line'],
                     ['***word***', 'Bold'],
+                    ['~Name~', 'Script letters for names (some designs)'],
                     ['<<  >>', 'Lean a line left or right (at its start)'],
                     ['___', 'A line to write on'],
                     ['[[maps]]  [[hands]]', 'Artwork icon (some designs)'],
+                    ['[[icon|words]]', 'Words written on a painted ribbon'],
                   ].map(([k, v]) => (
                     <div key={k} className="contents">
                       <dt><code className="rounded bg-wine/5 px-1.5 py-0.5 font-mono text-[13px] text-ink/80">{k}</code></dt>
@@ -289,6 +313,26 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                   ))}
                 </dl>
               </details>
+              {photoSlot && (
+                <div className="flex flex-wrap items-start gap-4 rounded-md bg-wine/[0.04] p-4 ring-1 ring-wine/10">
+                  <PhotoCrop slot={photoSlot} art={artPages![artIndex].src} fit={fit} onChange={setFit} />
+                  <div className="min-w-48 flex-1 space-y-2 text-[15px]">
+                    <p className="text-ink/85">{ownPhoto ? 'Your photo is on this page.' : 'This page has a photo. Add your own in place of the sample.'}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-wine px-4 py-2 text-sm text-rose hover:bg-wine-deep focus-within:ring-2 focus-within:ring-zari/60">
+                        <ImagePlus className="size-4" aria-hidden /> {ownPhoto ? 'Change photo' : 'Upload photo'}
+                        <input type="file" accept="image/*" className="sr-only" onChange={(e) => (pickPhoto(e.target.files?.[0]), (e.target.value = ''))} />
+                      </label>
+                      {invite.photos?.[artIndex] && (
+                        <button onClick={resetPhoto} className="rounded-full px-4 py-2 text-sm text-wine ring-1 ring-wine/25 hover:bg-wine/5">
+                          {ownPhoto ? 'Use sample photo' : 'Reset'}
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[13px] text-ink/55">Drag the photo to choose what shows in the frame, and use the slider to zoom. Your photo stays in this browser. It is not uploaded anywhere.</p>
+                  </div>
+                </div>
+              )}
               {page.kind === 'cover' ? (
                 <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
               ) : (
@@ -511,6 +555,56 @@ function SectionsForm({ p, on, lang, phonetic }: { p: SectionsPage; on: (fn: (p:
       >
         <Plus className="size-4" aria-hidden /> Add section
       </button>
+    </div>
+  )
+}
+
+// Photos are kept in the saved draft (localStorage), so they are scaled down to a phone-card size first.
+async function shrinkPhoto(file: File) {
+  const img = await createImageBitmap(file)
+  const k = Math.min(1, 1600 / Math.max(img.width, img.height))
+  const c = document.createElement('canvas')
+  c.width = Math.round(img.width * k)
+  c.height = Math.round(img.height * k)
+  c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+  img.close()
+  return c.toDataURL('image/jpeg', 0.85)
+}
+
+// The photo window as it looks on the card (artwork on top), at a small size. Dragging pans the photo; the slider zooms.
+function PhotoCrop({ slot, art, fit, onChange }: { slot: { box: number[]; src: string; fade?: boolean }; art: string; fit: Photo; onChange: (f: Photo) => void }) {
+  const [bx, by, bw, bh] = slot.box
+  const fw = 160
+  const fh = (fw * bh) / bw
+  const img = useRef<HTMLImageElement>(null)
+  const drag = useRef<{ x: number; y: number; fit: Photo } | null>(null)
+  const move = (e: React.PointerEvent) => {
+    const d = drag.current
+    const el = img.current
+    if (!d || !el?.naturalWidth) return
+    // How far the cover-fitted, zoomed photo overhangs the frame: dragging across that distance pans 0..100%.
+    const c = Math.max(fw / el.naturalWidth, fh / el.naturalHeight) * d.fit.zoom
+    const pan = (v: number, delta: number, over: number) => (over > 1 ? Math.min(100, Math.max(0, v - (delta * 100) / over)) : v)
+    onChange({ ...d.fit, x: pan(d.fit.x, e.clientX - d.x, el.naturalWidth * c - fw), y: pan(d.fit.y, e.clientY - d.y, el.naturalHeight * c - fh) })
+  }
+  return (
+    <div className="space-y-2">
+      <div
+        className="relative cursor-grab touch-none overflow-hidden rounded ring-1 ring-wine/15 active:cursor-grabbing"
+        style={{ width: fw, height: fh }}
+        onPointerDown={(e) => (e.currentTarget.setPointerCapture(e.pointerId), (drag.current = { x: e.clientX, y: e.clientY, fit }))}
+        onPointerMove={move}
+        onPointerUp={() => (drag.current = null)}
+        onPointerCancel={() => (drag.current = null)}
+      >
+        <img ref={img} src={fit.src ?? slot.src} alt="" draggable={false} className="size-full object-cover" style={photoStyle(fit)} />
+        {/* The artwork around the window, cropped to the frame, so the couple sees where the arch cuts the photo. */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: `url("${art}") ${bw < 540 ? (bx * 100) / (540 - bw) : 0}% ${(by * 100) / (960 - bh)}% / ${(540 * 100) / bw}% auto no-repeat` }}
+        />
+      </div>
+      <input type="range" min={1} max={3} step={0.05} value={fit.zoom} aria-label="Zoom photo" className="w-full accent-wine" onChange={(e) => onChange({ ...fit, zoom: +e.target.value })} />
     </div>
   )
 }

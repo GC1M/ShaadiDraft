@@ -1,9 +1,18 @@
 import { createContext, useContext, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { LANGS } from '../i18n'
 import { templateById } from '../templates'
-import type { CoverPage, Format, Invite, Lang, Page, SectionsPage, SymbolId } from '../types'
+import type { CoverPage, Format, Invite, Lang, Page, Photo, SectionsPage, SymbolId } from '../types'
 import { DESIGNS, type Design, type Ornaments } from './designs'
 import { Emblem, Flourish } from './motifs'
+
+// Where a photo sits in its frame until the couple moves it: centred, near the top so heads are not cut.
+export const PHOTO_FIT: Photo = { x: 50, y: 0, zoom: 1 }
+// Cover-fit the photo, show the chosen part, and zoom in around that same point.
+export const photoStyle = (f: Photo): CSSProperties => ({
+  objectPosition: `${f.x}% ${f.y}%`,
+  transform: `scale(${f.zoom})`,
+  transformOrigin: `${f.x}% ${f.y}%`,
+})
 
 export const SIZES: Record<Format, { w: number; h: number }> = {
   story: { w: 540, h: 960 }, // 9:16, exported at 2x = 1080 x 1920
@@ -38,23 +47,49 @@ function look(design: Design, lang: Lang): Look {
 }
 
 // The design's artwork icons, for [[name]] in text.
-const Art = createContext<Ornaments>({})
+const Art = createContext<{ orn: Ornaments; lang?: Lang }>({ orn: {} })
 
-// "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold,
-// [[name]] = artwork icon, ___ = a rule to write on, and a line starting << or >> leans left or right.
-function Rich({ text, accent, big }: { text: string; accent: string; big: string }) {
-  const art = useContext(Art)
+// "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold, ~words~ = the
+// design's names font in the accent colour (a wedding script for the couple's names),
+// [[name]] = artwork icon, [[name|words]] = words written on that artwork (a ribbon plate), ___ = a rule to write on, and a line starting << or >> leans left or right.
+function Rich({ text, accent, big, inline }: { text: string; accent: string; big: string; inline?: boolean }) {
+  const { orn, lang } = useContext(Art)
   return (
     <>
       {text.split('\n').map((raw, i) => {
         const lean = raw.startsWith('<<') ? 'left' : raw.startsWith('>>') ? 'right' : undefined
         const line = lean ? raw.slice(2) : raw
         const pad = lean === 'left' ? { paddingLeft: '14%' } : lean === 'right' ? { paddingRight: '14%' } : {}
+        // "left <> middle <> right": spread across the line (corner blessings such as || Shubh || and || Labh ||).
+        if (!inline && line.includes('<>'))
+          return (
+            <span key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              {line.split('<>').map((p, k) => <span key={k}><Rich inline text={p.trim()} accent={accent} big={big} /></span>)}
+            </span>
+          )
         return (
-        <span key={i} style={{ display: 'block', minHeight: '1em', textAlign: lean, ...pad }}>
-          {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|_{3,})/).map((part, j) =>
-            /^\[\[.+\]\]$/.test(part) && art[part.slice(2, -2)] ? (
-              <img key={j} src={art[part.slice(2, -2)].src} alt="" style={{ display: 'inline-block', width: `${art[part.slice(2, -2)].w}em`, verticalAlign: 'middle' }} />
+        <span key={i} style={inline ? undefined : { display: 'block', minHeight: '1em', textAlign: lean, ...pad, whiteSpace: line.includes('[[') ? 'nowrap' : undefined }}>
+          {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|~[^~]+~|_{3,})/).map((part, j) => {
+            const [icon, words] = /^\[\[.+\]\]$/.test(part) ? part.slice(2, -2).split(/\|(.*)/s) : []
+            const a = icon !== undefined ? orn[icon] : undefined
+            // A cut-out painted with another language's words: its plain piece, or just the typed words.
+            const lettered = !!a?.lang && a.lang !== lang
+            const src = lettered ? a?.plain : a?.src
+            const say = words && (lettered || !a?.lang) ? <Rich inline text={words} accent={accent} big={big} /> : null
+            // Words alone stand in for painted lettering: sized to take about the width the lettering took.
+            const fill = words ? Math.min(1.6, Math.max(0.8, (a?.w ?? 0) * 0.85 / (words.replace(/[*~]/g, '').length * 0.55 * (/^\*\*[^*]/.test(words) ? 1.6 : 1)))) : 1
+            return a && !src ? (
+              <span key={j} style={{ fontSize: `${fill.toFixed(2)}em` }}>{say}</span>
+            ) : a && say && a.at ? (
+              <span key={j} style={{ display: 'inline-flex', flexDirection: a.at === 'below' ? 'column' : 'column-reverse', alignItems: 'center', verticalAlign: 'middle' }}>
+                <img src={src} alt="" style={{ display: 'block', width: `${a.w}em` }} />
+                {say}
+              </span>
+            ) : a ? (
+              <span key={j} style={{ position: 'relative', display: 'inline-block', width: `${a.w}em`, verticalAlign: 'middle' }}>
+                <img src={src} alt="" style={{ display: 'block', width: '100%' }} />
+                {say && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap', fontSize: '0.68em', textShadow: '0 0 3px rgba(0,0,0,.45)' }}>{say}</span>}
+              </span>
             ) : /^_{3,}$/.test(part) ? (
               <span key={j} style={{ display: 'inline-block', width: `${part.length * 0.45}em`, borderBottom: '1px solid currentColor', marginLeft: '0.2em' }} />
             ) : part.length > 6 && part.startsWith('***') && part.endsWith('***') ? (
@@ -65,14 +100,18 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
               <span key={j} style={{ color: big, fontWeight: 700, fontSize: '1.6em', lineHeight: 1.25 }}>
                 {part.slice(2, -2)}
               </span>
+            ) : part.length > 2 && part.startsWith('~') && part.endsWith('~') ? (
+              <span key={j} style={{ color: accent, fontFamily: 'var(--names)' }}>
+                {part.slice(1, -1)}
+              </span>
             ) : part.length > 2 && part.startsWith('*') && part.endsWith('*') ? (
               <span key={j} style={{ color: accent, fontWeight: 700 }}>
                 {part.slice(1, -1)}
               </span>
             ) : (
               part
-            ),
-          )}
+            )
+          })}
         </span>
         )
       })}
@@ -82,8 +121,10 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
 
 function Heading({ x, children, size = 1.05 }: { x: Look; children: string; size?: number }) {
   if (!children.trim()) return null
+  // A heading painted on the artwork (a ribbon plate) is placed as its cut-out.
+  if (/^\[\[[^\]]+\]\]$/.test(children.trim())) return <Rich text={children.trim()} accent={x.d.colors.accent} big={x.d.colors.heading} />
   // Headings typed with their own marks (":: Li. Snehadhin ::") keep them.
-  const own = /^(::|॥|\|\||II )/.test(children.trim())
+  const own = /^(::|॥|\|\||II |\.\.\.)/.test(children.trim())
   const text = DANDA.includes(x.lang) && !own ? `॥ ${children} ॥` : children
   return (
     <p style={{ fontFamily: x.f.heading, color: x.d.colors.heading, fontSize: `${size}em`, fontWeight: 700, letterSpacing: x.lang === 'en' ? '0.06em' : 0 }}>
@@ -198,7 +239,7 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
 // Name list as two centred tables whose words line up, the way kankotri family lists are typeset.
 function Table({ lines, accent, big }: { lines: string[]; accent: string; big: string }) {
   // Long rows (five-word names) stay one table; shorter ones split into two side by side.
-  const half = Math.max(...lines.map((l) => l.length)) > 33 ? lines.length : Math.ceil(lines.length / 2)
+  const half = Math.max(...lines.map((l) => l.trim().split(/\s+/).length)) > 4 ? lines.length : Math.ceil(lines.length / 2)
   return (
     <div style={{ display: 'flex', justifyContent: 'center', gap: '1.6em' }}>
       {[lines.slice(0, half), lines.slice(half)].map((col, k) => {
@@ -217,10 +258,11 @@ function Table({ lines, accent, big }: { lines: string[]; accent: string; big: s
 type Sec = SectionsPage['sections'][number]
 const lineCount = (b: string) => b.split('\n').length
 
-function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
+function Sections({ x, p, head, cols }: { x: Look; p: SectionsPage; head: boolean; cols?: number }) {
   const c = x.d.colors
   const ty = x.d.type ?? {}
-  const short = (s: Sec) => !!s.heading && lineCount(s.body) <= 6 && s.heading.length < 24
+  // A painted page that sets cols lays out every headed section in rows, however long.
+  const short = (s: Sec) => !!s.heading && (!!cols || (lineCount(s.body) <= 6 && s.heading.length < 24))
   // Pair consecutive short sections side by side, as kankotris do; long ones take the full width.
   // In a run of 5, 9... the middle one stands alone, centred between the pairs.
   const rows: Sec[][] = []
@@ -234,13 +276,15 @@ function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
     const run = p.sections.slice(i, i + n)
     const mid = n % 4 === 1 && n >= 5 ? (n - 1) / 2 : -1
     for (let j = 0; j < n; ) {
-      if (j === mid || j === n - 1) rows.push([run[j++]])
-      else rows.push([run[j++], run[j++]])
+      const take = j === mid ? 1 : Math.min(cols ?? 2, n - j)
+      rows.push(run.slice(j, j + take))
+      j += take
     }
     i += n
   }
   // Name lists flow into two columns; long sentences (an invitation letter) stay one wide column.
-  const list = (b: string) => lineCount(b) > 6 && Math.max(...b.split('\n').map((l) => l.length)) <= 40
+  // Not on a painted page laid out in columns, nor a block holding a cut-out (an event with its ribbon or pin).
+  const list = (b: string) => !cols && !b.includes('[[') && lineCount(b) > 6 && Math.max(...b.split('\n').map((l) => l.length)) <= 40
   return (
     <>
       <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
@@ -283,12 +327,18 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const base0 = DESIGNS[t.design]
   const { w, h } = SIZES[invite.format]
   // Painted templates: each page has its own artwork and its own text band, scaled from story px.
-  const art = base0.pages?.[Math.max(0, invite.pages.indexOf(page)) % base0.pages.length]
+  const own = base0.pages?.[Math.max(0, invite.pages.indexOf(page)) % base0.pages.length]
+  // In another language a page with painted words uses its plain artwork, and its title is typed instead.
+  const art = own?.plain && invite.lang !== t.lang ? { ...own, ...own.plain, head: false } : own
   const d = art?.colors ? { ...base0, colors: { ...base0.colors, ...art.colors } } : base0
-  const head = art?.head === 'lang' ? invite.lang === t.lang : !!art?.head
+  // 'lang': the template's own pages type their title in the text, in its language and in every translation (tr).
+  const head = art?.head === 'lang' ? invite.lang === t.lang || !!t.tr?.[invite.lang] : !!art?.head
   const k = w / 540
   const crop = (960 * k - h) / 2
   const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
+  const side = art?.x ? { left: (art.x[0] * w) / 100, right: (art.x[1] * w) / 100 } : { left: safe.x, right: safe.x }
+  const fit = art?.photo && { ...PHOTO_FIT, ...invite.photos?.[base0.pages!.indexOf(art)] }
+  const photo = art?.photo && { src: fit!.src ?? art.photo.src, b: art.photo.box.map((v) => v * k), fade: art.photo.fade }
   const x = look(d, invite.lang)
   const base = w / 30
   const box = useRef<HTMLDivElement>(null)
@@ -303,7 +353,8 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
       if (!b || !el) return
       let k = SCALE[invite.scale] * (art?.size ?? d.type?.grow ?? 1)
       el.style.fontSize = `${base * k}px`
-      while (el.scrollHeight > b.clientHeight + 1 && k > 0.5) {
+      // Also shrink when a line is wider than the band (a long name in another script, a row with an ornament).
+      while ((el.scrollHeight > b.clientHeight + 1 || b.scrollWidth > b.clientWidth + 1) && k > 0.5) {
         k -= 0.03
         el.style.fontSize = `${base * k}px`
       }
@@ -322,7 +373,16 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking }}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art && !photo ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, '--names': x.f.names } as CSSProperties}>
+      {photo && (
+        <>
+          {/* The photo sits under the artwork, which is see-through where the printed card had its photo. */}
+          <div className="absolute overflow-hidden" style={{ left: photo.b[0], top: photo.b[1] - crop, width: photo.b[2], height: photo.b[3], maskImage: photo.fade ? 'linear-gradient(#000 62%, transparent 100%)' : undefined }}>
+            <img src={photo.src} alt="" className="size-full object-cover" style={photoStyle(fit!)} />
+          </div>
+          <div className="absolute inset-0" style={{ background: `center / cover url("${art!.src}")` }} />
+        </>
+      )}
       {!art && (
         <>
           {d.Overlay && <d.Overlay h={(h * 540) / w} />}
@@ -334,14 +394,14 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
           </div>
         </>
       )}
-      <div ref={box} className="absolute overflow-hidden" style={{ top: safe.top, bottom: safe.bottom, left: safe.x, right: safe.x }}>
+      <div ref={box} className="absolute overflow-hidden" style={{ top: safe.top, bottom: safe.bottom, ...side }}>
         <div
           ref={inner}
           style={{
             minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: art?.spread ? 'space-evenly' : 'center',
             alignItems: 'center',
             textAlign: 'center',
             gap: `${art?.gap ?? 0.55}em`,
@@ -349,7 +409,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             fontSize: base,
           }}
         >
-          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} />}</Art.Provider>
+          <Art.Provider value={{ orn: d.ornaments ?? {}, lang: invite.lang }}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} cols={art?.cols} />}</Art.Provider>
         </div>
       </div>
     </div>
