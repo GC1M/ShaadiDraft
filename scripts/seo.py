@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PUBLIC = ROOT / 'public'
 SITE = 'https://shaaditemplate.com'
 AUTHOR = 'Ashok Lalakiya'
-ORG = {'@id': f'{SITE}/#org'}
+# Every page names the publisher in full, so the reference resolves inside each page's own graph.
+ORG = {'@type': 'Organization', '@id': f'{SITE}/#org', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'logo': f'{SITE}/icon-512.png'}
 HOME_CARDS = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']  # featured designs for the homepage's structured data
 FONTS = ROOT / 'node_modules/@fontsource'
 WINE, WINE_DEEP, ZARI, ROSE = (74, 14, 28), (44, 7, 16), (201, 164, 92), (247, 237, 234)
@@ -119,8 +120,9 @@ def structured(path, page, url, title, desc, image, cards):
     guides = ('Guides', f'{SITE}/guides/')
     if rel == 'index.html':
         return [
-            {'@type': 'Organization', '@id': ORG['@id'], 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'logo': f'{SITE}/icon-512.png', 'email': 'hello@shaaditemplate.com',
-             'founder': {'@type': 'Person', 'name': AUTHOR}, 'address': {'@type': 'PostalAddress', 'addressLocality': 'Surat', 'addressRegion': 'Gujarat', 'addressCountry': 'IN'}},
+            {**ORG, 'email': 'hello@shaaditemplate.com',
+             'founder': {'@type': 'Person', 'name': AUTHOR}, 'address': {'@type': 'PostalAddress', 'streetAddress': '17 Manmohan Society, LH Road',  # as on contact.html
+                                                             'addressLocality': 'Surat', 'postalCode': '395010', 'addressRegion': 'Gujarat', 'addressCountry': 'IN'}},
             {'@type': 'WebSite', '@id': f'{SITE}/#website', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'inLanguage': 'en', 'publisher': ORG},
             {'@type': 'WebApplication', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'description': desc, 'applicationCategory': 'DesignApplication', 'operatingSystem': 'Any',
              'browserRequirements': 'Requires JavaScript', 'isAccessibleForFree': True, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'INR'},
@@ -134,8 +136,9 @@ def structured(path, page, url, title, desc, image, cards):
     if rel.endswith('-invitations.html'):  # ceremony and language hubs
         items = []
         for sid, body in re.findall(r'<section class="design" id="([\w-]+)">(.*?)</section>', page, re.S):
-            name = text(meta(body, r'<h2>(.*?)</h2>'))
-            own = re.search(r'href="([\w-]+\.html)"', meta(body, r'<h2>(.*?)</h2>') or '')
+            heading = meta(body, r'<h[23]>(.*?)</h[23]>') or ''  # ceremony hubs use h2, language hubs h3
+            name = text(heading)
+            own = re.search(r'href="([\w-]+\.html)"', heading)
             items.append({'@type': 'ListItem', 'position': len(items) + 1, 'item': {'@type': 'CreativeWork', 'name': name,
                           'url': f'{SITE}/templates/{own.group(1)}' if own else f'{url}#{sid}', 'image': f'{SITE}/templates/previews/{sid}.webp'}})
         return [{'@type': 'CollectionPage', 'name': h1, 'url': url, 'description': desc, 'inLanguage': lang, 'isPartOf': {'@id': f'{SITE}/#website'},

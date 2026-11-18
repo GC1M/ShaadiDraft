@@ -540,7 +540,7 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
   else if (symbol === 'bismillah')
     inner = (
       <g>
-        <path d="M58 24 A26 26 0 1 0 58 76 A20 20 0 1 1 58 24 Z" fill={color} />
+        <path d="M62 27 A26 26 0 1 0 62 73 A24 24 0 0 1 62 27 Z" fill={color} />
         <path d="M66 42 L68.5 48 L75 48 L70 52 L72 58 L66 54.5 L60 58 L62 52 L57 48 L63.5 48 Z" fill={accent} />
       </g>
     )
