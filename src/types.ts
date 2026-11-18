@@ -4,7 +4,7 @@
 export const LANG_IDS = ['en', 'hi', 'mr', 'gu', 'pa', 'ta'] as const
 export type Lang = (typeof LANG_IDS)[number]
 
-export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'shiva', 'balaji', 'gel-mataji', 'swaminarayan', 'ek-onkar', 'bismillah', 'jain', 'christian', 'floral'] as const
+export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'shiva', 'balaji', 'gel-mataji', 'khodiyar', 'bahuchar', 'butbhavani', 'swaminarayan', 'ek-onkar', 'bismillah', 'jain', 'christian', 'floral'] as const
 export type SymbolId = (typeof SYMBOL_IDS)[number]
 
 export const EVENT_IDS = ['save-the-date', 'ring', 'haldi', 'mehendi', 'sangeet', 'wedding', 'reception'] as const
@@ -54,6 +54,8 @@ export interface Invite {
   format: Format
   scale: FontScale
   pages: Page[]
+  // The couple's own photos (JPEG data URLs), by the index of the design page whose photo window they fill.
+  photos?: Record<number, string>
 }
 
 // Everything a template needs to pre-fill itself in one language. One file per language in src/samples/.

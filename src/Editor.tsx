@@ -1,8 +1,9 @@
-import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImagePlus, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
 import { Wordmark } from './Hero'
 import { CardPage, SIZES } from './card/Card'
+import { DESIGNS } from './card/designs'
 import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
 import { LANGS, SAMPLES } from './i18n'
 import { samplePages, sectionsPage, templateById } from './templates'
@@ -40,6 +41,25 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   const index = invite.pages.indexOf(page)
   const { w, h } = SIZES[invite.format]
   const L = invite.lang
+  // Painted designs with a photo window on this page: index of the design page the photo belongs to.
+  const artPages = DESIGNS[t.design].pages
+  const artIndex = artPages ? index % artPages.length : -1
+  const photoSlot = artPages?.[artIndex]?.photo
+  const ownPhoto = invite.photos?.[artIndex]
+  const pickPhoto = async (file?: File) => {
+    if (!file) return
+    try {
+      const url = await shrinkPhoto(file)
+      set({ photos: { ...invite.photos, [artIndex]: url } })
+      track('photo_upload', { template: invite.templateId })
+    } catch {
+      setToast('Could not read that photo. Please try a JPEG or PNG.')
+    }
+  }
+  const resetPhoto = () => {
+    const { [artIndex]: _gone, ...rest } = invite.photos ?? {}
+    set({ photos: rest })
+  }
 
   useEffect(() => {
     if (!toast) return
@@ -289,6 +309,26 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                   ))}
                 </dl>
               </details>
+              {photoSlot && (
+                <div className="flex items-center gap-4 rounded-md bg-wine/[0.04] p-4 ring-1 ring-wine/10">
+                  <img src={ownPhoto ?? photoSlot.src} alt="" className="size-20 shrink-0 rounded object-cover ring-1 ring-wine/15" />
+                  <div className="space-y-2 text-[15px]">
+                    <p className="text-ink/85">{ownPhoto ? 'Your photo is on this page.' : 'This page has a photo. Add your own in place of the sample.'}</p>
+                    <div className="flex flex-wrap gap-2">
+                      <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-wine px-4 py-2 text-sm text-rose hover:bg-wine-deep focus-within:ring-2 focus-within:ring-zari/60">
+                        <ImagePlus className="size-4" aria-hidden /> {ownPhoto ? 'Change photo' : 'Upload photo'}
+                        <input type="file" accept="image/*" className="sr-only" onChange={(e) => (pickPhoto(e.target.files?.[0]), (e.target.value = ''))} />
+                      </label>
+                      {ownPhoto && (
+                        <button onClick={resetPhoto} className="rounded-full px-4 py-2 text-sm text-wine ring-1 ring-wine/25 hover:bg-wine/5">
+                          Use sample photo
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[13px] text-ink/55">Your photo stays in this browser. It is not uploaded anywhere.</p>
+                  </div>
+                </div>
+              )}
               {page.kind === 'cover' ? (
                 <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
               ) : (
@@ -513,4 +553,16 @@ function SectionsForm({ p, on, lang, phonetic }: { p: SectionsPage; on: (fn: (p:
       </button>
     </div>
   )
+}
+
+// Photos are kept in the saved draft (localStorage), so they are scaled down to a phone-card size first.
+async function shrinkPhoto(file: File) {
+  const img = await createImageBitmap(file)
+  const k = Math.min(1, 1600 / Math.max(img.width, img.height))
+  const c = document.createElement('canvas')
+  c.width = Math.round(img.width * k)
+  c.height = Math.round(img.height * k)
+  c.getContext('2d')!.drawImage(img, 0, 0, c.width, c.height)
+  img.close()
+  return c.toDataURL('image/jpeg', 0.85)
 }

@@ -82,8 +82,10 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
 
 function Heading({ x, children, size = 1.05 }: { x: Look; children: string; size?: number }) {
   if (!children.trim()) return null
+  // A heading painted on the artwork (a ribbon plate) is placed as its cut-out.
+  if (/^\[\[[^\]]+\]\]$/.test(children.trim())) return <Rich text={children.trim()} accent={x.d.colors.accent} big={x.d.colors.heading} />
   // Headings typed with their own marks (":: Li. Snehadhin ::") keep them.
-  const own = /^(::|॥|\|\||II )/.test(children.trim())
+  const own = /^(::|॥|\|\||II |\.\.\.)/.test(children.trim())
   const text = DANDA.includes(x.lang) && !own ? `॥ ${children} ॥` : children
   return (
     <p style={{ fontFamily: x.f.heading, color: x.d.colors.heading, fontSize: `${size}em`, fontWeight: 700, letterSpacing: x.lang === 'en' ? '0.06em' : 0 }}>
@@ -217,10 +219,11 @@ function Table({ lines, accent, big }: { lines: string[]; accent: string; big: s
 type Sec = SectionsPage['sections'][number]
 const lineCount = (b: string) => b.split('\n').length
 
-function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
+function Sections({ x, p, head, cols }: { x: Look; p: SectionsPage; head: boolean; cols?: number }) {
   const c = x.d.colors
   const ty = x.d.type ?? {}
-  const short = (s: Sec) => !!s.heading && lineCount(s.body) <= 6 && s.heading.length < 24
+  // A painted page that sets cols lays out every headed section in rows, however long.
+  const short = (s: Sec) => !!s.heading && (!!cols || (lineCount(s.body) <= 6 && s.heading.length < 24))
   // Pair consecutive short sections side by side, as kankotris do; long ones take the full width.
   // In a run of 5, 9... the middle one stands alone, centred between the pairs.
   const rows: Sec[][] = []
@@ -234,13 +237,15 @@ function Sections({ x, p, head }: { x: Look; p: SectionsPage; head: boolean }) {
     const run = p.sections.slice(i, i + n)
     const mid = n % 4 === 1 && n >= 5 ? (n - 1) / 2 : -1
     for (let j = 0; j < n; ) {
-      if (j === mid || j === n - 1) rows.push([run[j++]])
-      else rows.push([run[j++], run[j++]])
+      const take = j === mid ? 1 : Math.min(cols ?? 2, n - j)
+      rows.push(run.slice(j, j + take))
+      j += take
     }
     i += n
   }
   // Name lists flow into two columns; long sentences (an invitation letter) stay one wide column.
-  const list = (b: string) => lineCount(b) > 6 && Math.max(...b.split('\n').map((l) => l.length)) <= 40
+  // Not on a painted page laid out in columns, nor a block holding a cut-out (an event with its ribbon or pin).
+  const list = (b: string) => !cols && !b.includes('[[') && lineCount(b) > 6 && Math.max(...b.split('\n').map((l) => l.length)) <= 40
   return (
     <>
       <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
@@ -289,6 +294,8 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const k = w / 540
   const crop = (960 * k - h) / 2
   const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
+  const side = art?.x ? { left: (art.x[0] * w) / 100, right: (art.x[1] * w) / 100 } : { left: safe.x, right: safe.x }
+  const photo = art?.photo && { src: invite.photos?.[base0.pages!.indexOf(art)] ?? art.photo.src, b: art.photo.box.map((v) => v * k) }
   const x = look(d, invite.lang)
   const base = w / 30
   const box = useRef<HTMLDivElement>(null)
@@ -322,7 +329,14 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking }}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art && !photo ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking }}>
+      {photo && (
+        <>
+          {/* The photo sits under the artwork, which is see-through where the printed card had its photo. */}
+          <img src={photo.src} alt="" className="absolute object-cover" style={{ left: photo.b[0], top: photo.b[1] - crop, width: photo.b[2], height: photo.b[3], objectPosition: 'center 30%' }} />
+          <div className="absolute inset-0" style={{ background: `center / cover url("${art!.src}")` }} />
+        </>
+      )}
       {!art && (
         <>
           {d.Overlay && <d.Overlay h={(h * 540) / w} />}
@@ -334,7 +348,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
           </div>
         </>
       )}
-      <div ref={box} className="absolute overflow-hidden" style={{ top: safe.top, bottom: safe.bottom, left: safe.x, right: safe.x }}>
+      <div ref={box} className="absolute overflow-hidden" style={{ top: safe.top, bottom: safe.bottom, ...side }}>
         <div
           ref={inner}
           style={{
@@ -349,7 +363,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             fontSize: base,
           }}
         >
-          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} />}</Art.Provider>
+          <Art.Provider value={d.ornaments ?? {}}>{page.kind === 'cover' ? <Cover x={x} p={page} symbol={t.symbol} head={head} /> : <Sections x={x} p={page} head={head} cols={art?.cols} />}</Art.Provider>
         </div>
       </div>
     </div>

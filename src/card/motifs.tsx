@@ -507,6 +507,43 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
         <path d="M51 14 L72 19 L51 25 Z" fill="#d32f2f" />
       </g>
     )
+  else if (symbol === 'khodiyar')
+    inner = (
+      <g>
+        {/* Khodiyar Maa's trishul over her mount, the crocodile (magar) */}
+        <rect x="48.5" y="26" width="3" height="40" rx="1.5" fill={color} />
+        <path d="M50 12 L53 26 L47 26 Z M38 18 Q38 32 48 33 L48 30 Q41 29 41 18 Z M62 18 Q62 32 52 33 L52 30 Q59 29 59 18 Z" fill={color} />
+        <path d="M18 74 Q22 66 34 66 L70 66 Q80 66 86 72 L74 72 L72 76 Q60 80 40 78 L30 82 L32 77 Q22 78 18 74 Z" fill={color} />
+        <circle cx="76" cy="69" r="1.4" fill={accent} />
+        {[40, 50, 60].map((x) => (
+          <path key={x} d={`M${x} 66 l3 -4 l3 4 Z`} fill={accent} />
+        ))}
+      </g>
+    )
+  else if (symbol === 'bahuchar')
+    inner = (
+      <g>
+        {/* Bahuchar Maa's mount, the rooster, under a red chundadi canopy */}
+        <path d="M24 30 Q50 14 76 30 Z" fill="#d32f2f" />
+        <path d="M44 40 Q48 34 52 38 Q56 34 56 42 Q62 46 60 52 L66 50 Q78 40 80 56 Q76 50 72 58 Q78 56 76 64 Q68 74 54 74 Q38 74 36 62 Q34 52 44 48 L38 46 Q40 42 44 44 Z" fill={color} />
+        <path d="M46 36 Q48 30 52 34 Q54 30 56 36" fill="#d32f2f" />
+        <circle cx="47" cy="45" r="1.4" fill={accent} />
+        <path d="M48 74 L46 84 M56 74 L58 84" stroke={color} strokeWidth="2" />
+      </g>
+    )
+  else if (symbol === 'butbhavani')
+    inner = (
+      <g>
+        {/* Mataji's three-peaked mukut over a lamp */}
+        <path d="M28 58 L28 36 L38 46 L50 26 L62 46 L72 36 L72 58 Z" fill={color} />
+        <rect x="26" y="58" width="48" height="6" rx="2" fill={accent} />
+        {[38, 50, 62].map((x) => (
+          <circle key={x} cx={x} cy="52" r="2.4" fill={accent} />
+        ))}
+        <path d="M40 74 Q50 84 60 74 Z" fill={color} />
+        <path d="M50 74 Q46 68 50 62 Q54 68 50 74 Z" fill="#e8892b" />
+      </g>
+    )
   else if (symbol === 'swaminarayan')
     inner = (
       <g>

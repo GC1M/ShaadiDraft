@@ -28,6 +28,7 @@ import { designs as batchB } from './designs-b'
 import { designs as batchC } from './designs-c'
 import { designs as batchD } from './designs-d'
 import { designs as batchE } from './designs-e'
+import { designs as batchF } from './designs-f'
 
 export interface Design {
   id: string
@@ -50,8 +51,21 @@ export interface Design {
   // size: starting text size for that page, before shrinking to fit (pages differ in density).
   // head 'lang': the page images carry no title, the template's own sample places its cut-out title in the text,
   // so titles are left out only in that language. colors: this page's ink where it differs (a dark page in a light set).
-  // gap: space between text blocks in em (default .55).
-  pages?: { src: string; top: number; bottom: number; head?: boolean | 'lang'; size?: number; colors?: Partial<Design['colors']>; gap?: number }[]
+  // gap: space between text blocks in em (default .55). x: left/right text margin in % of width where the page's
+  // frame is off-centre. cols: up to this many headed sections share a row. photo: a see-through window in the
+  // artwork, [x, y, w, h] in story px, filled with the couple's own photo (or the sample src) under the art.
+  pages?: {
+    src: string
+    top: number
+    bottom: number
+    head?: boolean | 'lang'
+    size?: number
+    colors?: Partial<Design['colors']>
+    gap?: number
+    x?: [number, number]
+    cols?: number
+    photo?: { box: [number, number, number, number]; src: string }
+  }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }
 }
@@ -807,6 +821,6 @@ const snanam: Design = {
 }
 
 export const DESIGNS: Record<string, Design> = Object.fromEntries(
-  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE].map((d) => [d.id, d]),
+  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF].map((d) => [d.id, d]),
 )
 
