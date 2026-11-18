@@ -654,10 +654,112 @@ export const designs: Design[] = [shubho, kasavu, pelli, jainLagna, chapel, pars
 export const templates: Template[] = [
   { id: 'shubho-bibaho', name: 'Shubho Bibaho Alpana Red', design: 'shubho', lang: 'en', symbol: 'ganesha', event: 'wedding' },
   { id: 'kerala-kasavu', name: 'Kerala Kasavu Gold Border', design: 'kasavu', lang: 'en', symbol: 'floral', event: 'wedding' },
-  { id: 'pelli-patrika', name: 'Pelli Patrika Turmeric Mandapam', design: 'pelli', lang: 'en', symbol: 'balaji', event: 'wedding' },
+  {
+    id: 'pelli-patrika',
+    name: 'Pelli Patrika Turmeric Mandapam',
+    design: 'pelli',
+    lang: 'en',
+    symbol: 'balaji',
+    event: 'wedding',
+    // A Telugu wedding: morning muhurtham, jeelakarra bellam and talambralu instead of baraat and pheras.
+    override: {
+      title: 'Shubha Vivaham',
+      hostLine: 'Smt. Lakshmi & Sri Venkata Ramana cordially invite you to the wedding of their daughter',
+      bride: ['Sravani', 'D/o Smt. Lakshmi & Sri Venkata Ramana'],
+      groom: ['Karthik', 'S/o Smt. Padma & Sri Srinivasa Rao'],
+      time: 'Sumuhurtham at 10:24 AM',
+      venue: 'Sri Venkateswara Kalyana Mandapam',
+      address: 'Banjara Hills, Hyderabad, Telangana',
+      rsvp: 'Ramana & Rao Families\n+91 98765 43210',
+      functions: {
+        title: 'Before the Muhurtham',
+        sections: [
+          ['Pellikuthuru', "Saturday, 21/11/2026\n9:00 AM\nThe bride's turmeric and blessing ceremony\nAt the bride's home"],
+          ['Pellikoduku', "Saturday, 21/11/2026\n11:00 AM\nThe groom's turmeric and blessing ceremony\nAt the groom's home"],
+          ['A note from the little ones', 'The nadaswaram will play and the talambralu will fly,\nour aunt is getting married, come early and join us!\n- Aadya, Ishaan, Charan, Meghana'],
+        ],
+      },
+      ceremonies: {
+        title: 'The Wedding Day',
+        sections: [
+          ['Snathakam and Kasi Yatra', 'Sunday, 22/11/2026\n6:30 AM'],
+          ['Sumuhurtham', '10:24 AM\nJeelakarra Bellam and Mangalya Dharanam'],
+          ['Talambralu and Lunch', '11:30 AM onwards\nYou are invited *with family*'],
+          ['Wedding Venue', 'Sri Venkateswara Kalyana Mandapam\nBanjara Hills, Hyderabad'],
+        ],
+      },
+      letter: {
+        title: 'Subhalekha',
+        body: 'Dear friends and family,\nWith the blessings of Lord Venkateswara and our elders,\nwe are delighted to invite you to the wedding of our daughter\n*Sravani*\nwith\n*Karthik*\nson of Smt. Padma & Sri Srinivasa Rao,\non Sunday, 22/11/2026.\nPlease join us with your family and bless the couple.',
+      },
+      family: {
+        title: 'Eagerly Awaiting You',
+        sections: [
+          ['With love from', 'Sri Venkata Ramana\nSri Subba Rao\nSri Nageswara Rao\nSri Srinivasa Rao\nSri Krishna Murthy\nSri Ravi Teja'],
+          ['Maternal uncles', 'Sri Ravi Kumar & family'],
+          ['Our dear daughters', 'Smt. Anusha Reddy\nSmt. Divya Varma'],
+        ],
+      },
+      message: {
+        title: 'A Digital Subhalekha',
+        body: 'Please accept this digital card as our personal invitation.\nKindly reply *OK* once you have read it.\n*The Ramana Family*\nwelcomes you with love.',
+      },
+    },
+  },
   { id: 'jain-lagna-patrika', name: 'Jain Lagna Patrika Saffron', design: 'jain-lagna', lang: 'gu', symbol: 'jain', event: 'wedding' },
-  { id: 'white-chapel', name: 'White Chapel Silver Arch', design: 'chapel', lang: 'en', symbol: 'christian', event: 'wedding' },
+  {
+    id: 'white-chapel',
+    name: 'White Chapel Silver Arch',
+    design: 'chapel',
+    lang: 'en',
+    symbol: 'christian',
+    event: 'wedding',
+    // A church wedding: nuptial mass and reception instead of baraat and pheras.
+    override: {
+      title: 'Holy Matrimony',
+      hostLine: "Mrs. Grace & Mr. Thomas D'Souza request the honour of your presence at the marriage of their daughter",
+      bride: ['Anita', "D/o Mrs. Grace & Mr. Thomas D'Souza"],
+      groom: ['Joel', 'S/o Mrs. Mary & Mr. Peter Fernandes'],
+      time: 'Nuptial Mass at 4:00 PM',
+      venue: "St. Andrew's Church",
+      address: 'Hill Road, Bandra West, Mumbai',
+      rsvp: "D'Souza & Fernandes Families\n+91 98765 43210",
+      functions: {
+        title: 'Before the Big Day',
+        sections: [
+          ['Bridal Shower', "Friday, 20/11/2026\n6:00 PM\nHosted by the bridesmaids\nAt the bride's home, Bandra"],
+          ['Roce', "Saturday, 21/11/2026\n4:00 PM\nCoconut milk blessing for the bride and groom\nAt both family homes"],
+          ['A note from the little ones', 'The bells will ring and we will carry the rings,\nour aunt is getting married, come early and sing with us!\n- Aaron, Tanya, Ryan, Mia'],
+        ],
+      },
+      ceremonies: {
+        title: 'The Wedding Day',
+        sections: [
+          ['Nuptial Mass', "Sunday, 22/11/2026\n4:00 PM\nSt. Andrew's Church"],
+          ['Reception', '7:30 PM\nToast, cake and first dance'],
+          ['Dinner and Dance', '8:30 PM onwards\nYou are invited *with family*'],
+          ['Reception Venue', "Taj Lands End\nBandstand, Bandra West, Mumbai"],
+        ],
+      },
+      letter: {
+        title: 'With Joy',
+        body: "Dear friends and family,\nWith thanks to God for His many blessings,\nwe joyfully invite you to the marriage of our daughter\n*Anita*\nwith\n*Joel*\nson of Mrs. Mary & Mr. Peter Fernandes,\non Sunday, 22/11/2026.\nPlease join us in prayer and celebration.",
+      },
+      family: {
+        title: 'With Love From',
+        sections: [
+          ['The families', "Mr. Thomas D'Souza\nMr. Joseph D'Souza\nMr. Peter Fernandes\nMr. Francis Fernandes"],
+          ['Grandparents', "Mrs. Rosy & Mr. Anthony D'Souza"],
+          ['Bridesmaids and best man', 'Ms. Sonia Pereira\nMs. Leah Rodrigues\nMr. Kevin Fernandes'],
+        ],
+      },
+      message: {
+        title: 'A Digital Invitation',
+        body: "Please accept this digital card as our personal invitation.\nKindly reply *OK* once you have read it.\n*The D'Souza Family*\nwelcomes you with love.",
+      },
+    },
+  },
   { id: 'parsi-lagan', name: 'Parsi Lagan Pastel Chalk', design: 'parsi-lagan', lang: 'gu', symbol: 'floral', event: 'wedding' },
   { id: 'kashmiri-chinar', name: 'Kashmiri Chinar & Shikara', design: 'chinar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
-  { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding', also: ['shiva'], featured: true },
+  { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding', also: ['shiva', 'gel-mataji', 'swaminarayan'], featured: true },
 ]

@@ -85,12 +85,28 @@ export const Wordmark = () => (
   </span>
 )
 
+// The hero and grid show each card's pre-rendered cover (public/templates/previews/<id>.webp), which is far lighter
+// than rendering every card live. A template without a preview yet is rendered live instead.
+const HERO = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']
+const preview = (id: string) => `templates/previews/${id}.webp`
+
+function Preview({ t }: { t: Template }) {
+  const [live, setLive] = useState(false)
+  const inv = useMemo(() => (live ? newInvite(t) : null), [live, t])
+  if (inv)
+    return (
+      <ScaledCard w={SIZES.story.w} h={SIZES.story.h} className="design-card">
+        <CardPage invite={inv} page={inv.pages[0]} />
+      </ScaledCard>
+    )
+  // alt is empty: the card's name and details are already in the button's heading and caption.
+  return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt="" onError={() => setLive(true)} className="design-card h-auto w-full" />
+}
+
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
   const [lang, setLang] = useState<Lang | 'all'>('all')
   const [symbol, setSymbol] = useState<SymbolId | 'all'>('all')
   const [event, setEvent] = useState<EventType | 'all'>('all')
-  // Sample invites are built once; previews re-render only when filters change.
-  const previews = useMemo(() => Object.fromEntries(TEMPLATES.map((t) => [t.id, newInvite(t)])), [])
   const byLangSymbol = TEMPLATES.filter((t) => (lang === 'all' || t.lang === lang) && (symbol === 'all' || t.symbol === symbol || !!t.also?.includes(symbol)))
   const shown = byLangSymbol.filter((t) => event === 'all' || t.event === event).sort((a, b) => Number(!!b.featured) - Number(!!a.featured))
   const count = (e: EventType | 'all') => byLangSymbol.filter((t) => e === 'all' || t.event === e).length
@@ -100,8 +116,6 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
     setSymbol('all')
     setEvent('all')
   }
-  const story = SIZES.story
-  const hero = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram'].map((id) => previews[id])
   const draftName = draft && TEMPLATES.find((t) => t.id === draft.templateId)?.name
   // When a filter changes, bring the top of the grid back into view and fade the new set in.
   const top = useRef<HTMLDivElement>(null)
@@ -115,6 +129,8 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
   }, [lang, symbol, event])
   const select = 'select-chevron min-w-0 truncate rounded-full border border-wine/25 bg-paper py-2.5 pl-4 pr-10 text-[15px] text-ink hover:border-wine/50 focus:border-wine'
 
+  // index.html carries a static copy of this header and hero inside #root so the page doesn't jump when React
+  // mounts. Change both together.
   return (
     <div className="min-h-screen">
       <div className="velvet text-rose">
@@ -133,9 +149,8 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
 
         <section className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pb-20 pt-6 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-28 lg:pt-14">
           <div className="min-w-0">
-            <h1 className="font-display text-[44px] leading-[1.02] tracking-[-0.02em] sm:text-[68px] lg:text-[80px]">
-              Invitations as grand as the wedding
-            </h1>
+            <h1 className="text-[13px] font-medium uppercase tracking-[0.22em] text-zari">Free Indian wedding invitation maker</h1>
+            <p className="mt-4 font-display text-[44px] leading-[1.02] tracking-[-0.02em] sm:text-[68px] lg:text-[80px]">Invitations as grand as the wedding</p>
             <p className="mt-8 max-w-md text-[18px] leading-relaxed text-rose/85">
               Type your families' names in English or your own script, then download images for WhatsApp or a PDF for the press.
             </p>
@@ -152,15 +167,10 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
             <p className="mt-8 text-sm text-rose/60">Free, with no login. English, हिन्दी, मराठी, ગુજરાતી, ਪੰਜਾਬੀ and தமிழ்.</p>
           </div>
           <div className="relative order-first mx-auto h-[320px] w-full max-w-[460px] sm:h-[470px] lg:order-none" aria-hidden>
-            {hero.map((inv, i) => (
-              <div
-                key={inv.templateId}
-                className="hero-card absolute top-2 w-[46%]"
-                style={{ left: `${3 + i * 24}%`, rotate: `${(i - 1) * 7}deg`, zIndex: i === 1 ? 2 : 1, animationDelay: `${i * 120}ms` }}
-              >
-                <ScaledCard w={story.w} h={story.h} className="shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]">
-                  <CardPage invite={inv} page={inv.pages[0]} />
-                </ScaledCard>
+            {HERO.map((id, i) => (
+              // No entrance animation here: the static hero in index.html already played it before React mounted.
+              <div key={id} className="absolute top-2 w-[46%]" style={{ left: `${3 + i * 24}%`, rotate: `${(i - 1) * 7}deg`, zIndex: i === 1 ? 2 : 1 }}>
+                <img src={preview(id)} width={540} height={960} alt="" fetchPriority={i === 1 ? 'high' : 'auto'} className="h-auto w-full shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]" />
               </div>
             ))}
           </div>
@@ -227,16 +237,13 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
         ) : (
           <div ref={grid} className="mt-12 grid grid-cols-2 gap-x-5 gap-y-14 sm:gap-x-10 md:grid-cols-3 lg:grid-cols-4">
             {shown.map((t) => {
-              const inv = previews[t.id]
               return (
                 <button key={t.id} onClick={() => onOpen(t)} className="design group flex min-w-0 flex-col text-left">
                   <div className="pointer-events-none relative w-full transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
                     {t.featured && (
                       <span className="zari-button absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-medium text-wine-deep shadow">★ Featured</span>
                     )}
-                    <ScaledCard w={story.w} h={story.h} className="design-card">
-                      <CardPage invite={inv} page={inv.pages[0]} />
-                    </ScaledCard>
+                    <Preview t={t} />
                   </div>
                   <h3 className="mt-5 font-display text-[19px] leading-snug">{t.name}</h3>
                   <p className="mt-1 text-sm text-ink/60">

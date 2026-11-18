@@ -6,6 +6,8 @@ export const gu: SampleText = {
     'radha-krishna': '॥ શ્રી રાધે કૃષ્ણ ॥',
     shiva: '॥ ૐ નમઃ શિવાય ॥',
     balaji: '॥ ૐ નમો વેંકટેશાય ॥',
+    'gel-mataji': '॥ જય ગેલ માતાજી ॥',
+    swaminarayan: '॥ જય શ્રી સ્વામિનારાયણ ॥',
     'ek-onkar': 'ੴ ਸਤਿ ਨਾਮੁ',
     bismillah: 'بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
     jain: '॥ ણમો અરિહંતાણં ॥',

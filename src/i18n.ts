@@ -23,6 +23,8 @@ export const SYMBOLS: Record<SymbolId, string> = {
   'radha-krishna': 'Radha-Krishna',
   shiva: 'Shiv-Parvati (Mahadev)',
   balaji: 'Tirupati Balaji',
+  'gel-mataji': 'Gel Mataji',
+  swaminarayan: 'Swaminarayan',
   'ek-onkar': 'Ek Onkar',
   bismillah: 'Bismillah',
   jain: 'Jain (Ahimsa hand)',
