@@ -15,7 +15,7 @@ function prerenderHero(): Plugin {
       order: 'post', // after Vite's own URL rewriting, which would try to resolve the public-dir image paths
       async handler(html) {
         const { module } = await runnerImport<typeof import('./src/Hero')>('/src/Hero.tsx', { configFile: false, logLevel: 'error', base })
-        return html.replace('<!-- app-hero -->', renderToStaticMarkup(createElement(module.Hero, { intro: true })))
+        return html.replace('<!-- app-hero -->', renderToStaticMarkup(createElement(module.Hero)))
       },
     },
   }

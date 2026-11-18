@@ -74,15 +74,7 @@ body {
   outline-offset: 3px;
 }
 
-/* The one orchestrated moment: the hero cards settle into place on load. Tilt comes from the
-   per-card `rotate` property, so the keyframes only move. */
-@keyframes settle {
-  from { opacity: 0; transform: translateY(28px); }
-  to { opacity: 1; transform: none; }
-}
-.hero-card { animation: settle 900ms cubic-bezier(.2,.7,.2,1) both; }
 @media (prefers-reduced-motion: reduce) {
-  .hero-card { animation: none; }
   .zari-button, .event-tab::after, .design-card, .design > div { transition: none !important; }
 }
 
@@ -140,4 +132,129 @@ body {
 /* index.html's static info and footer show only on the gallery. */
 html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) {
   display: none;
+}
+
+/* Opening: the headline arrives word by word out of a soft blur, then the copy and button follow. */
+@keyframes intro {
+  from { opacity: 0; transform: translateY(18px); filter: blur(10px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.intro { animation: intro 900ms cubic-bezier(.2,.7,.2,1) both; }
+.intro-2 { animation-delay: calc(1300ms + var(--t0, 0ms)); }
+.intro-3 { animation-delay: calc(1450ms + var(--t0, 0ms)); }
+.intro-4 { animation-delay: calc(1600ms + var(--t0, 0ms)); }
+
+/* Scroll, where the browser supports scroll-driven animation (others just see the static page):
+   the hero copy drifts up and fades as you leave it, and gallery cards and the info sections rise in as they enter. No JS. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .hero { view-timeline: --hero; }
+    @keyframes leave { to { opacity: .15; translate: 0 -80px; scale: .97; } }
+    .hero-copy { animation: leave linear both; animation-timeline: --hero; animation-range: exit 0% exit 90%; }
+    @keyframes rise { from { opacity: 0; translate: 0 48px; scale: .96; } }
+    .design, .reveal, #site-info :is(h2, p, ol, ul, details) {
+      animation: rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 70%;
+    }
+  }
+}
+
+/* Hero: a gold line-art mandap that draws itself on load, platform first and the dome last,
+   with the headline standing in its opening. Every stroke has pathLength=1, so one dash of
+   length 1 sliding from offset 1 to 0 reveals it. Technique from apex-ape's landmark drawing. */
+.mandap-hero {
+  position: relative;
+  height: clamp(640px, 88vh, 880px);
+  overflow: hidden;
+}
+.mandap {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  height: 100%;
+  aspect-ratio: 1200 / 820;
+  translate: -50% 0;
+  fill: none;
+  stroke: var(--color-zari);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.mandap :is(path, circle) {
+  stroke-dasharray: 1;
+  animation: draw var(--dur, 1.6s) cubic-bezier(.32,.72,0,1) calc(var(--d, 0s) + var(--t0, 0ms)) both;
+}
+@keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+/* Diya flames: filled once the strokes are in, then flicker. */
+.mandap .flame {
+  fill: #f0c46a;
+  stroke: none;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: light 600ms ease-out calc(3.2s + var(--t0, 0ms)) both, flicker 2.4s ease-in-out 3.8s infinite;
+}
+@keyframes light { from { opacity: 0; scale: .2; } }
+@keyframes flicker { 50% { scale: .9 1.08; } }
+/* Soft lamplight pooled in the opening, so the headline reads against the velvet. */
+.mandap-hero::before {
+  content: '';
+  position: absolute;
+  inset: 30% 20% 6%;
+  background: radial-gradient(closest-side, rgba(201, 164, 92, .14), transparent);
+}
+.mandap-hero .hero-copy {
+  position: absolute;
+  inset: 45% 0 auto;
+  margin-inline: auto;
+  width: min(640px, 86%);
+  text-align: center;
+}
+@media (max-width: 767px) {
+  .mandap-hero { height: auto; padding-bottom: 56px; }
+  .mandap { position: relative; left: auto; translate: none; width: 100%; height: auto; }
+  .mandap-hero .hero-copy { position: relative; inset: auto; margin-top: 8px; }
+}
+
+/* A light sweep across the main button every few seconds. */
+.shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 250, 230, .65) 50%, transparent 70%);
+  translate: -120% 0;
+  animation: shine 4.5s ease-in-out 1.6s infinite;
+}
+@keyframes shine {
+  0%, 60% { translate: -120% 0; }
+  100% { translate: 120% 0; }
+}
+
+/* Greeting ribbon: two identical runs, so sliding by half loops seamlessly. */
+.ribbon { animation: ribbon 40s linear infinite; }
+.ribbon:hover { animation-play-state: paused; }
+@keyframes ribbon {
+  to { translate: -50% 0; }
+}
+
+/* Thin zari bar at the top showing how far down the page you are. */
+.scroll-progress { display: none; }
+@supports (animation-timeline: scroll()) {
+  .scroll-progress {
+    display: block;
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 50;
+    height: 3px;
+    background: linear-gradient(90deg, #b48c45, #f0d595, #c9a45c);
+    transform-origin: left;
+    animation: progress linear both;
+    animation-timeline: scroll(root);
+  }
+  @keyframes progress { from { transform: scaleX(0); } }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro, .mandap :is(path, circle), .mandap .flame, .shine::after, .ribbon, .scroll-progress { animation: none; }
+  .scroll-progress { display: none; }
 }

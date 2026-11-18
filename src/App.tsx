@@ -94,10 +94,14 @@ function Preview({ t }: { t: Template }) {
   return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt="" onError={() => setLive(true)} className="design-card h-auto w-full" />
 }
 
+const GREETINGS = ['Shubh Vivah', 'शुभ विवाह', 'શુભ લગ્ન', 'ਸ਼ੁਭ ਵਿਆਹ', 'சுப முகூர்த்தம்', 'शुभमंगल सावधान', 'Save the Date']
+
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
   const [lang, setLang] = useState<Lang | 'all'>('all')
   const [symbol, setSymbol] = useState<SymbolId | 'all'>('all')
   const [event, setEvent] = useState<EventType | 'all'>('all')
+  // How far the prerendered hero's intro has run, so React's copy picks it up mid-way instead of replaying it.
+  const [elapsed] = useState(() => performance.now())
   const byLangSymbol = TEMPLATES.filter((t) => (lang === 'all' || t.lang === lang) && (symbol === 'all' || t.symbol === symbol || !!t.also?.includes(symbol)))
   const shown = byLangSymbol.filter((t) => event === 'all' || t.event === event).sort((a, b) => Number(!!b.featured) - Number(!!a.featured))
   const count = (e: EventType | 'all') => byLangSymbol.filter((t) => e === 'all' || t.event === e).length
@@ -122,12 +126,27 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
 
   return (
     <div className="min-h-screen">
-      <Hero draftName={draftName} />
+      <div className="scroll-progress" aria-hidden />
+      <Hero draftName={draftName} elapsed={elapsed} />
       <ZariBorder />
+
+      {/* A slow ribbon of the greeting in every script the maker supports. */}
+      <div className="overflow-hidden border-b border-wine/10 py-5" aria-hidden>
+        <div className="ribbon flex w-max whitespace-nowrap font-display text-[26px] italic text-wine/70 sm:text-[32px]">
+          {[0, 1].map((k) =>
+            GREETINGS.map((g, i) => (
+              <span key={`${k}-${i}`} className="flex items-center gap-10 pr-10">
+                {g}
+                <span className="text-[18px] not-italic text-zari">✦</span>
+              </span>
+            )),
+          )}
+        </div>
+      </div>
 
       <section id="templates" className="mx-auto max-w-6xl scroll-mt-2 px-4 pb-24 pt-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
-          <h2 className="font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>
+          <h2 className="reveal font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>
           <div className="grid w-full grid-cols-2 items-center gap-3 sm:flex sm:w-auto sm:flex-wrap">
             <select aria-label="Language" value={lang} onChange={(e) => setLang(e.target.value as Lang | 'all')} className={select}>
               <option value="all">Any language</option>
