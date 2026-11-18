@@ -35,6 +35,7 @@ export interface CoverPage {
 export interface Section {
   heading: string
   body: string // more than 6 lines are laid out in two columns
+  size?: number // text size of this block, set by a template's own sample (1 = the design's body size)
 }
 
 export interface SectionsPage {

@@ -2,8 +2,9 @@ import { templates as batchA } from './card/designs-a'
 import { templates as batchB } from './card/designs-b'
 import { templates as batchC } from './card/designs-c'
 import { templates as batchD } from './card/designs-d'
+import { templates as batchE } from './card/designs-e'
 import { SAMPLES } from './i18n'
-import type { CoverPage, EventType, Invite, Lang, Page, SampleText, SectionsPage, SymbolId } from './types'
+import type { CoverPage, EventType, Invite, Lang, Page, Section, SampleText, SectionsPage, SymbolId } from './types'
 
 export interface Template {
   id: string
@@ -17,6 +18,8 @@ export interface Template {
   // Replaces sample fields when the card is in the template's own language (e.g. a Nikkah couple, a church wedding).
   override?: Partial<Pick<CoverPage, 'title' | 'hostLine' | 'joiner' | 'time' | 'venue' | 'address' | 'rsvp'>> &
     Partial<Pick<SampleText, 'functions' | 'ceremonies' | 'letter' | 'family' | 'message'>> & { bride?: [string, string]; groom?: [string, string] }
+  // The printed card's own words, page by page, used as is when the card is in the template's language.
+  pages?: { title: string; sections: Section[] }[]
 }
 
 export const TEMPLATES: Template[] = [
@@ -55,6 +58,7 @@ export const TEMPLATES: Template[] = [
   ...batchB,
   ...batchC,
   ...batchD,
+  ...batchE,
 ]
 
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0]
@@ -68,6 +72,7 @@ export function sectionsPage(title: string, sections: [string, string][]): Secti
 
 // Sample pages for a template in a language. Weddings get the full kankotri set; other events are one card.
 export function samplePages(t: Template, lang: Lang): Page[] {
+  if (t.pages && lang === t.lang) return t.pages.map((p) => ({ id: uid(), kind: 'sections', title: p.title, sections: p.sections.map((x) => ({ ...x })) }))
   const s = SAMPLES[lang]
   const e = t.event
   const o = lang === t.lang ? (t.override ?? {}) : {}
