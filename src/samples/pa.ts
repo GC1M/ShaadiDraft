@@ -6,6 +6,8 @@ export const pa: SampleText = {
     'radha-krishna': '॥ ਸ਼੍ਰੀ ਰਾਧੇ ਕ੍ਰਿਸ਼ਨ ॥',
     shiva: '॥ ਓਮ ਨਮਃ ਸ਼ਿਵਾਯ ॥',
     balaji: '॥ ਓਮ ਨਮੋ ਵੇਂਕਟੇਸ਼ਾਯ ॥',
+    'gel-mataji': '॥ ਜੈ ਗੇਲ ਮਾਤਾਜੀ ॥',
+    swaminarayan: '॥ ਜੈ ਸ਼੍ਰੀ ਸਵਾਮੀਨਾਰਾਇਣ ॥',
     'ek-onkar': 'ੴ ਸਤਿ ਨਾਮੁ',
     bismillah: 'بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ',
     jain: '॥ ਣਮੋ ਅਰਿਹੰਤਾਣੰ ॥',

@@ -141,9 +141,9 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
   to { opacity: 1; transform: none; filter: none; }
 }
 .intro { animation: intro 900ms cubic-bezier(.2,.7,.2,1) both; }
-.hero-copy > p.intro:first-of-type { animation-delay: 1300ms; }
-.hero-copy > div.intro { animation-delay: 1450ms; }
-.hero-copy > p.intro:last-child { animation-delay: 1600ms; }
+.intro-2 { animation-delay: calc(1300ms + var(--t0, 0ms)); }
+.intro-3 { animation-delay: calc(1450ms + var(--t0, 0ms)); }
+.intro-4 { animation-delay: calc(1600ms + var(--t0, 0ms)); }
 
 /* Scroll, where the browser supports scroll-driven animation (others just see the static page):
    the hero copy drifts up and fades as you leave it, and gallery cards and the info sections rise in as they enter. No JS. */
@@ -184,7 +184,7 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
 }
 .mandap :is(path, circle) {
   stroke-dasharray: 1;
-  animation: draw var(--dur, 1.6s) cubic-bezier(.32,.72,0,1) var(--d, 0s) both;
+  animation: draw var(--dur, 1.6s) cubic-bezier(.32,.72,0,1) calc(var(--d, 0s) + var(--t0, 0ms)) both;
 }
 @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 /* Diya flames: filled once the strokes are in, then flicker. */
@@ -193,7 +193,7 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
   stroke: none;
   transform-box: fill-box;
   transform-origin: 50% 100%;
-  animation: light 600ms ease-out 3.2s both, flicker 2.4s ease-in-out 3.8s infinite;
+  animation: light 600ms ease-out calc(3.2s + var(--t0, 0ms)) both, flicker 2.4s ease-in-out 3.8s infinite;
 }
 @keyframes light { from { opacity: 0; scale: .2; } }
 @keyframes flicker { 50% { scale: .9 1.08; } }
