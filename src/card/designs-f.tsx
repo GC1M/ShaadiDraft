@@ -21,7 +21,7 @@ const page = (folder: string, n: number, top: number, bottom: number, more: Part
   size: 1.4,
   ...more,
 })
-const photo = (box: [number, number, number, number]) => ({ box, src: SAMPLE_PHOTO })
+const photo = (box: [number, number, number, number], fade?: boolean) => ({ box, src: SAMPLE_PHOTO, fade })
 
 const kankotri = { title: '"Kankotri Gujarati"', body: '"Kankotri Gujarati"' }
 const None = () => null
@@ -35,7 +35,7 @@ const vanUtsav: Design = {
   script: { gu: kankotri },
   type: { body: 1, heading: 1.1, lists: 'left' },
   ornaments: art('van-utsav', {
-    '1-couple': 3.4, '2-ganesh': 2.67, '2-vivah': 5.67, '2-flourish': 7.81, '3-pin': 1.6, '4-sang': 3.33, '6-pin': 1.33,
+    '1-couple': 3.4, '2-ganesh': 2.67, '2-vivah': 5.67, '2-flourish': 7.81, '3-pin': 0.81, '4-sang': 2.69, '6-pin': 1.33,
     '7-title': 7.67, '7-namaste': 5.94,
   }),
   Top: None,
@@ -60,7 +60,7 @@ const neelGulab: Design = {
   script: { gu: kankotri },
   type: { body: 1, heading: 1, lists: 'left' },
   ornaments: art('neel-gulab', {
-    '2-hands': 5.83, '2-shriman': 21.97, '2-nimantrak': 9.19, '4-mandap': 9.19, '4-swaruchi': 9.19, '4-jaan': 9.19, '4-hast': 9.19,
+    '2-hands': 5.66, '2-date': 13, '2-shriman': 21.97, '2-nimantrak': 9.19, '4-mandap': 9.19, '4-swaruchi': 9.19, '4-jaan': 9.19, '4-hast': 9.19,
     '4-mitho': 9.19, '5-hands': 5.64, '5-lagna': 9.19, '5-shubh': 9.19, '6-divya': 12.53, '6-sneh': 12.61, '6-avsar': 12.53,
     '6-mosal': 9.19, '6-bhanej': 9.19,
   }),
@@ -73,7 +73,7 @@ const neelGulab: Design = {
     page('neel-gulab', 4, 215, 116, { cols: 2 }),
     page('neel-gulab', 5, 232, 140),
     page('neel-gulab', 6, 140, 82),
-    page('neel-gulab', 7, 0, 0, { photo: photo([0, 27, 540, 907]) }, 'webp'),
+    page('neel-gulab', 7, 0, 0, { photo: photo([19, 24, 502, 912]) }, 'webp'),
     page('neel-gulab', 8, 240, 362, { x: [25, 6], colors: { text: '#7a1f2c', accent: '#b0813f' } }),
   ],
   safe,
@@ -83,8 +83,8 @@ const soneriJharokha: Design = {
   id: 'soneri-jharokha',
   sky: '#f3ece2',
   colors: { title: '#c0461f', heading: '#c0461f', text: '#7d5a24', accent: '#c0461f', muted: '#7d5a24' },
-  // Latin words (the couple's names on the cover) are set in a wedding script, as printed.
-  fonts: { title: '"Great Vibes", cursive', heading: 'Georgia, serif', body: '"Great Vibes", cursive', names: '"Great Vibes", cursive' },
+  // The couple's names on the cover are set in a wedding script (~name~), other Latin (date, OK) in a serif, as printed.
+  fonts: { title: '"Great Vibes", cursive', heading: 'Georgia, serif', body: 'Georgia, serif', names: '"Great Vibes", cursive' },
   script: { gu: kankotri },
   type: { body: 1, heading: 0.75 },
   ornaments: art('soneri-jharokha', {
@@ -93,14 +93,14 @@ const soneriJharokha: Design = {
   Top: None,
   Bottom: None,
   pages: [
-    page('soneri-jharokha', 1, 12, 32, { photo: photo([94, 234, 378, 404]), colors: { text: '#4f5d63' } }, 'webp'),
-    page('soneri-jharokha', 2, 450, 13, { colors: { text: '#4f5d63' } }),
-    page('soneri-jharokha', 3, 230, 16, { cols: 2 }),
-    page('soneri-jharokha', 4, 230, 40),
-    page('soneri-jharokha', 5, 222, 172),
-    page('soneri-jharokha', 6, 239, 65),
-    page('soneri-jharokha', 7, 240, 204),
-    page('soneri-jharokha', 8, 222, 68),
+    page('soneri-jharokha', 1, 10, 20, { photo: photo([94, 169, 378, 535], true), colors: { text: '#4f5d63' } }, 'webp'),
+    page('soneri-jharokha', 2, 450, 13, { colors: { text: '#4f5d63' }, spread: true, size: 1.6 }),
+    page('soneri-jharokha', 3, 230, 16, { cols: 2, spread: true, size: 1.3 }),
+    page('soneri-jharokha', 4, 230, 40, { spread: true, size: 1.75 }),
+    page('soneri-jharokha', 5, 222, 172, { spread: true, size: 1.38 }),
+    page('soneri-jharokha', 6, 239, 65, { spread: true, size: 1.45 }),
+    page('soneri-jharokha', 7, 240, 204, { spread: true, size: 1.45 }),
+    page('soneri-jharokha', 8, 222, 68, { spread: true, size: 1.75 }),
   ],
   safe,
 }
@@ -161,9 +161,7 @@ export const templates: Template[] = [
           b('***|| પરિણય મહોત્સવ ||***', 1.4),
           b(`*સ્નેહી સ્વજન શ્રી,*${DOTS}`, 0.85),
           b('સહર્ષ ખુશાલી સાથ જણાવવાનું કે\nઅમારા કુળદેવી શ્રી રાજ રાજેશ્વરી બુટભવાની માતાજીની અસીમ કૃપાથી\nઘુઘરાળા નિવાસી (હાલ સુરત)\n*અ.સૌ. ભાવનાબેન તથા શ્રી વિનુભાઈ પ્રેમજીભાઈ ધોળકીયા* ના સુપુત્ર', 0.75),
-          b('<<***ચિ. ફેનિલ***', 2),
-          b('[[4-sang]]'),
-          b('>>***ચિ. આશિકા***', 2),
+          b('***ચિ. ફેનિલ*** [[4-sang]] ***ચિ. આશિકા***', 1.6),
           b('બાલાપુર નિવાસી (હાલ સુરત)\n*અ.સૌ. રેખાબેન તથા શ્રી સુરેશભાઈ રાઘવભાઈ ઠુંમર* ની સુપુત્રી\nસાથે વિક્રમ સંવત ૨૦૮૦ ના મહા વદ ૮ ને સોમવાર, તા. ૦૪/૦૩/૨૦૨૪ના શુભદિને તોરણ નિરધાર્યા છે.\nતો આ શુભ પ્રસંગે પ્રભુતામાં પગલા પાડતા નવદંપતિને આશિર્વાદ અને\nઅમારા આનંદમાં સહભાગી થવા અમારું ભાવભર્યું આમંત્રણ છે.\nતો આ શુભ પ્રસંગે આપ હાજર રહી અમારો પ્રસંગ દિપાવશોજી.', 0.75),
         ],
       },
@@ -173,9 +171,10 @@ export const templates: Template[] = [
           b('|| શ્રી ગણેશાય નમઃ ||', 0.8),
           b('***|| અવસરના અભિલાષી ||***', 1.2),
           b(
-            'શ્રી સંજયભાઈ પ્રેમજીભાઈ ધોળકીયા\nશ્રી રમેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી નરેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી રાજેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી નિલેશભાઈ ભુપતભાઈ ધોળકીયા\nશ્રી જીતેન્દ્રભાઈ હિંમતભાઈ ધોળકીયા\nશ્રી જેનિશ વિનુભાઈ ધોળકીયા\nશ્રી નૈતિક નિલેશભાઈ ધોળકીયા\nશ્રી સ્નેહ સંજયભાઈ ધોળકીયા\nશ્રી કૃષાંત રમેશભાઈ ધોળકીયા\nશ્રી વિનિત રમેશભાઈ ધોળકીયા\nશ્રી દિવ્યેશ નરેશભાઈ ધોળકીયા\nશ્રી પ્રિન્સ રાજેશભાઈ ધોળકીયા\nશ્રી નિલ નરેશભાઈ ધોળકીયા\nશ્રી ધર્મ જીતેન્દ્રભાઈ ધોળકીયા',
-            0.7,
+            'શ્રી સંજયભાઈ પ્રેમજીભાઈ ધોળકીયા\nશ્રી રમેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી નરેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી રાજેશભાઈ બાબુભાઈ ધોળકીયા\nશ્રી નિલેશભાઈ ભુપતભાઈ ધોળકીયા\nશ્રી જીતેન્દ્રભાઈ હિંમતભાઈ ધોળકીયા\nશ્રી જેનિશ વિનુભાઈ ધોળકીયા\nશ્રી સ્નેહ સંજયભાઈ ધોળકીયા\nશ્રી કૃષાંત રમેશભાઈ ધોળકીયા\nશ્રી વિનિત રમેશભાઈ ધોળકીયા\nશ્રી દિવ્યેશ નરેશભાઈ ધોળકીયા\nશ્રી પ્રિન્સ રાજેશભાઈ ધોળકીયા\nશ્રી નિલ નરેશભાઈ ધોળકીયા\nશ્રી ધર્મ જીતેન્દ્રભાઈ ધોળકીયા',
+            0.58,
           ),
+          b('શ્રી નૈતિક નિલેશભાઈ ધોળકીયા', 0.58),
           h('|| મોસાળ પક્ષ ||', 'શ્રી નરેશભાઈ ભોળાભાઈ નાડોદા\n(ચિતલ)', 0.7),
           h('|| ભાણેજ પક્ષ ||', 'શ્રી રોશન બિપીનભાઈ શંકર\n(લાઠી)', 0.7),
           h('|| મીઠા બોલ ||', 'ઝંખના છે આપના ઉષ્માભર્યા આશીર્વાદની,\nભાવના છે આપની સ્નેહભરી શુભેચ્છાની,\nઅપેક્ષા છે આપની હદયપૂર્વક ની હાજરીની...\n*– વિશ્વા, સ્નેહ, આરવ, ક્રિષ્ના, ધ્યાની, આધ્યા*', 0.75),
@@ -225,7 +224,7 @@ export const templates: Template[] = [
           b('<<*ચિ. જેનીશ*', 1.8),
           b('[[2-hands]]'),
           b('>>*ચિ. અંજલી*', 1.8),
-          b('***શુક્રવાર, તા. ૨૫/૧૧/૨૦૨૨***', 0.75),
+          b('[[2-date|શુક્રવાર, તા. ૨૫/૧૧/૨૦૨૨]]', 0.75),
           b('[[2-shriman]]'),
           b('[[2-nimantrak]]'),
           b('*શ્રી વિનુભાઇ પ્રેમજીભાઇ ધોળકીયા*\n*શ્રી સંજયભાઇ પ્રેમજીભાઇ ધોળકીયા*\n*બી-૧૧૭ આદર્શનગર સોસાયટી વિ-૨,*\n*છાપરાભાઠા રોડ, અમરોલી, સુરત.*\n*મો. ૯૮૭૬૫ ૪૩૨૧૦ - ૯૧૨૩૪ ૫૬૭૮૯*', 0.75),
@@ -302,7 +301,7 @@ export const templates: Template[] = [
     pages: [
       {
         title: 'વોરા પરિવાર',
-        sections: [b('***વોરા પરિવાર***', 2.1), b('[[1-gap]]'), b('<<*Akash*', 2.6), b('&', 1.4), b('>>*Hiral*', 2.6), b('***21*** January, Tuesday ***2025***', 1.1)],
+        sections: [b('**વોરા પરિવાર**', 1.45), b('[[1-gap]]'), b('<<~Akash~\n~&~\n>>~Hiral~', 2.3), b('***21*** January, Tuesday ***2025***', 1.15)],
       },
       {
         title: 'શુભ વિવાહ',
@@ -336,7 +335,7 @@ export const templates: Template[] = [
         sections: [
           b('***સ્નેહી સ્વજન શ્રી,*** ________________________', 0.7),
           b('સહર્ષ ખુશાલી સાથ જણાવવાનું કે\nઅમારા કુળદેવી આઈ શ્રી ખોડિયાર માતાજીની અસીમ કૃપાથી\nશિવરાજગઢ નિવાસી (હાલ સુરત)\nઅ.સૌ. વિજ્યાબેન તથા શ્રી રસિકભાઈ ગંગદાસભાઈ વોરાના સુપુત્ર', 0.65),
-          b('*ચિ. આકાશ* [[5-hands]] *ચિ. હિરલ*', 1.5),
+          b('*ચિ. આકાશ* [[5-hands]] *ચિ. હિરલ*', 1.3),
           b('દાળીયા નિવાસી (હાલ સુરત)\nઅ.સૌ. હર્ષાબેન તથા શ્રી મહેશભાઈ જીવરાજભાઈ ધંવાની સુપુત્રી સાથે\nસંવત ૨૦૮૧ ના પોષ વદ ૭ ને મંગળવાર, તા. ૨૧/૦૧/૨૦૨૫ ના રોજ નિરધાર્યા છે.\nતો આ શુભ પ્રસંગે બે હૈયા અને પરિવારના મિલનની વેળાએ નવદંપતિને\nશુભાશિષ આપવા અમારૂ ભાવભર્યું આમંત્રણ છે.', 0.65),
         ],
       },
@@ -365,7 +364,7 @@ export const templates: Template[] = [
           b('*:: ઈ આમંત્રણ ::*', 1.7),
           b('સ્નેહી સ્વજનશ્રી,\nઅમારા લાડલા સુપુત્ર ના લગ્નનું', 0.8),
           b('*ડિજિટલ આમંત્રણ કાર્ડ*', 1.3),
-          b('આપશ્રી ને મોકલેલ છે.\nજે રૂબરૂ મળ્યા તુલ્ય સમજી જરૂર પધારશોજી.\nઆપશ્રી ને આમંત્રણ મળેલ છે.\nતેનો વળતો જવાબ ***OK*** કરીને આપશોજી.', 0.8),
+          b('આપશ્રી ને મોકલેલ છે.\nજે રૂબરૂ મળ્યા તુલ્ય સમજી જરૂર પધારશોજી.\nઆપશ્રી ને આમંત્રણ મળેલ છે.\nતેનો વળતો જવાબ *OK* કરીને આપશોજી.', 0.8),
           b('*આપ સ્નેહિજનોની પ્રતિક્ષામાં*', 1.1),
           b('*વોરા પરિવાર*', 2.2),
         ],

@@ -1,9 +1,18 @@
 import { createContext, useContext, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { LANGS } from '../i18n'
 import { templateById } from '../templates'
-import type { CoverPage, Format, Invite, Lang, Page, SectionsPage, SymbolId } from '../types'
+import type { CoverPage, Format, Invite, Lang, Page, Photo, SectionsPage, SymbolId } from '../types'
 import { DESIGNS, type Design, type Ornaments } from './designs'
 import { Emblem, Flourish } from './motifs'
+
+// Where a photo sits in its frame until the couple moves it: centred, near the top so heads are not cut.
+export const PHOTO_FIT: Photo = { x: 50, y: 0, zoom: 1 }
+// Cover-fit the photo, show the chosen part, and zoom in around that same point.
+export const photoStyle = (f: Photo): CSSProperties => ({
+  objectPosition: `${f.x}% ${f.y}%`,
+  transform: `scale(${f.zoom})`,
+  transformOrigin: `${f.x}% ${f.y}%`,
+})
 
 export const SIZES: Record<Format, { w: number; h: number }> = {
   story: { w: 540, h: 960 }, // 9:16, exported at 2x = 1080 x 1920
@@ -40,8 +49,9 @@ function look(design: Design, lang: Lang): Look {
 // The design's artwork icons, for [[name]] in text.
 const Art = createContext<Ornaments>({})
 
-// "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold,
-// [[name]] = artwork icon, ___ = a rule to write on, and a line starting << or >> leans left or right.
+// "\n" = new line, *word* = accent colour, **words** = large heading colour, ***words*** = bold, ~words~ = the
+// design's names font in the accent colour (a wedding script for the couple's names),
+// [[name]] = artwork icon, [[name|words]] = words written on that artwork (a ribbon plate), ___ = a rule to write on, and a line starting << or >> leans left or right.
 function Rich({ text, accent, big }: { text: string; accent: string; big: string }) {
   const art = useContext(Art)
   return (
@@ -52,9 +62,14 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
         const pad = lean === 'left' ? { paddingLeft: '14%' } : lean === 'right' ? { paddingRight: '14%' } : {}
         return (
         <span key={i} style={{ display: 'block', minHeight: '1em', textAlign: lean, ...pad }}>
-          {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|_{3,})/).map((part, j) =>
-            /^\[\[.+\]\]$/.test(part) && art[part.slice(2, -2)] ? (
-              <img key={j} src={art[part.slice(2, -2)].src} alt="" style={{ display: 'inline-block', width: `${art[part.slice(2, -2)].w}em`, verticalAlign: 'middle' }} />
+          {line.split(/(\[\[[^\]]+\]\]|\*\*\*[^*]+\*\*\*|\*\*[^*]+\*\*|\*[^*]+\*|~[^~]+~|_{3,})/).map((part, j) => {
+            const [icon, words] = /^\[\[.+\]\]$/.test(part) ? part.slice(2, -2).split('|') : []
+            const a = icon !== undefined ? art[icon] : undefined
+            return a ? (
+              <span key={j} style={{ position: 'relative', display: 'inline-block', width: `${a.w}em`, verticalAlign: 'middle' }}>
+                <img src={a.src} alt="" style={{ display: 'block', width: '100%' }} />
+                {words && <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 700, whiteSpace: 'nowrap' }}>{words}</span>}
+              </span>
             ) : /^_{3,}$/.test(part) ? (
               <span key={j} style={{ display: 'inline-block', width: `${part.length * 0.45}em`, borderBottom: '1px solid currentColor', marginLeft: '0.2em' }} />
             ) : part.length > 6 && part.startsWith('***') && part.endsWith('***') ? (
@@ -65,14 +80,18 @@ function Rich({ text, accent, big }: { text: string; accent: string; big: string
               <span key={j} style={{ color: big, fontWeight: 700, fontSize: '1.6em', lineHeight: 1.25 }}>
                 {part.slice(2, -2)}
               </span>
+            ) : part.length > 2 && part.startsWith('~') && part.endsWith('~') ? (
+              <span key={j} style={{ color: accent, fontFamily: 'var(--names)' }}>
+                {part.slice(1, -1)}
+              </span>
             ) : part.length > 2 && part.startsWith('*') && part.endsWith('*') ? (
               <span key={j} style={{ color: accent, fontWeight: 700 }}>
                 {part.slice(1, -1)}
               </span>
             ) : (
               part
-            ),
-          )}
+            )
+          })}
         </span>
         )
       })}
@@ -200,7 +219,7 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
 // Name list as two centred tables whose words line up, the way kankotri family lists are typeset.
 function Table({ lines, accent, big }: { lines: string[]; accent: string; big: string }) {
   // Long rows (five-word names) stay one table; shorter ones split into two side by side.
-  const half = Math.max(...lines.map((l) => l.length)) > 33 ? lines.length : Math.ceil(lines.length / 2)
+  const half = Math.max(...lines.map((l) => l.trim().split(/\s+/).length)) > 4 ? lines.length : Math.ceil(lines.length / 2)
   return (
     <div style={{ display: 'flex', justifyContent: 'center', gap: '1.6em' }}>
       {[lines.slice(0, half), lines.slice(half)].map((col, k) => {
@@ -295,7 +314,8 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   const crop = (960 * k - h) / 2
   const safe = art ? { top: art.top * k - crop, bottom: art.bottom * k - crop, x: d.safe.story.x * k } : d.safe[invite.format]
   const side = art?.x ? { left: (art.x[0] * w) / 100, right: (art.x[1] * w) / 100 } : { left: safe.x, right: safe.x }
-  const photo = art?.photo && { src: invite.photos?.[base0.pages!.indexOf(art)] ?? art.photo.src, b: art.photo.box.map((v) => v * k) }
+  const fit = art?.photo && { ...PHOTO_FIT, ...invite.photos?.[base0.pages!.indexOf(art)] }
+  const photo = art?.photo && { src: fit!.src ?? art.photo.src, b: art.photo.box.map((v) => v * k), fade: art.photo.fade }
   const x = look(d, invite.lang)
   const base = w / 30
   const box = useRef<HTMLDivElement>(null)
@@ -329,11 +349,13 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art && !photo ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking }}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art && !photo ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, '--names': x.f.names } as CSSProperties}>
       {photo && (
         <>
           {/* The photo sits under the artwork, which is see-through where the printed card had its photo. */}
-          <img src={photo.src} alt="" className="absolute object-cover" style={{ left: photo.b[0], top: photo.b[1] - crop, width: photo.b[2], height: photo.b[3], objectPosition: 'center 30%' }} />
+          <div className="absolute overflow-hidden" style={{ left: photo.b[0], top: photo.b[1] - crop, width: photo.b[2], height: photo.b[3], maskImage: photo.fade ? 'linear-gradient(#000 62%, transparent 100%)' : undefined }}>
+            <img src={photo.src} alt="" className="size-full object-cover" style={photoStyle(fit!)} />
+          </div>
           <div className="absolute inset-0" style={{ background: `center / cover url("${art!.src}")` }} />
         </>
       )}
@@ -355,7 +377,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
             minHeight: '100%',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'center',
+            justifyContent: art?.spread ? 'space-evenly' : 'center',
             alignItems: 'center',
             textAlign: 'center',
             gap: `${art?.gap ?? 0.55}em`,

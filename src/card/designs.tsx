@@ -51,9 +51,11 @@ export interface Design {
   // size: starting text size for that page, before shrinking to fit (pages differ in density).
   // head 'lang': the page images carry no title, the template's own sample places its cut-out title in the text,
   // so titles are left out only in that language. colors: this page's ink where it differs (a dark page in a light set).
-  // gap: space between text blocks in em (default .55). x: left/right text margin in % of width where the page's
+  // gap: space between text blocks in em (default .55); spread: blocks share out the band's spare height evenly
+  // (a print-shaped page stretched to 9:16, whose text was spaced down the whole page). x: left/right text margin in % of width where the page's
   // frame is off-centre. cols: up to this many headed sections share a row. photo: a see-through window in the
-  // artwork, [x, y, w, h] in story px, filled with the couple's own photo (or the sample src) under the art.
+  // artwork, [x, y, w, h] in story px, filled with the couple's own photo (or the sample src) under the art; fade: the photo melts into the page at
+  // its bottom instead of ending on a hard edge.
   pages?: {
     src: string
     top: number
@@ -62,9 +64,10 @@ export interface Design {
     size?: number
     colors?: Partial<Design['colors']>
     gap?: number
+    spread?: boolean
     x?: [number, number]
     cols?: number
-    photo?: { box: [number, number, number, number]; src: string }
+    photo?: { box: [number, number, number, number]; src: string; fade?: boolean }
   }[]
   // Text safe area in px, per format (story 540x960, print 450x630).
   safe: { story: Box; print: Box }

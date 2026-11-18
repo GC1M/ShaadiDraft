@@ -12,3 +12,13 @@ Customers find designs only through the gallery filters (event, language, God or
 ## Static pages and SEO
 
 See `doc/SEO.md` for the plan (the `doc/` folder is private and gitignored; it lives in the main checkout). After adding or editing anything in `public/*.html` or `index.html`, run `python3 scripts/seo.py` to refresh head tags, share images and the sitemap. A new template needs its cover preview at `public/templates/previews/<id>.webp` (540x960); render it with `python3 scripts/previews.py <id>` while `npm run dev` runs. Re-render whenever a template's sample text, design or artwork changes: CI runs `node scripts/previews-check.mjs` and fails on stale previews.
+
+## Adding or removing a template (same PR)
+
+A template change is not done until its SEO surface matches it, in the same PR. When a template is added, removed, renamed or relabeled, also update:
+
+- **Design page:** `public/templates/<id>.html` (every card page, artwork and invocation notes, sample wording without the sample family's names or numbers). Delete it when the template is removed.
+- **Hubs and index:** the matching language and event hubs (`public/templates/<lang>-invitations.html`, `wedding-invitations.html`, etc.) and `public/templates/index.html`. Add or remove the card links and fix any design counts or "only"/"first" claims.
+- **Keywords:** titles, descriptions and on-page wording that name the design, its god or symbol, language and event, so search terms match the gallery labels above.
+- **Images:** `python3 scripts/previews.py <id>` (cover and page images) while `npm run dev` runs. On removal, delete its previews and `public/og/templates-<id>.jpg`.
+- **Head tags, share images and sitemap:** run `python3 scripts/seo.py` last, then `node scripts/previews-check.mjs`.
