@@ -75,7 +75,6 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .intro { animation: none; }
   .zari-button, .event-tab::after, .design-card, .design > div { transition: none !important; }
 }
 
@@ -256,6 +255,6 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mandap :is(path, circle), .mandap .flame, .shine::after, .ribbon, .scroll-progress { animation: none; }
+  .intro, .mandap :is(path, circle), .mandap .flame, .shine::after, .ribbon, .scroll-progress { animation: none; }
   .scroll-progress { display: none; }
 }

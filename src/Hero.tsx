@@ -15,6 +15,7 @@ export const Wordmark = () => (
 )
 
 export const preview = (id: string) => `templates/previews/${id}.webp`
+
 // Gold line-art mandap, viewBox 1200x820, drawn in stages: platform, pillars, beam, domes,
 // drapes, then marigold strings and diyas. Left-hand parts are drawn once and mirrored.
 const g = (d: number, dur = 1.6) => ({ '--d': `${d}s`, '--dur': `${dur}s` }) as CSSProperties
@@ -72,7 +73,6 @@ function Mandap() {
     </svg>
   )
 }
-
 
 // The intro (mandap drawing, headline) runs on the prerendered copy. When React replaces it, `elapsed` (ms since
 // navigation) shifts every delay back so the animation carries on from the same point instead of restarting.
