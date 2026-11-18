@@ -249,7 +249,7 @@ function Credits() {
         </span>
       )),
     ],
-    ['Made with', 'ShaadiDraft'],
+    ['Made with', 'ShaadiTemplate'],
   ]
   return (
     <footer className="bg-(--fm-ink) px-6 pb-16 pt-[16svh] text-(--ov-mogra)">

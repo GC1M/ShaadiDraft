@@ -59,7 +59,7 @@ export default function App() {
 
 export const Wordmark = () => (
   <span className="font-display text-2xl italic tracking-tight">
-    ShaadiDraft <span className="ml-1 font-deva text-base not-italic text-zari">शादी</span>
+    ShaadiTemplate <span className="ml-1 font-deva text-base not-italic text-zari">शादी</span>
   </span>
 )
 
@@ -93,7 +93,7 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
     <div className="min-h-screen">
       <div className="velvet text-rose">
         <header className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6">
-          <a href="#" aria-label="ShaadiDraft home">
+          <a href="#" aria-label="ShaadiTemplate home">
             <Wordmark />
           </a>
           <nav className="flex items-center gap-5 text-[15px]">
