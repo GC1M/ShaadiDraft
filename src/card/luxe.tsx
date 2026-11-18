@@ -29,8 +29,10 @@ export function FoilDefs() {
 }
 
 // CSS background layers to prepend to a design's `sky`.
+// Quotes and parens stay percent-encoded: html-to-image's url() regex otherwise grabs the inner
+// url(#n), fetches it, and the export loses the whole background.
 const noise = (rgb: string, a: number) =>
-  `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 ${a} 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")`
+  `url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.85%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix values=%270 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 ${a} 0%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27/%3E%3C/svg%3E")`
 export const GRAIN = noise('0', 0.05) // cotton paper on light cards
 export const GRAIN_LIGHT = noise('1', 0.05) // velvet/silk tooth on dark cards
 export const SHEEN = 'linear-gradient(118deg,rgba(255,255,255,0) 28%,rgba(255,255,255,.13) 44%,rgba(255,255,255,0) 58%,rgba(255,255,255,.07) 74%,rgba(255,255,255,0) 86%)'
