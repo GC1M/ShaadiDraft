@@ -121,10 +121,12 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           <a href="#" aria-label="ShaadiTemplate home">
             <Wordmark />
           </a>
-          <nav className="flex items-center gap-5 text-[15px]">
-            <a href={PAGES[0][1]} className="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">
-              See a couple's wedding website
-            </a>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
+            {[['Designs', 'templates/'], ['Guides', 'guides/'], ["A couple's wedding website", PAGES[0][1]]].map(([label, href]) => (
+              <a key={href} href={href} className="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">
+                {label}
+              </a>
+            ))}
           </nav>
         </header>
 
