@@ -271,9 +271,24 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
 
             <section ref={formRef} className="scroll-mt-24 space-y-5">
               <Step n={3} title={`Words on page ${index + 1}`} />
-              <p className="text-[14px] leading-relaxed text-ink/65">
-                Press Enter for a new line. Wrap a word in stars, like *Sajode*, for the accent colour; **double stars** for a large line; ***triple stars*** for bold. Start a line with &lt;&lt; or &gt;&gt; to lean it left or right, and type ___ for a line to write on. Templates with artwork icons accept [[maps]] or [[hands]].
-              </p>
+              <details className="text-[14px] text-ink/65">
+                <summary className="cursor-pointer select-none text-wine hover:underline">Formatting tips</summary>
+                <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
+                  {[
+                    ['*word*', 'Accent colour'],
+                    ['**line**', 'Large line'],
+                    ['***word***', 'Bold'],
+                    ['<<  >>', 'Lean a line left or right (at its start)'],
+                    ['___', 'A line to write on'],
+                    ['[[maps]]  [[hands]]', 'Artwork icon (some designs)'],
+                  ].map(([k, v]) => (
+                    <div key={k} className="contents">
+                      <dt><code className="rounded bg-wine/5 px-1.5 py-0.5 font-mono text-[13px] text-ink/80">{k}</code></dt>
+                      <dd>{v}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
               {page.kind === 'cover' ? (
                 <CoverForm p={page} on={editCover} lang={L} phonetic={phonetic} />
               ) : (

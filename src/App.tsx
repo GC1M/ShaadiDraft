@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { CardPage, SIZES } from './card/Card'
 import Editor from './Editor'
 import { EVENTS, LANGS, SYMBOLS } from './i18n'
@@ -45,7 +45,14 @@ export default function App() {
 
   const open = (t: Template) => {
     // Re-opening the template you were editing keeps your text.
-    if (invite?.templateId !== t.id) setInvite(newInvite(t))
+    if (invite?.templateId !== t.id) {
+      const prev = invite && TEMPLATES.find((p) => p.id === invite.templateId)
+      // Page ids are random, so ignore them when checking whether the draft was ever edited.
+      const plain = (i: Invite) => JSON.stringify(i, (k, v) => (k === 'id' ? undefined : v))
+      const edited = prev && plain(invite) !== plain(newInvite(prev, invite.lang))
+      if (edited && !confirm(`Opening ${t.name} will replace your ${prev.name} draft. Continue?`)) return
+      setInvite(newInvite(t))
+    }
     track('template_open', { template: t.id, lang: t.lang, event: t.event })
     location.hash = 'edit'
   }
@@ -68,20 +75,14 @@ export const Wordmark = () => (
   </span>
 )
 
-const STEPS = [
-  `Choose one of ${TEMPLATES.length} designs`,
-  "Type your families' names, in English or your own script",
-  'Download images for WhatsApp, or a PDF for the press',
-]
-
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
   const [lang, setLang] = useState<Lang | 'all'>('all')
   const [symbol, setSymbol] = useState<SymbolId | 'all'>('all')
   const [event, setEvent] = useState<EventType | 'all'>('all')
   // Sample invites are built once; previews re-render only when filters change.
   const previews = useMemo(() => Object.fromEntries(TEMPLATES.map((t) => [t.id, newInvite(t)])), [])
-  const byLangSymbol = TEMPLATES.filter((t) => (lang === 'all' || t.lang === lang) && (symbol === 'all' || t.symbol === symbol))
-  const shown = byLangSymbol.filter((t) => event === 'all' || t.event === event)
+  const byLangSymbol = TEMPLATES.filter((t) => (lang === 'all' || t.lang === lang) && (symbol === 'all' || t.symbol === symbol || !!t.also?.includes(symbol)))
+  const shown = byLangSymbol.filter((t) => event === 'all' || t.event === event).sort((a, b) => Number(!!b.featured) - Number(!!a.featured))
   const count = (e: EventType | 'all') => byLangSymbol.filter((t) => e === 'all' || t.event === e).length
   const filtered = lang !== 'all' || symbol !== 'all' || event !== 'all'
   const clear = () => {
@@ -92,7 +93,17 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
   const story = SIZES.story
   const hero = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram'].map((id) => previews[id])
   const draftName = draft && TEMPLATES.find((t) => t.id === draft.templateId)?.name
-  const select = 'select-chevron rounded-full border border-wine/25 bg-paper py-2.5 pl-4 pr-10 text-[15px] text-ink hover:border-wine/50 focus:border-wine'
+  // When a filter changes, bring the top of the grid back into view and fade the new set in.
+  const top = useRef<HTMLDivElement>(null)
+  const grid = useRef<HTMLDivElement>(null)
+  const first = useRef(true)
+  useEffect(() => {
+    if (first.current) return void (first.current = false)
+    const still = matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (top.current && top.current.getBoundingClientRect().top < 0) top.current.scrollIntoView({ behavior: still ? 'auto' : 'smooth' })
+    if (!still) grid.current?.animate([{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.7,.2,1)' })
+  }, [lang, symbol, event])
+  const select = 'select-chevron min-w-0 truncate rounded-full border border-wine/25 bg-paper py-2.5 pl-4 pr-10 text-[15px] text-ink hover:border-wine/50 focus:border-wine'
 
   return (
     <div className="min-h-screen">
@@ -113,14 +124,9 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
             <h1 className="font-display text-[44px] leading-[1.02] tracking-[-0.02em] sm:text-[68px] lg:text-[80px]">
               Invitations as grand as the wedding
             </h1>
-            <ol className="mt-9 max-w-md space-y-3.5 text-[17px] leading-snug text-rose/85">
-              {STEPS.map((s, i) => (
-                <li key={s} className="flex gap-4">
-                  <span className="w-5 shrink-0 font-display text-xl italic leading-none text-zari">{i + 1}</span>
-                  {s}
-                </li>
-              ))}
-            </ol>
+            <p className="mt-8 max-w-md text-[18px] leading-relaxed text-rose/85">
+              Type your families' names in English or your own script, then download images for WhatsApp or a PDF for the press.
+            </p>
             <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
               <a href="#templates" className="zari-button inline-block rounded-full px-8 py-4 text-[15px] font-medium text-wine-deep">
                 Choose a design
@@ -151,52 +157,51 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
       <ZariBorder />
 
       <section id="templates" className="mx-auto max-w-6xl scroll-mt-2 px-4 pb-24 pt-16 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-wrap items-end justify-between gap-x-8 gap-y-6">
           <h2 className="font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>
-          <p className="text-[15px] text-ink/60" aria-live="polite">
-            {shown.length} {shown.length === 1 ? 'design' : 'designs'}
-          </p>
-        </div>
-
-        {/* The event is the first thing people know, so it leads; language and symbol refine it. */}
-        <div className="-mx-4 mt-9 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-          <div className="flex min-w-max gap-1 border-b border-wine/15" role="group" aria-label="Invitation type">
-            {(['all', ...EVENT_IDS] as const).map((e) => (
-              <button
-                key={e}
-                onClick={() => setEvent(e)}
-                aria-pressed={event === e}
-                className={`event-tab relative px-3.5 pb-3.5 pt-1 text-[15px] transition-colors ${event === e ? 'text-wine' : 'text-ink/60 hover:text-ink'}`}
-              >
-                {e === 'all' ? 'Every event' : EVENTS[e]}
-                <span className="ml-1.5 text-xs text-ink/40">{count(e)}</span>
+          <div className="grid w-full grid-cols-2 items-center gap-3 sm:flex sm:w-auto sm:flex-wrap">
+            <select aria-label="Language" value={lang} onChange={(e) => setLang(e.target.value as Lang | 'all')} className={select}>
+              <option value="all">Any language</option>
+              {LANG_IDS.map((l) => (
+                <option key={l} value={l}>
+                  {l === 'en' ? 'English' : `${LANGS[l].name} (${LANGS[l].native})`}
+                </option>
+              ))}
+            </select>
+            <select aria-label="God or sacred symbol" value={symbol} onChange={(e) => setSymbol(e.target.value as SymbolId | 'all')} className={select}>
+              <option value="all">Any symbol</option>
+              {SYMBOL_IDS.map((s) => (
+                <option key={s} value={s}>
+                  {SYMBOLS[s]}
+                </option>
+              ))}
+            </select>
+            {filtered && (
+              <button onClick={clear} className="col-span-2 justify-self-start px-2 py-2 text-[15px] text-wine underline decoration-zari underline-offset-[6px] hover:decoration-wine">
+                Clear filters
               </button>
-            ))}
+            )}
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <select aria-label="Language" value={lang} onChange={(e) => setLang(e.target.value as Lang | 'all')} className={select}>
-            <option value="all">Any language</option>
-            {LANG_IDS.map((l) => (
-              <option key={l} value={l}>
-                {l === 'en' ? 'English' : `${LANGS[l].name} (${LANGS[l].native})`}
-              </option>
-            ))}
-          </select>
-          <select aria-label="God or sacred symbol" value={symbol} onChange={(e) => setSymbol(e.target.value as SymbolId | 'all')} className={select}>
-            <option value="all">Any symbol</option>
-            {SYMBOL_IDS.map((s) => (
-              <option key={s} value={s}>
-                {SYMBOLS[s]}
-              </option>
-            ))}
-          </select>
-          {filtered && (
-            <button onClick={clear} className="px-2 py-2 text-[15px] text-wine underline decoration-zari underline-offset-[6px] hover:decoration-wine">
-              Clear filters
-            </button>
-          )}
+        {/* The event is the first thing people know, so it leads and stays in reach while scrolling. */}
+        <div ref={top} className="mt-8" />
+        <div className="sticky top-0 z-20 -mx-4 bg-rose/90 px-4 backdrop-blur-md sm:-mx-6 sm:px-6">
+          <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+            <div className="flex min-w-max gap-1 border-b border-wine/15 pt-3" role="group" aria-label="Invitation type">
+              {(['all', ...EVENT_IDS] as const).map((e) => (
+                <button
+                  key={e}
+                  onClick={() => setEvent(e)}
+                  aria-pressed={event === e}
+                  className={`event-tab relative px-3.5 pb-3.5 pt-1 text-[15px] transition-colors ${event === e ? 'text-wine' : 'text-ink/60 hover:text-ink'}`}
+                >
+                  {e === 'all' ? 'All' : EVENTS[e]}
+                  <span className="ml-1.5 text-xs text-ink/40">{count(e)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {shown.length === 0 ? (
@@ -208,12 +213,15 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
             </button>
           </div>
         ) : (
-          <div className="mt-12 grid grid-cols-2 gap-x-5 gap-y-14 sm:gap-x-10 md:grid-cols-3 lg:grid-cols-4">
+          <div ref={grid} className="mt-12 grid grid-cols-2 gap-x-5 gap-y-14 sm:gap-x-10 md:grid-cols-3 lg:grid-cols-4">
             {shown.map((t) => {
               const inv = previews[t.id]
               return (
                 <button key={t.id} onClick={() => onOpen(t)} className="design group flex min-w-0 flex-col text-left">
-                  <div className="pointer-events-none w-full transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
+                  <div className="pointer-events-none relative w-full transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
+                    {t.featured && (
+                      <span className="zari-button absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-medium text-wine-deep shadow">★ Featured</span>
+                    )}
                     <ScaledCard w={story.w} h={story.h} className="design-card">
                       <CardPage invite={inv} page={inv.pages[0]} />
                     </ScaledCard>
