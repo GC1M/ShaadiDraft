@@ -107,9 +107,9 @@ export function downloadIcs(e: WeddingEvent) {
   const ics = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//ShaadiDraft//Sample//EN',
+    'PRODID:-//ShaadiTemplate//Sample//EN',
     'BEGIN:VEVENT',
-    `UID:${e.id}-ananya-arjun@shaadidraft`,
+    `UID:${e.id}-ananya-arjun@shaaditemplate.com`,
     `DTSTAMP:${icsTime(new Date())}`,
     `DTSTART:${fromIst(e.start)}`,
     `DTEND:${fromIst(e.end)}`,
@@ -198,7 +198,7 @@ export function SeeAlso() {
   const others = PAGES.filter(([, href]) => href !== location.hash)
   return (
     <p className="mt-8">
-      A sample wedding website made with ShaadiDraft. The couple and their story are fictional. Other versions:{' '}
+      A sample wedding website made with ShaadiTemplate. The couple and their story are fictional. Other versions:{' '}
       {others.map(([label, href]) => (
         <span key={href}>
           <a href={href} className="underline underline-offset-4 hover:text-(--ov-zari)">
