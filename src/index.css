@@ -136,3 +136,8 @@ body {
   box-shadow: 0 28px 50px -20px rgba(43, 20, 24, .6);
 }
 .design:focus-visible { outline: none; }
+
+/* index.html's static info and footer show only on the gallery. */
+html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) {
+  display: none;
+}

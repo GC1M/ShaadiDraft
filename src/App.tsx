@@ -17,6 +17,8 @@ const SITES: Record<string, ReturnType<typeof lazy>> = {
   ...Object.fromEntries(['stepwell', 'courtyard', 'hall', 'salon'].map((k) => [`#/ananya-arjun/${k}`, Scan])),
 }
 const isSite = () => (location.hash in SITES ? location.hash : '')
+// Static template pages link to #template/<id> to open that design. Consumed once, so StrictMode's re-run is a no-op.
+let linked = TEMPLATES.find((t) => `#template/${t.id}` === location.hash)
 
 export default function App() {
   const [invite, setInvite] = useState<Invite | null>(loadInvite)
@@ -37,6 +39,11 @@ export default function App() {
   useEffect(() => {
     scrollTo(0, 0)
   }, [inEditor, inSite])
+  // The static guide, FAQ and footer in index.html belong to the gallery only.
+  const view = inSite ? 'site' : inEditor && invite ? 'editor' : 'home'
+  useEffect(() => {
+    document.documentElement.dataset.view = view
+  }, [view])
 
   const open = (t: Template) => {
     // Re-opening the template you were editing keeps your text.
@@ -51,6 +58,13 @@ export default function App() {
     track('template_open', { template: t.id, lang: t.lang, event: t.event })
     location.hash = 'edit'
   }
+  useEffect(() => {
+    if (!linked) return
+    const t = linked
+    linked = undefined
+    history.replaceState(null, '', location.pathname + location.search) // cancelling the draft prompt leaves a clean gallery URL
+    open(t)
+  }, [])
 
   if (inSite) {
     const Site = SITES[inSite]
@@ -107,10 +121,12 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           <a href="#" aria-label="ShaadiTemplate home">
             <Wordmark />
           </a>
-          <nav className="flex items-center gap-5 text-[15px]">
-            <a href={PAGES[0][1]} className="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">
-              See a couple's wedding website
-            </a>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
+            {[['Designs', 'templates/'], ['Guides', 'guides/'], ["A couple's wedding website", PAGES[0][1]]].map(([label, href]) => (
+              <a key={href} href={href} className="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">
+                {label}
+              </a>
+            ))}
           </nav>
         </header>
 
@@ -236,19 +252,6 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
       </section>
 
       <ZariBorder />
-      <footer className="velvet px-4 py-10 text-center text-sm text-rose/70">
-        <Wordmark />
-        <p className="mx-auto mt-4 max-w-xl leading-relaxed">
-          Your invitation is saved in this browser only. Phonetic typing sends single words to Google to convert them.
-        </p>
-        <nav className="mt-4 flex flex-wrap justify-center gap-x-5 gap-y-1">
-          {[['About', 'about.html'], ['Contact', 'contact.html'], ['Privacy', 'privacy.html'], ['Terms', 'terms.html'], ['Refunds', 'refund.html']].map(([label, href]) => (
-            <a key={href} href={href} className="underline underline-offset-4 hover:text-rose">
-              {label}
-            </a>
-          ))}
-        </nav>
-      </footer>
     </div>
   )
 }

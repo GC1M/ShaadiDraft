@@ -2,7 +2,11 @@
    payment-gateway reviewers can read them without running the app. */
 body { margin: 0; background: #f7edea; color: #2b1418; font: 17px/1.65 Georgia, "Times New Roman", serif; }
 header { background: #4a0e1c; color: #f7edea; padding: 18px 16px; }
-header a { color: #f7edea; text-decoration: none; font: italic 24px Didot, "Bodoni MT", Georgia, serif; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
+header a { color: #f7edea; text-decoration: none; }
+header .brand { font: italic 24px Didot, "Bodoni MT", Georgia, serif; }
+header nav { display: flex; gap: 18px; font-size: 15px; }
+header nav a:hover { text-decoration: underline; }
 main { max-width: 720px; margin: 0 auto; padding: 32px 16px 48px; }
 h1 { font: 38px/1.15 Didot, "Bodoni MT", Georgia, serif; margin: 0 0 8px; }
 h2 { font-size: 22px; margin: 32px 0 6px; }
@@ -10,3 +14,10 @@ a { color: #6b1428; }
 .muted { color: #6b5b5e; font-size: 15px; }
 footer { border-top: 1px solid #d9c9c5; padding: 24px 16px; text-align: center; font-size: 15px; }
 footer a { margin: 0 8px; }
+blockquote { margin: 12px 0; padding: 10px 16px; border-left: 3px solid #c9a24a; background: #fbf4f1; }
+li { margin: 4px 0; }
+.design { display: flex; gap: 20px; align-items: flex-start; margin: 32px 0; padding-top: 24px; border-top: 1px solid #d9c9c5; }
+.design img { width: 160px; height: auto; flex-shrink: 0; border-radius: 3px; box-shadow: 0 8px 20px -8px rgba(43, 20, 24, .45); }
+.design h2 { margin-top: 0; }
+.cta { display: inline-block; background: #4a0e1c; color: #f7edea; padding: 8px 18px; border-radius: 999px; text-decoration: none; font-size: 15px; }
+@media (max-width: 520px) { .design { flex-direction: column; } .design img { width: 200px; } }
