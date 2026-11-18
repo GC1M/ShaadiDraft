@@ -24,7 +24,22 @@ export function track(name: string, params: Record<string, string | number | boo
   window.clarity?.('event', name)
 }
 
+// Visiting any page with ?notrack turns analytics off in this browser (so the owner's own devices are not counted);
+// ?track turns it back on. Stored per browser, so it holds on any network but is lost if site data is cleared.
+// public/analytics.js has the same check for the static pages.
+function optedOut() {
+  try {
+    const q = new URLSearchParams(location.search)
+    if (q.has('notrack')) localStorage.setItem('notrack', '1')
+    if (q.has('track')) localStorage.removeItem('notrack')
+    return localStorage.getItem('notrack') === '1'
+  } catch {
+    return false
+  }
+}
+
 export function initAnalytics() {
+  if (optedOut()) return
   if (GA) {
     window.dataLayer = window.dataLayer || []
     // gtag must push the arguments object itself, not an array.

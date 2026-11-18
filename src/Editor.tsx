@@ -156,7 +156,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
       track('export', { kind, format: invite.format, pages: invite.pages.length, template: invite.templateId })
     } catch (e) {
       console.error(e)
-      track('export_failed', { kind, format: invite.format, error: String(e).slice(0, 150) })
+      track('export_failed', { kind, format: invite.format, template: invite.templateId, error: String(e).slice(0, 150) })
       setToast('Could not create the file. Please try again.')
     } finally {
       setBusy('')
