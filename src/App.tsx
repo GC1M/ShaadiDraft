@@ -17,27 +17,17 @@ const SITES: Record<string, ReturnType<typeof lazy>> = {
   ...Object.fromEntries(['stepwell', 'courtyard', 'hall', 'salon'].map((k) => [`#/ananya-arjun/${k}`, Scan])),
 }
 const isSite = () => (location.hash in SITES ? location.hash : '')
-// Static template pages link to #template/<id>: open that design in the editor, keeping a draft of the same design.
-// Read once at load so StrictMode's double state init can't see the rewritten hash.
-const linked = TEMPLATES.find((t) => `#template/${t.id}` === location.hash)
-if (linked) history.replaceState(null, '', '#edit')
-function initialInvite(): Invite | null {
-  const saved = loadInvite()
-  return linked && saved?.templateId !== linked.id ? newInvite(linked) : saved
-}
+// Static template pages link to #template/<id> to open that design. Consumed once, so StrictMode's re-run is a no-op.
+let linked = TEMPLATES.find((t) => `#template/${t.id}` === location.hash)
 
 export default function App() {
-  const [invite, setInvite] = useState<Invite | null>(initialInvite)
+  const [invite, setInvite] = useState<Invite | null>(loadInvite)
   const [inEditor, setInEditor] = useState(isEditor)
   const [inSite, setInSite] = useState(isSite)
 
   useEffect(() => {
     if (invite) saveInvite(invite)
   }, [invite])
-  useEffect(() => {
-    // After main.tsx's initAnalytics; module-level code runs before it.
-    if (linked) track('template_open', { template: linked.id, lang: linked.lang, event: linked.event, from: 'template_page' })
-  }, [])
   useEffect(() => {
     const onHash = () => {
       setInEditor(isEditor())
@@ -68,6 +58,13 @@ export default function App() {
     track('template_open', { template: t.id, lang: t.lang, event: t.event })
     location.hash = 'edit'
   }
+  useEffect(() => {
+    if (!linked) return
+    const t = linked
+    linked = undefined
+    history.replaceState(null, '', location.pathname) // cancelling the draft prompt leaves a clean gallery URL
+    open(t)
+  }, [])
 
   if (inSite) {
     const Site = SITES[inSite]
