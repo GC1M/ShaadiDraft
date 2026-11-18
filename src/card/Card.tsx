@@ -373,14 +373,16 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   }, [page, base, invite.scale, invite.lang, invite.templateId, art])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: art && !photo ? `center / cover url("${art.src}") ${d.sky}` : d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, '--names': x.f.names } as CSSProperties}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, '--names': x.f.names } as CSSProperties}>
+      {/* Painted art is an <img>, not a CSS background: Safari's export drops a url() background's size and colour, so pages came out black. */}
+      {art && !photo && <img src={art.src} alt="" className="absolute inset-0 size-full object-cover" />}
       {photo && (
         <>
           {/* The photo sits under the artwork, which is see-through where the printed card had its photo. */}
           <div className="absolute overflow-hidden" style={{ left: photo.b[0], top: photo.b[1] - crop, width: photo.b[2], height: photo.b[3], maskImage: photo.fade ? 'linear-gradient(#000 62%, transparent 100%)' : undefined }}>
             <img src={photo.src} alt="" className="size-full object-cover" style={photoStyle(fit!)} />
           </div>
-          <div className="absolute inset-0" style={{ background: `center / cover url("${art!.src}")` }} />
+          <img src={art!.src} alt="" className="absolute inset-0 size-full object-cover" />
         </>
       )}
       {!art && (
