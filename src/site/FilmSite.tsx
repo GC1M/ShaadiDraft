@@ -164,7 +164,7 @@ function Hero({ open }: { open: boolean }) {
           <Letters text="Arjun" delay={1700} />
         </h1>
         <p className="fm-fade ov-meta mt-8 text-(--ov-zari)" style={{ '--d': '2600ms' } as CSSProperties}>
-          Udaipur, 21 and 22 November 2026
+          Udaipur, 20 and 21 November 2027
         </p>
       </div>
       <span className="fm-fade fm-cue" style={{ '--d': '3400ms' } as CSSProperties} aria-hidden />

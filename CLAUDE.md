@@ -11,4 +11,4 @@ Customers find designs only through the gallery filters (event, language, God or
 
 ## Static pages and SEO
 
-See `SEO.md` for the plan. After adding or editing anything in `public/*.html` or `index.html`, run `python3 scripts/seo.py` to refresh head tags, share images and the sitemap. A new template needs its cover preview at `public/templates/previews/<id>.webp` (540x960); render it with `python3 scripts/previews.py <id>` while `npm run dev` runs. Re-render whenever a template's sample text, design or artwork changes: CI runs `node scripts/previews-check.mjs` and fails on stale previews.
+See `doc/SEO.md` for the plan (the `doc/` folder is private and gitignored; it lives in the main checkout). After adding or editing anything in `public/*.html` or `index.html`, run `python3 scripts/seo.py` to refresh head tags, share images and the sitemap. A new template needs its cover preview at `public/templates/previews/<id>.webp` (540x960); render it with `python3 scripts/previews.py <id>` while `npm run dev` runs. Re-render whenever a template's sample text, design or artwork changes: CI runs `node scripts/previews-check.mjs` and fails on stale previews.

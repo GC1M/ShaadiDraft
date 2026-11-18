@@ -13,7 +13,7 @@ export function WalkIntro({ show, line }: { show: boolean; line: string }) {
       <h1 className="ov-display mt-3 text-[clamp(3.4rem,10vw,8.5rem)] leading-[0.92]">
         Ananya <i className="ov-amp">&amp;</i> Arjun
       </h1>
-      <p className="ov-meta mt-5">21 and 22 November 2026, Udaipur</p>
+      <p className="ov-meta mt-5">20 and 21 November 2027, Udaipur</p>
       <p className="mt-8 text-[15px] text-(--ov-mogra)/80">{line}</p>
       <span aria-hidden className="ov-cue mx-auto mt-5 block" />
     </div>
@@ -43,7 +43,7 @@ export function Chapter({ i, show }: { i: number; show: boolean }) {
 export function Programme({ show }: { show: boolean }) {
   return (
     <section className="pw-programme" data-show={show || undefined} inert={!show} aria-label="The celebrations">
-      <p className="ov-meta text-center text-(--ov-zari)">November 2026, The Leela Palace, Lake Pichola</p>
+      <p className="ov-meta text-center text-(--ov-zari)">November 2027, The Leela Palace, Lake Pichola</p>
       <ol className="pw-days">
         {EVENTS.map((e) => (
           <li key={e.id}>

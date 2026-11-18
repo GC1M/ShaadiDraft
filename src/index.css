@@ -152,9 +152,11 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
   display: none;
 }
 
-/* Opening: the headline arrives word by word out of a soft blur, then the copy and button follow. */
+/* Opening: the headline arrives word by word out of a soft blur, then the copy and button follow.
+   Starts at opacity .01, not 0: Chrome skips fully transparent text as the Largest Contentful Paint, so a 0 start
+   would push homepage LCP back to the end of the intro (3.8s on a throttled phone). */
 @keyframes intro {
-  from { opacity: 0; transform: translateY(18px); filter: blur(10px); }
+  from { opacity: .01; transform: translateY(18px); filter: blur(10px); }
   to { opacity: 1; transform: none; filter: none; }
 }
 .intro { animation: intro 900ms cubic-bezier(.2,.7,.2,1) both; }

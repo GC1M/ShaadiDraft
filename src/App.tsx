@@ -90,8 +90,7 @@ function Preview({ t }: { t: Template }) {
         <CardPage invite={inv} page={inv.pages[0]} />
       </ScaledCard>
     )
-  // alt is empty: the card's name and details are already in the button's heading and caption.
-  return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt="" onError={() => setLive(true)} className="design-card h-auto w-full" />
+  return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt={`${t.name}, ${EVENTS[t.event]} invitation card`} onError={() => setLive(true)} className="design-card h-auto w-full" />
 }
 
 const GREETINGS = ['Shubh Vivah', 'शुभ विवाह', 'શુભ લગ્ન', 'ਸ਼ੁਭ ਵਿਆਹ', 'சுப முகூர்த்தம்', 'शुभमंगल सावधान', 'Save the Date']
@@ -204,7 +203,17 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           <div ref={grid} className="mt-12 grid grid-cols-2 gap-x-5 gap-y-14 sm:gap-x-10 md:grid-cols-3 lg:grid-cols-4">
             {shown.map((t) => {
               return (
-                <button key={t.id} onClick={() => onOpen(t)} className="design group flex min-w-0 flex-col text-left">
+                // A link to the design's own page, so crawlers reach every design from the homepage; a plain click opens the editor.
+                <a
+                  key={t.id}
+                  href={`templates/${t.id}.html`}
+                  onClick={(e) => {
+                    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button) return
+                    e.preventDefault()
+                    onOpen(t)
+                  }}
+                  className="design group flex min-w-0 flex-col text-left"
+                >
                   <div className="pointer-events-none relative w-full transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
                     {t.featured && (
                       <span className="zari-button absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-medium text-wine-deep shadow">★ Featured</span>
@@ -218,7 +227,7 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
                   <span className="mt-2.5 text-sm font-medium text-wine underline decoration-zari underline-offset-[6px] group-hover:decoration-wine">
                     Customize
                   </span>
-                </button>
+                </a>
               )
             })}
           </div>

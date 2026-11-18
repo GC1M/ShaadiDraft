@@ -61,7 +61,7 @@ export const STORY: { year: string; title: string; body: string; photo: Photo }[
     photo: SHOTS.ring,
   },
   {
-    year: '2026',
+    year: '2027',
     title: 'Udaipur, with everyone',
     body: 'We’re getting married by the lake, with the people who’ve watched all of this happen.',
     photo: SHOTS.twirl,
@@ -71,9 +71,9 @@ export const STORY: { year: string; title: string; body: string; photo: Photo }[
 export type WeddingEvent = { id: string; name: string; date: string; start: string; end: string; time: string; note: string; photo: Photo }
 export const VENUE = 'The Leela Palace, Lake Pichola, Udaipur'
 export const EVENTS: WeddingEvent[] = [
-  { id: 'mehendi', name: 'Mehendi', date: 'Saturday, 21 November 2026', start: '20261121T160000', end: '20261121T220000', time: '4 pm until late, on the lake lawns', note: 'Floor seating and a lot of henna. Wear something you can sit cross-legged in.', photo: SHOTS.henna },
-  { id: 'haldi', name: 'Haldi', date: 'Sunday, 22 November 2026', start: '20261122T100000', end: '20261122T123000', time: '10 am, in the courtyard', note: 'You will be painted yellow. Wear white you don’t mind losing.', photo: SHOTS.marigold },
-  { id: 'pheras', name: 'Pheras', date: 'Sunday, 22 November 2026', start: '20261122T153000', end: '20261122T193000', time: '3:30 pm, by the water', note: 'Seven rounds of the fire as the sun goes down, then dinner on the lawns.', photo: SHOTS.diyas },
+  { id: 'mehendi', name: 'Mehendi', date: 'Saturday, 20 November 2027', start: '20271120T160000', end: '20271120T220000', time: '4 pm until late, on the lake lawns', note: 'Floor seating and a lot of henna. Wear something you can sit cross-legged in.', photo: SHOTS.henna },
+  { id: 'haldi', name: 'Haldi', date: 'Sunday, 21 November 2027', start: '20271121T100000', end: '20271121T123000', time: '10 am, in the courtyard', note: 'You will be painted yellow. Wear white you don’t mind losing.', photo: SHOTS.marigold },
+  { id: 'pheras', name: 'Pheras', date: 'Sunday, 21 November 2027', start: '20271121T153000', end: '20271121T193000', time: '3:30 pm, by the water', note: 'Seven rounds of the fire as the sun goes down, then dinner on the lawns.', photo: SHOTS.diyas },
 ]
 
 
