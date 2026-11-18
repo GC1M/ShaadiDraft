@@ -79,7 +79,8 @@ export default function App() {
 }
 
 export const Wordmark = () => (
-  <span className="font-display text-2xl italic tracking-tight">
+  <span className="inline-flex items-center gap-2.5 font-display text-2xl italic tracking-tight">
+    <img src={`${import.meta.env.BASE_URL}logo-on-dark.svg`} alt="" width="28" height="30" className="-mt-1" />
     ShaadiTemplate <span className="ml-1 font-deva text-base not-italic text-zari">शादी</span>
   </span>
 )

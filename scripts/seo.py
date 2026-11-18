@@ -5,7 +5,7 @@
 For every page with a canonical URL it rewrites the block between <!-- seo --> and <!-- /seo --> in <head>
 (favicons, Open Graph and Twitter tags, JSON-LD), draws the page's 1200x630 share image into public/og/, and
 regenerates public/sitemap.xml with lastmod dates and the card previews each page shows. Pages without a
-canonical (404) only get the favicons. Needs Pillow. Safe to run repeatedly.
+canonical (404) only get the favicons. Needs Pillow and rsvg-convert (brew install librsvg). Safe to run repeatedly.
 """
 
 import datetime
@@ -39,14 +39,11 @@ def font(name, size):
 
 
 def icons():
-    """Gold शा on wine: favicon.ico, the 192px icon and the Apple touch icon."""
-    big = Image.new('RGB', (512, 512), WINE)
-    d = ImageDraw.Draw(big)
-    d.text((256, 262), 'शा', font=font('tiro-devanagari-hindi/files/tiro-devanagari-hindi-devanagari-400-normal.woff', 330), fill=ZARI, anchor='mm')
-    big.save(PUBLIC / 'icon-512.png')
-    big.resize((192, 192), Image.LANCZOS).save(PUBLIC / 'icon-192.png')
-    big.resize((180, 180), Image.LANCZOS).save(PUBLIC / 'apple-touch-icon.png')
-    big.save(PUBLIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+    """PNG and ICO versions of the brand mark (public/favicon.svg) for browsers, Google results and the Organization logo."""
+    for size, name in [(512, 'icon-512.png'), (192, 'icon-192.png'), (48, 'favicon-48.png')]:
+        subprocess.run(['rsvg-convert', '-w', str(size), '-h', str(size), '-o', PUBLIC / name, PUBLIC / 'favicon.svg'], check=True)
+    Image.open(PUBLIC / 'favicon-48.png').save(PUBLIC / 'favicon.ico', sizes=[(16, 16), (32, 32), (48, 48)])
+    (PUBLIC / 'favicon-48.png').unlink()
 
 
 def wrap(draw, text, fnt, width):
@@ -168,7 +165,8 @@ def structured(path, page, url, title, desc, image, cards):
 
 def head_block(path, page):
     prefix = '/'  # absolute paths work from every directory on the custom domain
-    tags = [f'<link rel="icon" href="{prefix}favicon.ico" sizes="48x48" />',
+    tags = [f'<link rel="icon" href="{prefix}favicon.svg" type="image/svg+xml" />',
+            f'<link rel="icon" href="{prefix}favicon.ico" sizes="48x48" />',
             f'<link rel="icon" href="{prefix}icon-192.png" type="image/png" sizes="192x192" />',
             f'<link rel="apple-touch-icon" href="{prefix}apple-touch-icon.png" />']
     url = meta(page, r'<link rel="canonical" href="([^"]+)"')
@@ -212,6 +210,7 @@ def main():
     for path in pages:
         page = path.read_text()
         page = re.sub(r'\n?[ \t]*<!-- seo -->.*?<!-- /seo -->', '', page, flags=re.S)
+        page = re.sub(r'\n[ \t]*<link rel="(?:icon|apple-touch-icon)"[^>]*>', '', page)  # the block below carries them
         tags, url, images = head_block(path, page)
         indent = '    ' if path == ROOT / 'index.html' else ''
         block = '\n'.join(indent + t for t in ['<!-- seo -->', *tags, '<!-- /seo -->'])
