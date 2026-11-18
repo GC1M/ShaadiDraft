@@ -195,7 +195,7 @@ html:is([data-view='editor'], [data-view='site']) :is(#site-info, #site-footer) 
   opacity: 0;
   transform-box: fill-box;
   transform-origin: center;
-  animation: petal var(--fall) linear calc(3.6s + var(--delay) + var(--t0, 0ms)) infinite;
+  animation: petal var(--fall) linear calc(4s + var(--delay) + var(--t0, 0ms)) infinite;
 }
 .mandap .petal.rose { fill: #e07a8c; }
 .mandap .petal :is(ellipse, circle) { stroke: none; animation: none; }
