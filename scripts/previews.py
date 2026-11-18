@@ -9,6 +9,7 @@ Needs Pillow, Playwright for Python and Google Chrome.
 """
 
 import io
+import subprocess
 import sys
 from pathlib import Path
 
@@ -47,6 +48,8 @@ def main(ids):
             print(tid, cards.count(), 'pages')
             ctx.close()
         browser.close()
+    # Record these previews as fresh for the CI check.
+    subprocess.run(['node', 'scripts/previews-check.mjs', '--write', *ids], cwd=OUT.parents[2], check=True)
 
 
 if __name__ == '__main__':

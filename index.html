@@ -30,41 +30,10 @@
   </head>
   <body>
     <div id="root">
-      <!-- Static copy of the gallery header and hero in App.tsx, which React replaces on mount. It gives crawlers the
-           H1 and keeps the page from jumping while the app loads. Change both together. -->
+      <!-- Static copy of the gallery, which React replaces on mount. It gives crawlers the H1 and keeps the page
+           from jumping while the app loads. The header and hero are rendered from src/Hero.tsx at build time. -->
       <div class="min-h-screen">
-        <div class="velvet text-rose">
-          <header class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 px-4 py-5 sm:px-6">
-            <a href="#" aria-label="ShaadiTemplate home"><span class="inline-flex items-center gap-2.5 font-display text-2xl italic tracking-tight"><img src="/logo-on-dark.svg" alt="" width="28" height="30" class="-mt-1" />ShaadiTemplate <span class="ml-1 font-deva text-base not-italic text-zari"><span lang="hi">शादी</span></span></span></a>
-            <nav class="flex flex-wrap items-center gap-x-5 gap-y-2 text-[15px]">
-              <a href="templates/" class="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">Designs</a>
-              <a href="guides/" class="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">Guides</a>
-              <a href="#/ananya-arjun" class="text-rose/80 underline-offset-[6px] hover:text-rose hover:underline">A couple's wedding website</a>
-            </nav>
-          </header>
-          <section class="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 px-4 pb-20 pt-6 sm:px-6 lg:grid-cols-[1.05fr_1fr] lg:pb-28 lg:pt-14">
-            <div class="min-w-0">
-              <h1 class="text-[13px] font-medium uppercase tracking-[0.22em] text-zari">Free Indian wedding invitation maker</h1>
-              <p class="mt-4 font-display text-[44px] leading-[1.02] tracking-[-0.02em] sm:text-[68px] lg:text-[80px]">Invitations as grand as the wedding</p>
-              <p class="mt-8 max-w-md text-[18px] leading-relaxed text-rose/85">Type your families' names in English or your own script, then download images for WhatsApp or a PDF for the press.</p>
-              <div class="mt-10 flex flex-wrap items-center gap-x-6 gap-y-4">
-                <a href="#templates" class="zari-button inline-block rounded-full px-8 py-4 text-[15px] font-medium text-wine-deep">Choose a design</a>
-              </div>
-              <p class="mt-8 text-sm text-rose/60">Free, with no login. English, <span lang="hi">हिन्दी</span>, <span lang="mr">मराठी</span>, <span lang="gu">ગુજરાતી</span>, <span lang="pa">ਪੰਜਾਬੀ</span> and <span lang="ta">தமிழ்</span>.</p>
-            </div>
-            <div class="relative order-first mx-auto h-[320px] w-full max-w-[460px] sm:h-[470px] lg:order-none" aria-hidden="true">
-              <div class="hero-card absolute top-2 w-[46%]" style="left: 3%; rotate: -7deg; z-index: 1; animation-delay: 0ms">
-                <img src="/templates/previews/royal-udaipur.webp" width="540" height="960" alt="" class="h-auto w-full shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]" />
-              </div>
-              <div class="hero-card absolute top-2 w-[46%]" style="left: 27%; rotate: 0deg; z-index: 2; animation-delay: 120ms">
-                <img src="/templates/previews/gulabi-kankotri.webp" width="540" height="960" alt="" fetchpriority="high" class="h-auto w-full shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]" />
-              </div>
-              <div class="hero-card absolute top-2 w-[46%]" style="left: 51%; rotate: 7deg; z-index: 1; animation-delay: 240ms">
-                <img src="/templates/previews/kanchipuram.webp" width="540" height="960" alt="" class="h-auto w-full shadow-[0_30px_60px_-14px_rgba(10,0,4,0.75)]" />
-              </div>
-            </div>
-          </section>
-        </div>
+        <!-- app-hero -->
         <div class="h-10 bg-wine-deep"></div>
         <section id="templates" class="mx-auto min-h-screen max-w-6xl scroll-mt-2 px-4 pb-24 pt-16 sm:px-6">
           <h2 class="font-display text-[40px] leading-none tracking-[-0.015em] sm:text-[56px]">Choose your design</h2>

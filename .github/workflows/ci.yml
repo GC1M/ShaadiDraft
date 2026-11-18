@@ -24,5 +24,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm audit --omit=dev --audit-level=high
+      # Fails when a template changed but its gallery preview was not re-rendered (scripts/previews.py).
+      - run: node scripts/previews-check.mjs
       # Type-checks (tsc -b) and builds exactly as the Pages deploy does.
       - run: npm run build -- --base=./
