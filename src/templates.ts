@@ -12,6 +12,8 @@ export interface Template {
   lang: Lang
   symbol: SymbolId
   event: EventType
+  also?: SymbolId[] // other sacred figures in the artwork, so the symbol filter finds the card under each
+  featured?: true // starred: shown first in the gallery with a badge
   // Replaces sample fields when the card is in the template's own language (e.g. a Nikkah couple).
   override?: Partial<Pick<CoverPage, 'title' | 'hostLine' | 'joiner' | 'rsvp'>> & { bride?: [string, string]; groom?: [string, string] }
 }

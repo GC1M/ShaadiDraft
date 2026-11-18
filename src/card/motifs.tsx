@@ -471,6 +471,15 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
         </g>
       </g>
     )
+  else if (symbol === 'shiva')
+    inner = (
+      <g>
+        {/* Trishul with a damaru tied below the prongs */}
+        <rect x="48" y="30" width="4" height="56" rx="2" fill={color} />
+        <path d="M50 14 L54 30 L46 30 Z M34 24 Q34 40 48 42 L48 38 Q38 36 38 24 Z M66 24 Q66 40 52 42 L52 38 Q62 36 62 24 Z" fill={color} />
+        <path d="M40 48 L60 48 L52 55 L60 62 L40 62 L48 55 Z" fill={accent} />
+      </g>
+    )
   else if (symbol === 'balaji')
     inner = (
       <g>
@@ -484,6 +493,28 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
           ))}
         </g>
         <path d="M78 38 C 86 40 88 50 82 56 C 78 60 72 58 72 52 C 72 46 76 44 78 38 Z" fill={color} />
+      </g>
+    )
+  else if (symbol === 'jain')
+    inner = (
+      <g>
+        {/* Ahimsa hand: raised palm with the dharma wheel */}
+        {[36, 44, 52, 60].map((x, i) => (
+          <rect key={x} x={x} y={i === 0 || i === 3 ? 26 : 20} width="7" height="30" rx="3.5" fill={color} />
+        ))}
+        <rect x="24" y="44" width="7" height="22" rx="3.5" fill={color} transform="rotate(-35 27.5 55)" />
+        <path d="M34 46 L68 46 L68 70 Q68 84 51 84 Q34 84 34 70 Z" fill={color} />
+        <circle cx="51" cy="64" r="9" fill="none" stroke={accent} strokeWidth="2" />
+        {Array.from({ length: 8 }, (_, i) => (
+          <line key={i} x1="51" y1="64" x2="51" y2="55" stroke={accent} strokeWidth="1.2" transform={`rotate(${i * 45} 51 64)`} />
+        ))}
+      </g>
+    )
+  else if (symbol === 'christian')
+    inner = (
+      <g>
+        <rect x="46" y="18" width="8" height="66" rx="1.5" fill={color} />
+        <rect x="30" y="34" width="40" height="8" rx="1.5" fill={color} />
       </g>
     )
   else if (symbol === 'bismillah')

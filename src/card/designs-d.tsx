@@ -655,9 +655,9 @@ export const templates: Template[] = [
   { id: 'shubho-bibaho', name: 'Shubho Bibaho Alpana Red', design: 'shubho', lang: 'en', symbol: 'ganesha', event: 'wedding' },
   { id: 'kerala-kasavu', name: 'Kerala Kasavu Gold Border', design: 'kasavu', lang: 'en', symbol: 'floral', event: 'wedding' },
   { id: 'pelli-patrika', name: 'Pelli Patrika Turmeric Mandapam', design: 'pelli', lang: 'en', symbol: 'balaji', event: 'wedding' },
-  { id: 'jain-lagna-patrika', name: 'Jain Lagna Patrika Saffron', design: 'jain-lagna', lang: 'gu', symbol: 'floral', event: 'wedding' },
-  { id: 'white-chapel', name: 'White Chapel Silver Arch', design: 'chapel', lang: 'en', symbol: 'floral', event: 'wedding' },
+  { id: 'jain-lagna-patrika', name: 'Jain Lagna Patrika Saffron', design: 'jain-lagna', lang: 'gu', symbol: 'jain', event: 'wedding' },
+  { id: 'white-chapel', name: 'White Chapel Silver Arch', design: 'chapel', lang: 'en', symbol: 'christian', event: 'wedding' },
   { id: 'parsi-lagan', name: 'Parsi Lagan Pastel Chalk', design: 'parsi-lagan', lang: 'gu', symbol: 'floral', event: 'wedding' },
   { id: 'kashmiri-chinar', name: 'Kashmiri Chinar & Shikara', design: 'chinar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
-  { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding' },
+  { id: 'sandhya-kankotri', name: 'Sandhya Pink Dusk Kankotri', design: 'sandhya', lang: 'gu', symbol: 'ganesha', event: 'wedding', also: ['shiva'], featured: true },
 ]

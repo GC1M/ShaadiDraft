@@ -4,9 +4,12 @@ export const en: SampleText = {
   invocation: {
     ganesha: '|| Shri Ganeshaya Namah ||',
     'radha-krishna': '|| Shri Radhe Krishna ||',
+    shiva: '|| Om Namah Shivaya ||',
     balaji: '|| Om Namo Venkatesaya ||',
     'ek-onkar': 'Ik Onkar Satnam',
     bismillah: 'Bismillah-ir-Rahman-ir-Rahim',
+    jain: '|| Namo Arihantanam ||',
+    christian: '',
     floral: '',
   },
   shlok: 'Vakratunda Mahakaya Suryakoti Samaprabha\nNirvighnam Kuru Me Deva Sarva-Kaaryeshu Sarvada',
