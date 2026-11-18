@@ -22,7 +22,7 @@ PUBLIC = ROOT / 'public'
 SITE = 'https://shaaditemplate.com'
 AUTHOR = 'Ashok Lalakiya'
 ORG = {'@id': f'{SITE}/#org'}
-HOME_CARDS = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']
+HOME_CARDS = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']  # the homepage hero, HERO in src/Hero.tsx
 FONTS = ROOT / 'node_modules/@fontsource'
 WINE, WINE_DEEP, ZARI, ROSE = (74, 14, 28), (44, 7, 16), (201, 164, 92), (247, 237, 234)
 TODAY = datetime.date.today().isoformat()
@@ -200,6 +200,8 @@ def head_block(path, page):
         tags.append(f'<script type="application/ld+json">{ld}</script>')
     # Every card preview the page shows, for the image sitemap.
     shown = re.findall(r'src="[^"]*?(previews/[^"]+\.webp)"', page)
+    if '<!-- app-hero -->' in page:  # the homepage hero is rendered from src/Hero.tsx at build time
+        shown = [f'previews/{c}.webp' for c in HOME_CARDS] + shown
     return tags, url, [f'{SITE}/templates/{i}' for i in dict.fromkeys(shown)]
 
 

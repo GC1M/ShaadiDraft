@@ -1,7 +1,7 @@
 import { ArrowDown, ArrowLeft, ArrowUp, Check, Eye, FileDown, ImageDown, Loader2, Plus, RotateCcw, Share2, Trash2 } from 'lucide-react'
 import { flushSync } from 'react-dom'
 import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
-import { Wordmark } from './App'
+import { Wordmark } from './Hero'
 import { CardPage, SIZES } from './card/Card'
 import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
 import { LANGS, SAMPLES } from './i18n'
