@@ -4,7 +4,7 @@ body { margin: 0; background: #f7edea; color: #2b1418; font: 17px/1.65 Georgia, 
 header { background: #4a0e1c; color: #f7edea; padding: 18px 16px; }
 header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 20px; }
 header a { color: #f7edea; text-decoration: none; }
-header .brand { font: italic 24px Didot, "Bodoni MT", Georgia, serif; }
+header .brand { font: italic 24px Didot, "Bodoni MT", Georgia, serif; display: inline-flex; align-items: center; gap: 10px; }
 header nav { display: flex; gap: 18px; font-size: 15px; }
 header nav a:hover { text-decoration: underline; }
 main { max-width: 720px; margin: 0 auto; padding: 32px 16px 48px; }
