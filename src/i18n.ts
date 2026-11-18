@@ -21,9 +21,12 @@ export const LANGS: Record<Lang, { name: string; native: string; title: string; 
 export const SYMBOLS: Record<SymbolId, string> = {
   ganesha: 'Lord Ganesha',
   'radha-krishna': 'Radha-Krishna',
+  shiva: 'Shiv-Parvati (Mahadev)',
   balaji: 'Tirupati Balaji',
   'ek-onkar': 'Ek Onkar',
   bismillah: 'Bismillah',
+  jain: 'Jain (Ahimsa hand)',
+  christian: 'Christian (Cross)',
   floral: 'Floral / no deity',
 }
 

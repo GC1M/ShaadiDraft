@@ -4,7 +4,7 @@
 export const LANG_IDS = ['en', 'hi', 'mr', 'gu', 'pa', 'ta'] as const
 export type Lang = (typeof LANG_IDS)[number]
 
-export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'balaji', 'ek-onkar', 'bismillah', 'floral'] as const
+export const SYMBOL_IDS = ['ganesha', 'radha-krishna', 'shiva', 'balaji', 'ek-onkar', 'bismillah', 'jain', 'christian', 'floral'] as const
 export type SymbolId = (typeof SYMBOL_IDS)[number]
 
 export const EVENT_IDS = ['save-the-date', 'ring', 'haldi', 'mehendi', 'sangeet', 'wedding', 'reception'] as const
