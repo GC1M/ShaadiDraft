@@ -552,6 +552,89 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
         <circle cx="50" cy="48" r="7" fill="#d32f2f" stroke={color} strokeWidth="1" />
       </g>
     )
+  else if (symbol === 'mahalakshmi')
+    inner = (
+      <g>
+        {/* Lakshmi's lotus with gold coins falling into it */}
+        <LotusBloom x={50} y={74} s={1} petal={accent} deep={color} />
+        {[
+          [36, 30],
+          [50, 22],
+          [64, 30],
+          [50, 40],
+        ].map(([x, y]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="5" fill={accent} stroke={color} strokeWidth="1.4" />
+        ))}
+      </g>
+    )
+  else if (symbol === 'chamunda')
+    inner = (
+      <g>
+        {/* Chamunda Maa's shrine on Chotila hill, with her red dhaja */}
+        <path d="M14 82 Q34 54 50 50 Q66 54 86 82 Z" fill={color} />
+        <rect x="42" y="38" width="16" height="14" fill={accent} />
+        <path d="M40 38 L50 28 L60 38 Z" fill={accent} />
+        <rect x="49" y="12" width="2" height="18" fill={color} />
+        <path d="M51 12 L68 16 L51 21 Z" fill="#d32f2f" />
+      </g>
+    )
+  else if (symbol === 'brahmani')
+    inner = (
+      <g>
+        {/* Brahmani Mataji's mount, the hamsa (swan) */}
+        <path d="M26 66 Q30 80 52 80 Q76 80 80 62 Q66 70 56 66 Q50 62 54 50 Q58 38 50 30 Q42 24 36 32 L28 32 L36 36 Q44 34 46 42 Q48 50 42 58 Q34 66 26 66 Z" fill={color} />
+        <path d="M58 64 Q66 56 76 58 Q70 66 58 64 Z" fill={accent} />
+        <circle cx="40" cy="32" r="1.6" fill={accent} />
+      </g>
+    )
+  else if (symbol === 'mahakali')
+    inner = (
+      <g>
+        {/* Mahakali's khadga (curved sword) with a flame above */}
+        <path d="M46 84 L54 84 L54 74 L46 74 Z" fill={color} />
+        <rect x="40" y="70" width="20" height="4" rx="2" fill={accent} />
+        <path d="M47 70 Q40 50 50 26 Q62 48 53 70 Z" fill={color} />
+        <path d="M50 22 Q44 16 50 8 Q56 16 50 22 Z" fill="#e8892b" />
+      </g>
+    )
+  else if (symbol === 'umiya')
+    inner = (
+      <g>
+        {/* Umiya Mataji's temple shikhar with a saffron flag */}
+        <path d="M30 80 L30 58 Q34 34 50 24 Q66 34 70 58 L70 80 Z" fill={color} />
+        <path d="M44 80 L44 68 Q50 60 56 68 L56 80 Z" fill={accent} />
+        {[46, 52].map((y) => (
+          <line key={y} x1="34" y1={y} x2="66" y2={y} stroke={accent} strokeWidth="1.4" />
+        ))}
+        <rect x="49" y="8" width="2" height="18" fill={color} />
+        <path d="M51 8 L68 13 L51 18 Z" fill="#e8892b" />
+      </g>
+    )
+  else if (symbol === 'shrinathji')
+    inner = (
+      <g>
+        {/* Shrinathji lifting Govardhan hill on his raised left hand */}
+        <path d="M18 34 Q34 14 50 18 Q66 14 82 34 Z" fill={color} />
+        <rect x="47" y="34" width="6" height="34" rx="3" fill={color} />
+        <circle cx="50" cy="35" r="5" fill={accent} />
+        <path d="M36 84 Q50 66 64 84 Z" fill={accent} />
+      </g>
+    )
+  else if (symbol === 'ranchhodrai')
+    inner = (
+      <g>
+        {/* Ranchhodraiji of Dakor: the Sudarshan chakra over a red dhaja */}
+        <circle cx="50" cy="44" r="18" fill="none" stroke={color} strokeWidth="3" />
+        <circle cx="50" cy="44" r="5" fill={accent} />
+        {Array.from({ length: 12 }, (_, i) => (
+          <g key={i} transform={`rotate(${i * 30} 50 44)`}>
+            <line x1="50" y1="44" x2="50" y2="27" stroke={color} strokeWidth="1.4" />
+            <path d="M47 26 L50 19 L53 26 Z" fill={accent} />
+          </g>
+        ))}
+        <path d="M30 74 L70 74 L64 84 L36 84 Z" fill="#d32f2f" />
+      </g>
+    )
   else if (symbol === 'jain')
     inner = (
       <g>

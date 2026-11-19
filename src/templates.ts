@@ -4,6 +4,7 @@ import { templates as batchC } from './card/designs-c'
 import { templates as batchD } from './card/designs-d'
 import { templates as batchE } from './card/designs-e'
 import { templates as batchF } from './card/designs-f'
+import { templates as batchG } from './card/designs-g'
 import { SAMPLES } from './i18n'
 import type { CoverPage, EventType, Invite, Lang, Page, Section, SampleText, SectionsPage, SymbolId } from './types'
 
@@ -64,6 +65,7 @@ export const TEMPLATES: Template[] = [
   ...batchD,
   ...batchE,
   ...batchF,
+  ...batchG,
 ]
 
 export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0]
