@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Design } from "./designs";
 import type { Template } from "../templates";
-import { GRAIN, GRAIN_LIGHT, SHEEN, VIGNETTE, noise } from "./luxe";
+import { GRAIN, GRAIN_LIGHT, VIGNETTE, noise } from "./luxe";
 
 // The luxury set: one large crafted hero per card (gold leaf, zari, mirror work, henna, rangoli dots), two colours and
 // one metal, solid ink for every word. Metals here use a short-period foil with a near-white hot stop, so even a
@@ -80,6 +80,18 @@ export const hash = (i: number) =>
   ((((i * 9301 + 49297) % 233280) + 233280) % 233280) / 233280;
 export const ring = (n: number, f: (a: number, i: number) => ReactNode) =>
   Array.from({ length: n }, (_, i) => f((360 / n) * i, i));
+// An all-over craft ground: a motif repeated on a grid across the card (rows staggered by half a step).
+export const field = (
+  h: number,
+  step: number,
+  f: (x: number, y: number, i: number) => ReactNode,
+  stagger = true,
+) =>
+  Array.from({ length: Math.ceil(h / step) + 1 }, (_, r) =>
+    Array.from({ length: Math.ceil(540 / step) + 1 }, (_, c) =>
+      f(c * step + (stagger && r % 2 ? step / 2 : 0), r * step, r * 100 + c),
+    ),
+  );
 
 // Raw silk: long horizontal slubs instead of round paper grain.
 export const SLUB = noise("1", 0.06).replace(
@@ -202,7 +214,7 @@ function Temple() {
 
 const harmandir: Design = {
   id: "harmandir",
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 32%,#1d2c60 0%,#121d45 55%,#060b20 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 32%,#1d2c60 0%,#121d45 55%,#060b20 100%)`,
   colors: {
     title: "#f1cc7f",
     heading: "#f1dfbd",
@@ -212,7 +224,7 @@ const harmandir: Design = {
     names: "#f1cc7f",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Cinzel"',
     heading: '"Gloock"',
     body: cormorant,
     names: '"Gloock"',
@@ -340,7 +352,7 @@ const weave = (y0: number, y1: number) =>
 
 const korvai: Design = {
   id: "korvai",
-  sky: `${SLUB}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 42%,#6c1222 0%,#4a0914 55%,#24030a 100%)`,
+  sky: `${SLUB}, ${VIGNETTE}, radial-gradient(ellipse at 50% 42%,#6c1222 0%,#4a0914 55%,#24030a 100%)`,
   colors: {
     title: "#fbbd6e",
     heading: "#fee7cc",
@@ -499,6 +511,8 @@ const Glint = ({ x, y, s }: { x: number; y: number; s: number }) => (
     fill="#ffffff"
   />
 );
+// A sheesh mahal medallion: rounded mirror petals set in gilt plaster, each piece edged in dark lead,
+// around a convex centre mirror. Rounded cuts and gold between them, so it reads as inlay, not frost.
 function Rosette({
   x,
   y,
@@ -510,16 +524,43 @@ function Rosette({
   r: number;
   seed: number;
 }) {
+  const petal = (a: number, l: number, w: number) => {
+    const [c, s] = [Math.cos(rad(a)), Math.sin(rad(a))];
+    const tip = [x + c * l, y + s * l];
+    const side = (k: number) => [
+      x + c * l * 0.45 - s * w * k,
+      y + s * l * 0.45 + c * w * k,
+    ];
+    const [l1, l2] = [side(1), side(-1)];
+    return `M${x + c * r * 0.3} ${y + s * r * 0.3} Q${l1[0]} ${l1[1]} ${tip[0]} ${tip[1]} Q${l2[0]} ${l2[1]} ${x + c * r * 0.3} ${y + s * r * 0.3} Z`;
+  };
   return (
-    <g stroke={VELVET} strokeWidth="0.5">
+    <g stroke="#0c0410" strokeWidth={Math.max(0.6, r * 0.05)}>
+      <circle cx={x} cy={y} r={r * 1.18} fill={m("gold")} />
       {ring(8, (a, i) => (
         <path
           key={i}
-          d={`M${x} ${y} L${x + Math.cos(rad(a - 16)) * r} ${y + Math.sin(rad(a - 16)) * r} L${x + Math.cos(rad(a)) * r * 1.25} ${y + Math.sin(rad(a)) * r * 1.25} L${x + Math.cos(rad(a + 16)) * r} ${y + Math.sin(rad(a + 16)) * r} Z`}
-          fill={MIRROR[Math.floor(hash(seed + i) * 5)]}
+          d={petal(a - 90, r * 1.05, r * 0.42)}
+          fill={MIRROR[1 + Math.floor(hash(seed + i) * 4)]}
         />
       ))}
-      <circle cx={x} cy={y} r={r * 0.3} fill={m("silver")} />
+      {ring(8, (a, i) => (
+        <circle
+          key={`d${i}`}
+          cx={x + Math.cos(rad(a - 67.5)) * r * 0.86}
+          cy={y + Math.sin(rad(a - 67.5)) * r * 0.86}
+          r={r * 0.13}
+          fill={MIRROR[Math.floor(hash(seed + i + 9) * 3)]}
+        />
+      ))}
+      <circle cx={x} cy={y} r={r * 0.34} fill={MIRROR[2]} />
+      <path
+        d={`M${x - r * 0.2} ${y - r * 0.08} A${r * 0.22} ${r * 0.22} 0 0 1 ${x + r * 0.06} ${y - r * 0.22}`}
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth={Math.max(0.6, r * 0.06)}
+        strokeLinecap="round"
+      />
     </g>
   );
 }
@@ -602,11 +643,7 @@ function Jharokha({ h }: { h: number }) {
       <Rosette x={420} y={44} r={10} seed={41} />
       <Rosette x={30} y={140} r={9} seed={51} />
       <Rosette x={510} y={140} r={9} seed={61} />
-      <path
-        d="M270 30 V14 M262 22 H278"
-        stroke={m("silver")}
-        strokeWidth="1.2"
-      />
+      <path d="M270 12 L275 21 L270 30 L265 21 Z" fill={m("silver")} />
       <Rosette x={270} y={38} r={7} seed={71} />
       {[
         [86, 175, 7],
@@ -626,7 +663,7 @@ function Jharokha({ h }: { h: number }) {
 
 const aaina: Design = {
   id: "aaina",
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 40%,#3c2052 0%,#230f31 58%,#0d0318 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 40%,#3c2052 0%,#230f31 58%,#0d0318 100%)`,
   colors: {
     title: "#e8ecf1",
     heading: "#dbe2e9",
@@ -780,7 +817,7 @@ const mehndiJaal: Design = {
     names: "#5e2a08",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Gloock"',
     heading: '"Gloock"',
     body: cormorant,
     names: '"Gloock"',

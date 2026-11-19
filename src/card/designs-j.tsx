@@ -1,6 +1,6 @@
 import type { Design } from "./designs";
 import type { Template } from "../templates";
-import { GRAIN, GRAIN_LIGHT, SHEEN, VIGNETTE } from "./luxe";
+import { GRAIN, GRAIN_LIGHT, VIGNETTE } from "./luxe";
 import {
   Frame,
   PAPER_PRESS,
@@ -9,6 +9,7 @@ import {
   Svg,
   VELVET_PRESS,
   cormorant,
+  field,
   hash,
   m,
   rad,
@@ -127,8 +128,17 @@ const kolam: Design = {
       <path d="M0 336 H540" stroke={KAAVI} strokeWidth="4" />
     </Scene>
   ),
+  // The pulli grid the kolam is drawn on, laid across the whole threshold before the loops go down.
   Overlay: ({ h }) => (
     <Frame h={h}>
+      <g fill={KAAVI} opacity="0.2">
+        {field(
+          h,
+          23,
+          (x, y, i) => <circle key={i} cx={x - 4} cy={y} r="1.3" />,
+          false,
+        )}
+      </g>
       <path
         d={`M14 58 V${h - 14} M526 58 V${h - 14}`}
         stroke={KAAVI}
@@ -324,7 +334,7 @@ function Mandapa({ h }: { h: number }) {
 
 const thanjavur: Design = {
   id: "thanjavur",
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 45%,#0f3a2a 0%,${EMERALD} 58%,#02140c 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 45%,#0f3a2a 0%,${EMERALD} 58%,#02140c 100%)`,
   colors: {
     title: "#d7cc8b",
     heading: "#f1eccc",
@@ -359,7 +369,7 @@ const thanjavur: Design = {
 /* Phulkari: a bagh of darned silk diamonds, golden floss with magenta */
 /* and white hearts, so dense the rust khaddar shows only as a grid.   */
 
-const KHADDAR = "#331006";
+const KHADDAR = "#6e2a12"; // rust khaddar, hand-spun and madder-dyed
 const FLOSS = ["#f2b630", "#d6337a", "#f6efe2"];
 
 // Stitches fill a triangle with lines parallel to its outer edge (from apex a toward edge b-c).
@@ -431,7 +441,7 @@ function Bagh({ y, rows }: { y: number; rows: number }) {
 
 const phulkari: Design = {
   id: "phulkari",
-  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 45%,#4a1a0c 0%,${KHADDAR} 58%,#1a0602 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 45%,#7a2e14 0%,${KHADDAR} 58%,#3a1206 100%)`,
   colors: {
     title: "#ffd36b",
     heading: "#f8e2b0",
@@ -441,7 +451,7 @@ const phulkari: Design = {
     names: "#ffd36b",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Gloock"',
     heading: '"Jost"',
     body: cormorant,
     names: '"Gloock"',
@@ -471,6 +481,19 @@ const phulkari: Design = {
       />
       <Bagh y={190} rows={6} />
     </Scene>
+  ),
+  // The darning carries on across the cloth: small satin-stitch diamonds in gold floss.
+  Overlay: ({ h }) => (
+    <Frame h={h}>
+      <g stroke={FLOSS[0]} strokeWidth="1.1" opacity="0.2" strokeLinecap="round">
+        {field(h, 38, (x, y, i) => (
+          <path
+            key={i}
+            d={`M${x - 2} ${y - 6} h4 M${x - 5} ${y - 3} h10 M${x - 7} ${y} h14 M${x - 5} ${y + 3} h10 M${x - 2} ${y + 6} h4`}
+          />
+        ))}
+      </g>
+    </Frame>
   ),
   safe: {
     story: { top: 142, bottom: 150, x: 44 },
@@ -570,25 +593,56 @@ const kalire: Design = {
       ))}
     </Svg>
   ),
-  // The chooda itself: red and ivory bangles in a band along the bottom.
+  // The chunni the kalire fall onto: a fine net of gold sitara.
+  Overlay: ({ h }) => (
+    <Frame h={h}>
+      <g opacity="0.5">
+        {field(h, 30, (x, y, i) => (
+          <circle key={i} cx={x} cy={y} r="1.5" fill={m("leaf")} />
+        ))}
+      </g>
+    </Frame>
+  ),
+  // The chooda itself, side-on along the arm: red and ivory bangles with a kundan pair in the middle.
   Bottom: () => (
     <Scene>
-      {Array.from({ length: 9 }, (_, i) => (
-        <rect
-          key={i}
-          x="0"
-          y={286 + i * 6}
-          width="540"
-          height="5"
-          fill={i === 4 ? "url(#h-leaf)" : i % 2 ? "#f3e9da" : CHOODA}
-        />
-      ))}
-      <path d="M0 282 H540" stroke={m("leaf")} strokeWidth="2" />
+      <path d="M0 206 H540" stroke={m("leaf")} strokeWidth="1.4" />
+      {Array.from({ length: 41 }, (_, i) => {
+        const x = 10 + i * 13;
+        const mid = Math.abs(i - 20);
+        const kundan = mid === 2;
+        const c = kundan ? m("leaf") : i % 3 === 1 ? "#f6eedd" : CHOODA;
+        const ry = 52 - mid * 0.35;
+        return (
+          <g key={i}>
+            <ellipse cx={x} cy={276} rx="8" ry={ry} fill="none" stroke={c} strokeWidth={kundan ? 7 : 6} />
+            <path
+              d={`M${x - 5} ${276 - ry * 0.7} Q${x - 9} 276 ${x - 5} ${276 + ry * 0.7}`}
+              fill="none"
+              stroke="#ffffff"
+              strokeWidth="0.9"
+              opacity={c === CHOODA ? 0.45 : 0.2}
+            />
+            {kundan &&
+              Array.from({ length: 7 }, (_, k) => (
+                <circle
+                  key={k}
+                  cx={x - 7.5}
+                  cy={276 - ry * 0.75 + (k * ry * 1.5) / 6}
+                  r="2.2"
+                  fill={k % 2 ? "#f4f6f8" : CHOODA}
+                  stroke="#624800"
+                  strokeWidth="0.4"
+                />
+              ))}
+          </g>
+        );
+      })}
     </Scene>
   ),
   safe: {
-    story: { top: 196, bottom: 76, x: 46 },
-    print: { top: 164, bottom: 62, x: 40 },
+    story: { top: 196, bottom: 148, x: 46 },
+    print: { top: 164, bottom: 112, x: 40 },
   },
 };
 
@@ -698,7 +752,7 @@ const genda: Design = {
     title: '"Gloock"',
     heading: '"Jost"',
     body: cormorant,
-    names: '"Italiana"',
+    names: '"Gloock"',
   },
   script: SCRIPT,
   type: { title: 2.6, names: 2.4 },
@@ -847,7 +901,7 @@ const deco: Design = {
     names: "#e8d4ad",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Cinzel"',
     heading: '"Jost"',
     body: '"Jost", sans-serif',
     names: '"Bodoni Moda"',
@@ -967,8 +1021,8 @@ const Leaf = ({
     strokeWidth="0.8"
   />
 );
-const InlayFlower = ({ x, y }: { x: number; y: number }) => (
-  <g>
+const InlayFlower = ({ x, y, s = 1, turn = false }: { x: number; y: number; s?: number; turn?: boolean }) => (
+  <g transform={`translate(${x} ${y}) rotate(${turn ? 90 : 0}) scale(${s}) translate(${-x} ${-y})`}>
     {ring(5, (a, i) => (
       <ellipse
         key={i}
@@ -992,10 +1046,43 @@ const InlayFlower = ({ x, y }: { x: number; y: number }) => (
   </g>
 );
 
+// Grey veins drifting through white marble, drawn in story units and stretched to the card's height.
+const VEINS = [
+  "M-20 150 C110 120 170 270 300 236 S460 300 560 252",
+  "M-20 560 C100 500 190 600 330 520 S470 500 560 560",
+  "M70 -10 C110 120 50 250 150 400",
+  "M440 330 C400 450 480 560 420 700 S470 900 430 980",
+  "M-20 820 C80 790 140 860 240 830",
+];
+const VEIN_FINE = [
+  "M170 214 C200 250 190 300 230 330",
+  "M330 520 C350 470 400 460 420 420",
+  "M110 250 C150 260 170 300 210 310",
+  "M455 600 C500 620 520 600 560 640",
+];
+const InlayBorder = ({ h }: { h: number }) => {
+  const step = 42;
+  const across = Array.from({ length: 12 }, (_, i) => 39 + i * ((462) / 11));
+  const down = Array.from({ length: Math.floor((h - 78) / step) + 1 }, (_, i) => 39 + i * ((h - 78) / Math.floor((h - 78) / step)));
+  return (
+    <g>
+      <path
+        d={`M12 12 H528 V${h - 12} H12 Z M30 30 V${h - 30} H510 V30 Z`}
+        fill={INLAY}
+        fillRule="evenodd"
+      />
+      <rect x="15" y="15" width="510" height={h - 30} fill="none" stroke={m("leaf")} strokeWidth="0.8" />
+      <rect x="34" y="34" width="472" height={h - 68} fill="none" stroke={m("leaf")} strokeWidth="1" />
+      {across.map((x) => [21, h - 21].map((y) => <InlayFlower key={`${x}-${y}`} x={x} y={y} s={0.7} />))}
+      {down.slice(1, -1).map((y) => [21, 519].map((x) => <InlayFlower key={`${x}-${y}`} x={x} y={y} s={0.7} turn />))}
+    </g>
+  );
+};
+
 const nikkah: Design = {
   id: "pietra-dura",
-  // White marble: a pale stone ground with long grey veins.
-  sky: `${GRAIN}, linear-gradient(128deg,rgba(120,118,112,0) 30%,rgba(120,118,112,.14) 31%,rgba(120,118,112,0) 33%,rgba(120,118,112,0) 61%,rgba(120,118,112,.1) 62.5%,rgba(120,118,112,0) 64%), radial-gradient(ellipse at 50% 42%,#f6f5f2 0%,#ecebe6 60%,#dcdad3 100%)`,
+  // White marble: a pale stone ground; the grey veins are drawn in the Overlay.
+  sky: `${GRAIN}, radial-gradient(ellipse at 50% 42%,#f6f5f2 0%,#ecebe6 60%,#dcdad3 100%)`,
   colors: {
     title: "#14523c",
     heading: "#1f3a30",
@@ -1014,93 +1101,71 @@ const nikkah: Design = {
   type: { title: 2.3 },
   press: PAPER_PRESS,
   cover: { flourish: false },
-  Top: () => (
-    <Svg h={58}>
-      {[14, 44].map((y) => (
-        <path key={y} d={`M18 ${y} H522`} stroke={INLAY} strokeWidth="1.6" />
-      ))}
-      {[18, 40].map((y) => (
-        <path
-          key={y}
-          d={`M18 ${y} H522`}
-          stroke={m("leaf")}
-          strokeWidth="0.6"
-        />
-      ))}
-      {Array.from({ length: 12 }, (_, i) => (
-        <InlayFlower key={i} x={42 + i * 41.5} y={29} />
-      ))}
-    </Svg>
-  ),
+  Top: () => <Svg h={40}>{null}</Svg>,
   Overlay: ({ h }) => (
     <Frame h={h}>
-      <rect
-        x="14"
-        y="14"
-        width="512"
-        height={h - 28}
-        fill="none"
-        stroke={INLAY}
-        strokeWidth="1.6"
-      />
-      <rect
-        x="19"
-        y="19"
-        width="502"
-        height={h - 38}
-        fill="none"
-        stroke={m("leaf")}
-        strokeWidth="0.6"
-      />
+      <g transform={`scale(1 ${h / 960})`} fill="none" stroke="#8d8a82" strokeLinecap="round">
+        {VEINS.map((d) => (
+          <path key={d} d={d} strokeWidth="1.3" opacity="0.32" vectorEffect="non-scaling-stroke" />
+        ))}
+        {VEIN_FINE.map((d) => (
+          <path key={d} d={d} strokeWidth="0.7" opacity="0.26" vectorEffect="non-scaling-stroke" />
+        ))}
+      </g>
+      <InlayBorder h={h} />
     </Frame>
   ),
   Bottom: () => (
     <Scene>
-      {/* the niche */}
+      {/* the niche: black inlay spandrels around a cusped arch of white marble */}
+      <rect x="164" y="92" width="212" height="244" fill={INLAY} />
+      <rect x="168" y="96" width="204" height="240" fill="none" stroke={m("leaf")} strokeWidth="0.8" />
       <path
-        d="M190 336 V214 Q190 170 230 156 Q258 148 270 120 Q282 148 310 156 Q350 170 350 214 V336"
-        fill="none"
-        stroke={INLAY}
-        strokeWidth="2.2"
+        d="M180 336 V204 Q180 166 212 152 Q238 141 248 128 Q262 122 270 104 Q278 122 292 128 Q302 141 328 152 Q360 166 360 204 V336 Z"
+        fill="#eeece6"
       />
       <path
-        d="M198 336 V216 Q198 178 234 164 Q260 156 270 134 Q280 156 306 164 Q342 178 342 216 V336"
+        d="M186 336 V206 Q186 172 216 158 Q241 147 251 135 Q264 129 270 114 Q276 129 289 135 Q299 147 324 158 Q354 172 354 206 V336"
         fill="none"
         stroke={m("leaf")}
-        strokeWidth="0.8"
-      />
-      {/* vase */}
-      <path
-        d="M248 334 C232 324 236 300 254 294 L250 284 H290 L286 294 C304 300 308 324 292 334 Z"
-        fill={LAPIS}
-        stroke={INLAY}
         strokeWidth="1"
       />
-      <path d="M252 284 H288" stroke={m("leaf")} strokeWidth="2" />
-      {/* stems, leaves and flowers */}
-      <path
-        d="M270 284 V176 M266 284 Q244 240 226 214 M274 284 Q296 240 314 214 M268 284 Q256 254 238 252 M272 284 Q284 254 302 252"
-        fill="none"
-        stroke={MALACHITE}
-        strokeWidth="1.6"
-      />
-      <Leaf x={262} y={270} a={-40} s={0.8} />
-      <Leaf x={278} y={270} a={40} s={0.8} />
-      <Leaf x={252} y={236} a={-60} s={0.6} />
-      <Leaf x={288} y={236} a={60} s={0.6} />
-      <Tulip x={270} y={180} a={0} c={CARNELIAN} s={1.2} />
-      <Tulip x={226} y={216} a={-24} c={LAPIS} />
-      <Tulip x={314} y={216} a={24} c={LAPIS} />
-      <Tulip x={238} y={254} a={-60} c={CARNELIAN} s={0.8} />
-      <Tulip x={302} y={254} a={60} c={CARNELIAN} s={0.8} />
-      <InlayFlower x={120} y={300} />
-      <InlayFlower x={420} y={300} />
-      <path d="M40 336 H500" stroke={INLAY} strokeWidth="1.6" />
+      <InlayFlower x={190} y={118} s={0.8} />
+      <InlayFlower x={350} y={118} s={0.8} />
+      <g transform="translate(270 336) scale(1.15) translate(-270 -336)">
+        {/* vase */}
+        <path
+          d="M248 334 C232 324 236 300 254 294 L250 284 H290 L286 294 C304 300 308 324 292 334 Z"
+          fill={LAPIS}
+          stroke={INLAY}
+          strokeWidth="1"
+        />
+        <path d="M252 284 H288" stroke={m("leaf")} strokeWidth="2" />
+        <path d="M244 314 H296" stroke={m("leaf")} strokeWidth="0.8" />
+        {/* stems, leaves and flowers */}
+        <path
+          d="M270 284 V176 M266 284 Q244 240 226 214 M274 284 Q296 240 314 214 M268 284 Q256 254 238 252 M272 284 Q284 254 302 252"
+          fill="none"
+          stroke={MALACHITE}
+          strokeWidth="1.6"
+        />
+        <Leaf x={262} y={270} a={-40} s={0.8} />
+        <Leaf x={278} y={270} a={40} s={0.8} />
+        <Leaf x={252} y={236} a={-60} s={0.6} />
+        <Leaf x={288} y={236} a={60} s={0.6} />
+        <Tulip x={270} y={180} a={0} c={CARNELIAN} s={1.2} />
+        <Tulip x={226} y={216} a={-24} c={LAPIS} />
+        <Tulip x={314} y={216} a={24} c={LAPIS} />
+        <Tulip x={238} y={254} a={-60} c={CARNELIAN} s={0.8} />
+        <Tulip x={302} y={254} a={60} c={CARNELIAN} s={0.8} />
+      </g>
+      <InlayFlower x={110} y={290} />
+      <InlayFlower x={430} y={290} />
     </Scene>
   ),
   safe: {
-    story: { top: 76, bottom: 236, x: 50 },
-    print: { top: 62, bottom: 194, x: 44 },
+    story: { top: 76, bottom: 250, x: 50 },
+    print: { top: 62, bottom: 206, x: 44 },
   },
 };
 

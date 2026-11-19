@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Design } from "./designs";
 import type { Template } from "../templates";
-import { GRAIN, GRAIN_LIGHT, SHEEN, VIGNETTE } from "./luxe";
+import { GRAIN, GRAIN_LIGHT, VIGNETTE } from "./luxe";
 import {
   Frame,
   PAPER_PRESS,
@@ -10,6 +10,7 @@ import {
   Svg,
   VELVET_PRESS,
   cormorant,
+  field,
   hash,
   m,
   rad,
@@ -161,18 +162,36 @@ const patola: Design = {
       <IkatDiamond x={270} y={196} n={3} u={4} fill={P_RED} seed={1} />
     </Scene>
   ),
+  // The sari itself: a faint ikat ground and patola borders down both sides, so the words sit inside the cloth.
   Overlay: ({ h }) => (
     <Frame h={h}>
-      <path
-        d={`M14 104 V${h - 140} M526 104 V${h - 140}`}
-        stroke={P_RED}
-        strokeWidth="1.2"
-      />
+      <g opacity="0.09">
+        {field(h, 56, (x, y, i) => (
+          <IkatDiamond key={i} x={x} y={y} n={3} u={4} fill={P_RED} seed={i} />
+        ))}
+      </g>
+      {[0, 516].map((x0) => (
+        <g key={x0}>
+          <rect x={x0} y="0" width="24" height={h} fill={P_RED} />
+          <path d={`M${x0 + 1} 0 V${h} M${x0 + 23} 0 V${h}`} stroke={P_INK} strokeWidth="2" />
+          {Array.from({ length: Math.ceil(h / 22) }, (_, i) => (
+            <IkatDiamond
+              key={i}
+              x={x0 + 12}
+              y={11 + i * 22}
+              n={3}
+              u={2.6}
+              fill={i % 2 ? P_SAFFRON : "#fbf5ea"}
+              seed={x0 + i}
+            />
+          ))}
+        </g>
+      ))}
     </Frame>
   ),
   safe: {
-    story: { top: 130, bottom: 160, x: 46 },
-    print: { top: 104, bottom: 130, x: 40 },
+    story: { top: 130, bottom: 160, x: 50 },
+    print: { top: 104, bottom: 130, x: 44 },
   },
 };
 
@@ -496,6 +515,20 @@ const pithi: Design = {
       <Bandhani y={236} h={104} edge="top" />
     </Scene>
   ),
+  // The tie-dyed ground carries on behind the words: chaubundi, four tied dots to a diamond.
+  Overlay: ({ h }) => (
+    <Frame h={h}>
+      <g fill={B_RED} opacity="0.2">
+        {field(h, 34, (x, y, i) => (
+          <g key={i}>
+            {[[0, -3.4], [3.4, 0], [0, 3.4], [-3.4, 0]].map(([dx, dy], k) => (
+              <circle key={k} cx={x + dx} cy={y + dy} r="1.4" />
+            ))}
+          </g>
+        ))}
+      </g>
+    </Frame>
+  ),
   safe: {
     story: { top: 142, bottom: 124, x: 44 },
     print: { top: 116, bottom: 100, x: 38 },
@@ -595,7 +628,7 @@ function Garbo() {
 
 const garbo: Design = {
   id: "garbo",
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 40%,#2a1f5c 0%,#1a1340 58%,#0a0720 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 40%,#2a1f5c 0%,#1a1340 58%,#0a0720 100%)`,
   colors: {
     title: "#ffb98a",
     heading: "#ffe6d6",
@@ -605,7 +638,7 @@ const garbo: Design = {
     names: "#ffb98a",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Gloock"',
     heading: '"Marcellus"',
     body: cormorant,
     names: '"Gloock"',
@@ -667,7 +700,7 @@ const garbo: Design = {
 /* Gota Patti: rose-gold ribbon leaves appliqued on rani-pink silk:    */
 /* scalloped lace edges and sprays rising from the corners.            */
 
-const RANI = "#420a2c";
+const RANI = "#8a1048";
 const gotaLeaf = "M0 0 C6 -6 15 -6 22 0 C15 6 6 6 0 0 Z";
 
 // A spray of gota leaves along a quadratic stem from (x0,y0) through (cx,cy) to (x1,y1).
@@ -760,9 +793,9 @@ const Scallops = ({ y, down }: { y: number; down: boolean }) => (
 
 const gota: Design = {
   id: "gota-patti",
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 42%,#5c0e3e 0%,#420a2c 58%,#220414 100%)`,
+  sky: `${GRAIN_LIGHT}, ${VIGNETTE}, radial-gradient(ellipse at 50% 42%,#9c1452 0%,${RANI} 58%,#5a0a30 100%)`,
   colors: {
-    title: "#f7baa7",
+    title: "#ffe3b8",
     heading: "#fee5dd",
     text: "#f8eef3",
     accent: "#e9ae9b",
@@ -773,7 +806,7 @@ const gota: Design = {
     title: '"Bodoni Moda"',
     heading: '"Marcellus"',
     body: cormorant,
-    names: '"Italiana"',
+    names: '"Bodoni Moda"',
   },
   script: SCRIPT,
   type: { title: 2.4, names: 2.2 },
@@ -909,7 +942,7 @@ const pichhwai: Design = {
     title: '"Gloock"',
     heading: '"Marcellus"',
     body: cormorant,
-    names: '"Italiana"',
+    names: '"Gloock"',
   },
   script: SCRIPT,
   type: { title: 2.5, names: 2.3 },
@@ -1049,49 +1082,67 @@ function Bangles({ x, y }: { x: number; y: number }) {
   );
 }
 
-// The same set seen from the side: a tall stack of bangles, each a ring in perspective with a lit upper rim.
-function Stack() {
-  const order = [...BANGLES, ...BANGLES.slice(0, 6)];
-  return (
-    <g>
-      {order.map(([, c, kundan], i) => {
-        const y = 330 - i * 8.5;
+// Bangles stacked on a tray, seen from above at an angle: whole rings, a soft shadow, two loose ones beside,
+// and kundan bangles set with white and ruby stones in gold collets.
+const Ring = ({
+  y,
+  rx,
+  ry,
+  c,
+  kundan,
+  cx = 270,
+}: {
+  y: number;
+  rx: number;
+  ry: number;
+  c: string;
+  kundan: boolean;
+  cx?: number;
+}) => (
+  <g>
+    <ellipse
+      cx={cx}
+      cy={y}
+      rx={rx}
+      ry={ry}
+      fill="none"
+      stroke={kundan ? m("gold") : c}
+      strokeWidth={kundan ? 9 : 7}
+    />
+    <path
+      d={`M${cx - rx + 2} ${y - 2} A${rx} ${ry} 0 0 1 ${cx + rx - 2} ${y - 2}`}
+      fill="none"
+      stroke="#ffffff"
+      strokeWidth="1"
+      opacity={kundan ? 0.25 : 0.45}
+    />
+    {kundan &&
+      Array.from({ length: 15 }, (_, k) => {
+        const a = Math.PI * ((k + 0.5) / 15);
+        const x = cx - Math.cos(a) * rx;
+        const yy = y + Math.sin(a) * ry;
         return (
-          <g key={i}>
-            <ellipse
-              cx="270"
-              cy={y}
-              rx="150"
-              ry="30"
-              fill="none"
-              stroke={kundan ? m("gold") : c}
-              strokeWidth={kundan ? 9 : 7}
-            />
-            <path
-              d={`M122 ${y - 2} A150 30 0 0 1 418 ${y - 2}`}
-              fill="none"
-              stroke="#ffffff"
-              strokeWidth="1"
-              opacity={kundan ? 0.2 : 0.4}
-            />
-            {kundan &&
-              Array.from({ length: 21 }, (_, k) => {
-                const a = Math.PI * (k / 20);
-                return (
-                  <circle
-                    key={k}
-                    cx={270 - Math.cos(a) * 150}
-                    cy={y + Math.sin(a) * 30}
-                    r="2.4"
-                    fill={k % 3 ? "#f4f6f8" : "#b8162c"}
-                    stroke="#624800"
-                    strokeWidth="0.5"
-                  />
-                );
-              })}
+          <g key={k}>
+            <circle cx={x} cy={yy} r="4.2" fill={m("gold")} stroke="#624800" strokeWidth="0.5" />
+            <circle cx={x} cy={yy} r="2.8" fill={k % 3 ? "#f4f6f8" : "#b8162c"} />
+            <circle cx={x - 0.9} cy={yy - 0.9} r="0.8" fill="#ffffff" />
           </g>
         );
       })}
+  </g>
+);
+function Stack() {
+  const order = BANGLES.slice(0, 9);
+  return (
+    <g>
+      <ellipse cx="270" cy="314" rx="150" ry="20" fill="#3e2440" opacity="0.14" />
+      <ellipse cx="96" cy="324" rx="66" ry="10" fill="#3e2440" opacity="0.12" />
+      <ellipse cx="444" cy="324" rx="66" ry="10" fill="#3e2440" opacity="0.12" />
+      <Ring cx={96} y={318} rx={58} ry={11} c="#b8162c" kundan={false} />
+      <Ring cx={444} y={318} rx={58} ry={11} c="gold" kundan />
+      {order.map(([, c, kundan], i) => (
+        <Ring key={i} y={296 - i * 9} rx={128} ry={24} c={c} kundan={kundan} />
+      ))}
     </g>
   );
 }
@@ -1108,7 +1159,7 @@ const choodi: Design = {
     names: "#5e0d33",
   },
   fonts: {
-    title: '"Italiana"',
+    title: '"Bodoni Moda"',
     heading: '"Jost"',
     body: cormorant,
     names: '"Bodoni Moda"',
@@ -1136,6 +1187,18 @@ const choodi: Design = {
         stroke={m("leaf")}
         strokeWidth="1"
       />
+      {/* a string of glass bangle beads inside the gold rule */}
+      {(() => {
+        const cols = ["#b8162c", "#46a05c", "#5a2a7a", "#c49f4d"];
+        const across = Array.from({ length: 50 }, (_, i) => 24 + i * 10);
+        const down = Array.from({ length: Math.floor((h - 48) / 10) + 1 }, (_, i) => 24 + i * 10);
+        return [
+          ...across.flatMap((x, i) => [[x, 24, i], [x, h - 24, i + 1]]),
+          ...down.flatMap((y, i) => [[24, y, i + 2], [516, y, i + 3]]),
+        ].map(([x, y, i], k) => (
+          <circle key={k} cx={x} cy={y} r="2.2" fill={cols[i % 4]} opacity="0.75" />
+        ));
+      })()}
     </Frame>
   ),
   Bottom: () => (
@@ -1283,8 +1346,17 @@ const paithani: Design = {
       ))}
     </Scene>
   ),
+  // Asharfi buttis, gold coins woven all over the body of the sari.
   Overlay: ({ h }) => (
     <Frame h={h}>
+      <g opacity="0.42">
+        {field(h, 48, (x, y, i) => (
+          <g key={i}>
+            <circle cx={x} cy={y} r="3.4" fill={m("leaf")} />
+            <circle cx={x} cy={y} r="1.3" fill={MAGENTA} />
+          </g>
+        ))}
+      </g>
       <path
         d={`M14 52 V${h - 150} M526 52 V${h - 150}`}
         stroke={MAGENTA}
