@@ -92,12 +92,14 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
   }
   // Make your own: a new occasion brings that occasion's sample pages; a new symbol re-fills an untouched sample.
   const rebuild = (patch: { event?: EventType; symbol?: SymbolId }) => {
+    // The Golden temple scene is Harmandir Sahib: only on a card that carries Ik Onkar.
+    const style = patch.symbol && patch.symbol !== 'ek-onkar' && invite.style?.scene === 'harmandir' ? { ...invite.style, scene: 'none' } : invite.style
     const untouched = stripIds(invite.pages) === stripIds(samplePages(t, invite.lang))
     if (untouched || (patch.event && confirm('Replace your text with the sample text for this occasion?'))) {
       const pages = samplePages(templateOf({ ...invite, ...patch }), invite.lang)
-      set({ ...patch, pages })
+      set({ ...patch, style, pages })
       setCurrent(pages[0].id)
-    } else if (patch.symbol) set(patch)
+    } else if (patch.symbol) set({ ...patch, style })
   }
   const reset = () => {
     if (!confirm('Replace every page with the sample text?')) return
@@ -629,7 +631,7 @@ function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<
   const s = styled(d, invite.style).s!
   const pick = (patch: Partial<CardStyle>) => set({ style: { ...invite.style, ...patch } })
   // A design that draws its own arch would get a second one nested inside it.
-  const frames = Object.entries(FRAMES).filter(([id]) => id !== 'jharokha' || !OWN_ARCH.has(d.id))
+  const frames = Object.entries(FRAMES).filter(([id]) => id !== 'jharokha' || !OWN_ARCH.has(d.id)).map(([id, l]) => [id, rebuild && id === 'original' ? 'None' : l] as const)
   const swatch = (on: boolean) => `size-9 rounded-full ring-offset-2 ring-offset-paper transition ${on ? 'ring-2 ring-wine' : 'ring-1 ring-wine/20 hover:ring-wine/50'}`
   return (
     <div className="space-y-4 rounded-md bg-wine/[0.03] p-4 ring-1 ring-wine/10">
@@ -672,13 +674,13 @@ function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<
           ))}
         </div>
       </Control>
-      <Control label="Foil">
+      {(s.frame !== 'original' || s.pattern !== 'none') && <Control label="Foil">
         <div role="radiogroup" aria-label="Foil" className="mt-1.5 flex flex-wrap gap-2.5">
           {(Object.keys(FOILS) as CardStyle['foil'][]).map((f) => (
             <button key={f} type="button" role="radio" aria-checked={s.foil === f} title={FOILS[f]} aria-label={FOILS[f]} onClick={() => pick({ foil: f })} className={swatch(s.foil === f)} style={{ background: FOIL_SWATCH[f] }} />
           ))}
         </div>
-      </Control>
+      </Control>}
       {rebuild &&
         (
           [
@@ -687,7 +689,7 @@ function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<
           ] as const
         ).map(([k, label, opts]) => (
           <Control key={k} label={label}>
-            <Segmented<string> label={label} value={s[k] ?? 'none'} onChange={(v) => pick({ [k]: v })} options={Object.entries(opts).map(([id, l]) => ({ id, label: l }))} />
+            <Segmented<string> label={label} value={s[k] ?? 'none'} onChange={(v) => pick({ [k]: v })} options={Object.entries(opts).filter(([id]) => id !== 'harmandir' || t.symbol === 'ek-onkar').map(([id, l]) => ({ id, label: l }))} />
           </Control>
         ))}
       <details className="group" open={!!rebuild}>
@@ -697,7 +699,7 @@ function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<
             [
               ['frame', 'Frame', frames],
               ['pattern', 'Pattern', Object.entries(PATTERNS)],
-              ['fonts', 'Lettering', Object.entries(FONTS)],
+              ['fonts', 'Lettering', Object.entries(FONTS).filter(([id]) => !rebuild || id !== 'original')],
             ] as const
           ).map(([k, label, opts]) => (
             <Control key={k} label={label}>
