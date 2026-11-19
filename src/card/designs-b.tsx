@@ -259,7 +259,7 @@ function Bandhanwar() {
 
 const haldiKalash: Design = {
   id: 'haldi-kalash',
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 34%,#c86a12 0%,#a24808 56%,#6f2c05 100%)`,
+  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 34%,#9c4f0c 0%,#7f3906 56%,#5a2304 100%)`,
   colors: { title: '#f5d58e', heading: '#fae2ab', text: '#fcf0de', accent: '#f1c463', muted: '#f2caa2' },
   fonts: { title: '"Cinzel"', heading: '"Cinzel"', body: serif, names: '"Great Vibes"' },
   Top: () => <Bandhanwar />,

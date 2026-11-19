@@ -808,7 +808,7 @@ function TempleBorder({ h }: { h: number }) {
 
 const snanam: Design = {
   id: 'snanam',
-  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 30%,#c4721b 0%,#a2530f 55%,#763808 100%)`,
+  sky: `${GRAIN_LIGHT}, ${SHEEN}, ${VIGNETTE}, radial-gradient(ellipse at 50% 30%,#9a5312 0%,#7e3f0b 55%,#5c2a06 100%)`,
   colors: { title: '#fae2a2', heading: '#fdeec6', text: '#fff5e4', accent: '#ffd57e', muted: '#f1cfa4' },
   fonts: { title: '"Great Vibes"', heading: '"Marcellus"', body: serif, names: '"Great Vibes"' },
   Top: () => null,
@@ -830,7 +830,18 @@ const snanam: Design = {
   safe: { story: { top: 70, bottom: 240, x: 50 }, print: { top: 52, bottom: 180, x: 42 } },
 }
 
+// Make your own: a plain ground the couple dresses with a palette, frame, pattern, top decoration and scene (style.tsx).
+const custom: Design = {
+  id: 'custom',
+  sky: 'linear-gradient(180deg,#5a1424,#3a0a16 60%,#2a0710)',
+  colors: { title: '#ecd08a', heading: '#e9cf8f', text: '#f4e6cc', accent: '#f2b99c', muted: '#d8c0a2', names: '#f6dfa0' },
+  fonts: { title: '"Cinzel"', heading: '"Cinzel"', body: serif, names: '"Pinyon Script"' },
+  Top: () => null,
+  Bottom: () => null,
+  safe: SAFE,
+}
+
 export const DESIGNS: Record<string, Design> = Object.fromEntries(
-  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF, ...batchG].map((d) => [d.id, d]),
+  [custom, gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF, ...batchG].map((d) => [d.id, d]),
 )
 

@@ -35,7 +35,7 @@ const noise = (rgb: string, a: number) =>
   `url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%27180%27 height=%27180%27%3E%3Cfilter id=%27n%27%3E%3CfeTurbulence type=%27fractalNoise%27 baseFrequency=%27.85%27 numOctaves=%273%27 stitchTiles=%27stitch%27/%3E%3CfeColorMatrix values=%270 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 0 ${rgb} 0 0 0 ${a} 0%27/%3E%3C/filter%3E%3Crect width=%27100%25%27 height=%27100%25%27 filter=%27url%28%23n%29%27/%3E%3C/svg%3E")`
 export const GRAIN = noise('0', 0.05) // cotton paper on light cards
 export const GRAIN_LIGHT = noise('1', 0.05) // velvet/silk tooth on dark cards
-export const SHEEN = 'linear-gradient(118deg,rgba(255,255,255,0) 28%,rgba(255,255,255,.13) 44%,rgba(255,255,255,0) 58%,rgba(255,255,255,.07) 74%,rgba(255,255,255,0) 86%)'
+export const SHEEN = 'linear-gradient(118deg,rgba(255,255,255,0) 30%,rgba(255,255,255,.06) 46%,rgba(255,255,255,0) 62%)'
 export const VIGNETTE = 'radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 55%,rgba(0,0,0,.28) 100%)'
 
 /* ---------------- filigree ---------------- */

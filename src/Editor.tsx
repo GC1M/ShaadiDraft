@@ -4,11 +4,12 @@ import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetSta
 import { Wordmark } from './Hero'
 import { CardPage, PHOTO_FIT, SIZES, photoStyle } from './card/Card'
 import { DESIGNS } from './card/designs'
+import { FOIL_SWATCH, FOILS, FONTS, FRAMES, OWN_ARCH, PALETTES, PATTERNS, SCENES, TOPS, styled } from './card/style'
 import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
-import { LANGS, SAMPLES } from './i18n'
-import { samplePages, sectionsPage, templateById } from './templates'
+import { EVENTS, LANGS, SAMPLES, SYMBOLS } from './i18n'
+import { CUSTOM, samplePages, sectionsPage, templateOf } from './templates'
 import { TransliterateInput } from './transliterate'
-import { LANG_IDS, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type Photo, type SectionsPage } from './types'
+import { EVENT_IDS, LANG_IDS, SYMBOL_IDS, type CardStyle, type EventType, type SymbolId, type CoverPage, type FontScale, type Format, type Invite, type Lang, type Page, type Photo, type SectionsPage } from './types'
 import { ScaledCard, Segmented } from './ui'
 import { track } from './analytics'
 
@@ -18,7 +19,7 @@ const inputCls = 'mt-1.5 w-full rounded-md border border-wine/20 bg-paper px-3.5
 const stripIds = (pages: Page[]) => JSON.stringify(pages.map(({ id: _id, ...rest }) => rest))
 
 export default function Editor({ invite, setInvite, onBack }: Props) {
-  const t = templateById(invite.templateId)
+  const t = templateOf(invite)
   const [current, setCurrent] = useState(invite.pages[0]?.id)
   const [zoom, setZoom] = useState<'fit' | '100'>('fit')
   const [phonetic, setPhonetic] = useState(true)
@@ -88,6 +89,15 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
       set({ lang, pages })
       setCurrent(pages[0].id)
     } else set({ lang })
+  }
+  // Make your own: a new occasion brings that occasion's sample pages; a new symbol re-fills an untouched sample.
+  const rebuild = (patch: { event?: EventType; symbol?: SymbolId }) => {
+    const untouched = stripIds(invite.pages) === stripIds(samplePages(t, invite.lang))
+    if (untouched || (patch.event && confirm('Replace your text with the sample text for this occasion?'))) {
+      const pages = samplePages(templateOf({ ...invite, ...patch }), invite.lang)
+      set({ ...patch, pages })
+      setCurrent(pages[0].id)
+    } else if (patch.symbol) set(patch)
   }
   const reset = () => {
     if (!confirm('Replace every page with the sample text?')) return
@@ -242,6 +252,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                   />
                 </Control>
               </div>
+              {!artPages && <Customise invite={invite} set={set} rebuild={t.id === CUSTOM.id ? rebuild : undefined} />}
               {L !== 'en' && (
                 <label className="flex items-start gap-3 rounded-md bg-wine/[0.04] p-4 text-[15px] text-ink/85 ring-1 ring-wine/10">
                   <input type="checkbox" checked={phonetic} onChange={(e) => setPhonetic(e.target.checked)} className="mt-1 size-4 accent-wine" />
@@ -605,6 +616,96 @@ function PhotoCrop({ slot, art, fit, onChange }: { slot: { box: number[]; src: s
         />
       </div>
       <input type="range" min={1} max={3} step={0.05} value={fit.zoom} aria-label="Zoom photo" className="w-full accent-wine" onChange={(e) => onChange({ ...fit, zoom: +e.target.value })} />
+    </div>
+  )
+}
+
+// Pick the parts of a drawn design: colours and foil up front, frame, pattern and lettering under More options.
+// Unset parts keep the designer's choice.
+// Make your own (rebuild set) also picks the occasion, the god or symbol, a top decoration and a bottom scene.
+function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<Invite>) => void; rebuild?: (p: { event?: EventType; symbol?: SymbolId }) => void }) {
+  const t = templateOf(invite)
+  const d = DESIGNS[t.design]
+  const s = styled(d, invite.style).s!
+  const pick = (patch: Partial<CardStyle>) => set({ style: { ...invite.style, ...patch } })
+  // A design that draws its own arch would get a second one nested inside it.
+  const frames = Object.entries(FRAMES).filter(([id]) => id !== 'jharokha' || !OWN_ARCH.has(d.id))
+  const swatch = (on: boolean) => `size-9 rounded-full ring-offset-2 ring-offset-paper transition ${on ? 'ring-2 ring-wine' : 'ring-1 ring-wine/20 hover:ring-wine/50'}`
+  return (
+    <div className="space-y-4 rounded-md bg-wine/[0.03] p-4 ring-1 ring-wine/10">
+      <div className="flex items-baseline justify-between gap-4">
+        <p className="font-display text-[20px]">{rebuild ? 'Build your design' : 'Customise the design'}</p>
+        {invite.style && (
+          <button type="button" onClick={() => set({ style: undefined })} className="text-[13px] text-wine underline underline-offset-4">
+            Reset design
+          </button>
+        )}
+      </div>
+      {rebuild && (
+        <div className="flex flex-wrap gap-x-6 gap-y-4">
+          <label className="block">
+            <span className="text-[13px] text-ink/65">Occasion</span>
+            <select value={t.event} onChange={(e) => rebuild({ event: e.target.value as EventType })} className={`${inputCls} select-chevron w-auto pr-10`}>
+              {EVENT_IDS.map((e) => (
+                <option key={e} value={e}>
+                  {EVENTS[e]}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="text-[13px] text-ink/65">God or sacred symbol</span>
+            <select value={t.symbol} onChange={(e) => rebuild({ symbol: e.target.value as SymbolId })} className={`${inputCls} select-chevron w-auto pr-10`}>
+              {SYMBOL_IDS.map((s) => (
+                <option key={s} value={s}>
+                  {SYMBOLS[s]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+      )}
+      <Control label="Colours">
+        <div role="radiogroup" aria-label="Colours" className="mt-1.5 flex flex-wrap gap-2.5">
+          {Object.entries(PALETTES).filter(([id]) => !rebuild || id !== 'original').map(([id, p]) => (
+            <button key={id} type="button" role="radio" aria-checked={s.palette === id} title={p?.label ?? 'Original'} aria-label={p?.label ?? 'Original'} onClick={() => pick({ palette: id as CardStyle['palette'] })} className={swatch(s.palette === id)} style={{ background: p ? p.sky : d.sky }} />
+          ))}
+        </div>
+      </Control>
+      <Control label="Foil">
+        <div role="radiogroup" aria-label="Foil" className="mt-1.5 flex flex-wrap gap-2.5">
+          {(Object.keys(FOILS) as CardStyle['foil'][]).map((f) => (
+            <button key={f} type="button" role="radio" aria-checked={s.foil === f} title={FOILS[f]} aria-label={FOILS[f]} onClick={() => pick({ foil: f })} className={swatch(s.foil === f)} style={{ background: FOIL_SWATCH[f] }} />
+          ))}
+        </div>
+      </Control>
+      {rebuild &&
+        (
+          [
+            ['top', 'Top decoration', TOPS],
+            ['scene', 'Bottom scene', SCENES],
+          ] as const
+        ).map(([k, label, opts]) => (
+          <Control key={k} label={label}>
+            <Segmented<string> label={label} value={s[k] ?? 'none'} onChange={(v) => pick({ [k]: v })} options={Object.entries(opts).map(([id, l]) => ({ id, label: l }))} />
+          </Control>
+        ))}
+      <details className="group" open={!!rebuild}>
+        <summary className="cursor-pointer text-[14px] text-wine">More options: frame, pattern, lettering</summary>
+        <div className="mt-4 space-y-4">
+          {(
+            [
+              ['frame', 'Frame', frames],
+              ['pattern', 'Pattern', Object.entries(PATTERNS)],
+              ['fonts', 'Lettering', Object.entries(FONTS)],
+            ] as const
+          ).map(([k, label, opts]) => (
+            <Control key={k} label={label}>
+              <Segmented<string> label={label} value={s[k]} onChange={(v) => pick({ [k]: v })} options={opts.map(([id, l]) => ({ id, label: l }))} />
+            </Control>
+          ))}
+        </div>
+      </details>
     </div>
   )
 }
