@@ -762,7 +762,6 @@ function Spray({ p, k = 1 }: { p: [number, number, number, number, number, numbe
 // A wide gota ribbon: woven rose-gold tape with a scalloped lace edge, stitched on with a running seam.
 const GotaLace = ({ y, down }: { y: number; down: boolean }) => {
   const top = down ? y - 44 : y;
-  const edge = down ? y : y;
   return (
     <g>
       <rect x="0" y={top} width="540" height="44" fill={m("rose")} />
@@ -789,11 +788,11 @@ const GotaLace = ({ y, down }: { y: number; down: boolean }) => {
       {Array.from({ length: 19 }, (_, i) => (
         <g key={`s${i}`}>
           <path
-            d={`M${i * 30} ${edge} a15 15 0 0 ${down ? 0 : 1} 30 0`}
+            d={`M${i * 30} ${y} a15 15 0 0 ${down ? 0 : 1} 30 0`}
             fill={m("rose")}
           />
-          <circle cx={i * 30 + 15} cy={down ? edge + 7 : edge - 7} r="2.4" fill={RANI} />
-          <circle cx={i * 30 + 15} cy={down ? edge + 7 : edge - 7} r="1" fill={m("gold")} />
+          <circle cx={i * 30 + 15} cy={down ? y + 7 : y - 7} r="2.4" fill={RANI} />
+          <circle cx={i * 30 + 15} cy={down ? y + 7 : y - 7} r="1" fill={m("gold")} />
         </g>
       ))}
     </g>

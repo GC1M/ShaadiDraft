@@ -1125,7 +1125,7 @@ const nikkah: Design = {
   type: { title: 2.3 },
   press: PAPER_PRESS,
   cover: { flourish: false },
-  Top: () => <Svg h={40}>{null}</Svg>,
+  Top: () => null,
   Overlay: ({ h }) => (
     <Frame h={h}>
       <g fill="none" strokeLinecap="round" opacity="0.6">
