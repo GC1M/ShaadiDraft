@@ -1,10 +1,10 @@
-import { templates as batchA } from './card/designs-a'
-import { templates as batchB } from './card/designs-b'
-import { templates as batchC } from './card/designs-c'
 import { templates as batchD } from './card/designs-d'
 import { templates as batchE } from './card/designs-e'
 import { templates as batchF } from './card/designs-f'
 import { templates as batchG } from './card/designs-g'
+import { templates as batchH } from './card/designs-h'
+import { templates as batchI } from './card/designs-i'
+import { templates as batchJ } from './card/designs-j'
 import { SAMPLES } from './i18n'
 import type { CoverPage, EventType, Invite, Lang, Page, Section, SampleText, SectionsPage, SymbolId } from './types'
 
@@ -27,47 +27,58 @@ export interface Template {
   tr?: Partial<Record<Lang, { title: string; sections: Pick<Section, 'heading' | 'body'>[] }[]>>
 }
 
-export const TEMPLATES: Template[] = [
-  { id: 'gulabi-kankotri', name: 'Gulabi Kankotri', design: 'gulabi', lang: 'gu', symbol: 'ganesha', event: 'wedding' },
-  { id: 'royal-udaipur', name: 'Royal Udaipur Maroon & Gold', design: 'udaipur', lang: 'en', symbol: 'ganesha', event: 'wedding' },
-  { id: 'shubh-vivah', name: 'Shubh Vivah Traditional', design: 'kesar', lang: 'hi', symbol: 'ganesha', event: 'wedding' },
-  { id: 'haldi-sunshine', name: 'Marigold & Haldi Sunshine', design: 'marigold', lang: 'en', symbol: 'floral', event: 'haldi' },
-  { id: 'henna-courtyard', name: 'Emerald Henna Courtyard', design: 'henna', lang: 'en', symbol: 'floral', event: 'mehendi' },
-  { id: 'vrindavan', name: 'Vrindavan Peacock & Flute', design: 'vrindavan', lang: 'hi', symbol: 'radha-krishna', event: 'sangeet' },
-  { id: 'anand-karaj', name: 'Anand Karaj Royal Blue', design: 'anand-karaj', lang: 'pa', symbol: 'ek-onkar', event: 'wedding' },
-  { id: 'kanchipuram', name: 'Kanchipuram Temple Silk', design: 'kanchipuram', lang: 'ta', symbol: 'balaji', event: 'wedding' },
-  {
-    id: 'nikkah-walima',
-    name: 'Nikkah & Walima Ivory Gold',
-    design: 'nikkah',
-    lang: 'en',
-    symbol: 'bismillah',
-    event: 'reception',
-    override: {
-      title: 'Walima Reception',
-      hostLine: 'Mr. & Mrs. Imran Khan and Mr. & Mrs. Salim Siddiqui request the pleasure of your company at the Walima of',
-      bride: ['Zoya', 'D/o Mrs. Rukhsar & Mr. Imran Khan'],
-      groom: ['Ayaan', 'S/o Mrs. Farah & Mr. Salim Siddiqui'],
-      joiner: '&',
-      rsvp: 'Khan & Siddiqui Families\n+91 98765 43210',
-    },
-  },
-  { id: 'mangalashtak', name: 'Mandapam Mangalashtak', design: 'paithani', lang: 'mr', symbol: 'ganesha', event: 'ring' },
-  { id: 'bandhani', name: 'Bandhani Festive Invite', design: 'bandhani', lang: 'gu', symbol: 'ganesha', event: 'save-the-date' },
-  { id: 'ivory-monogram', name: 'Ivory Monogram Minimal', design: 'ivory', lang: 'en', symbol: 'floral', event: 'save-the-date' },
-  { id: 'nischayathartham', name: 'Nischayathartham Banana Leaf', design: 'nischayam', lang: 'ta', symbol: 'balaji', event: 'ring' },
-  { id: 'peacock-mehfil', name: 'Peacock Teal Mehfil', design: 'peacock', lang: 'en', symbol: 'floral', event: 'mehendi' },
-  { id: 'palace-night', name: 'Palace Night Lights', design: 'palace-night', lang: 'hi', symbol: 'ganesha', event: 'reception' },
-  { id: 'mangala-snanam', name: 'Mangala Snanam Turmeric Bath', design: 'snanam', lang: 'ta', symbol: 'balaji', event: 'haldi' },
-  ...batchA,
-  ...batchB,
-  ...batchC,
-  ...batchD,
-  ...batchE,
-  ...batchF,
-  ...batchG,
-]
+export const TEMPLATES: Template[] = [...batchD, ...batchE, ...batchF, ...batchG, ...batchH, ...batchI, ...batchJ]
 
+// Designs retired in the luxury restyle, mapped to the nearest live card (same event, then the same god or
+// sacred symbol, then language), so a saved draft or an old #template/ link keeps its occasion.
+const RETIRED: Record<string, string> = {
+  'gulabi-kankotri': 'sandhya-kankotri', // gu/ganesha/wedding to gu/ganesha/wedding
+  'royal-udaipur': 'sandhya-kankotri', // en/ganesha/wedding to gu/ganesha/wedding
+  'shubh-vivah': 'gota-patti', // hi/ganesha/wedding to hi/ganesha/wedding
+  'haldi-sunshine': 'genda-haldi', // en/floral/haldi to en/floral/haldi
+  'henna-courtyard': 'mehndi-jaal', // en/floral/mehendi to en/floral/mehendi
+  'vrindavan': 'pichhwai-lotus', // hi/radha-krishna/sangeet to hi/radha-krishna/sangeet
+  'anand-karaj': 'harmandir-gold-leaf', // pa/ek-onkar/wedding to pa/ek-onkar/wedding
+  'kanchipuram': 'korvai-silk', // ta/balaji/wedding to ta/balaji/wedding
+  'nikkah-walima': 'pietra-dura-walima', // en/bismillah/reception to en/bismillah/reception
+  'mangalashtak': 'patola-sagai', // mr/ganesha/ring to gu/ganesha/ring
+  'bandhani': 'choodi-save-the-date', // gu/ganesha/save-the-date to hi/ganesha/save-the-date
+  'ivory-monogram': 'deco-black-tie', // en/floral/save-the-date to en/floral/save-the-date
+  'nischayathartham': 'kolam-nischayathartham', // ta/balaji/ring to ta/balaji/ring
+  'peacock-mehfil': 'mehndi-jaal', // en/floral/mehendi to en/floral/mehendi
+  'palace-night': 'aaina-mahal', // hi/ganesha/reception to hi/ganesha/reception
+  'mangala-snanam': 'thipka-rangoli', // ta/balaji/haldi to mr/ganesha/haldi
+  'monsoon-postcard': 'deco-black-tie', // en/floral/save-the-date to en/floral/save-the-date
+  'kite-festival': 'choodi-save-the-date', // gu/ganesha/save-the-date to hi/ganesha/save-the-date
+  'calendar-circle': 'choodi-save-the-date', // hi/ganesha/save-the-date to hi/ganesha/save-the-date
+  'celestial-moon': 'deco-black-tie', // en/floral/save-the-date to en/floral/save-the-date
+  'rose-gold-solitaire': 'patola-sagai', // en/floral/ring to gu/ganesha/ring
+  'gol-dhana': 'patola-sagai', // gu/ganesha/ring to gu/ganesha/ring
+  'misri-roka': 'kalire-chunni', // pa/ek-onkar/ring to pa/ek-onkar/ring
+  'turmeric-splash': 'genda-haldi', // en/floral/haldi to en/floral/haldi
+  'haldi-kalash': 'thipka-rangoli', // hi/ganesha/haldi to mr/ganesha/haldi
+  'pithi-mirror-work': 'pithi-bandhani', // gu/ganesha/haldi to gu/ganesha/haldi
+  'rangoli-haldi': 'thipka-rangoli', // mr/ganesha/haldi to mr/ganesha/haldi
+  'mehendi-hands': 'mehndi-jaal', // en/floral/mehendi to en/floral/mehendi
+  'jharokha-jaal': 'mehndi-jaal', // hi/floral/mehendi to en/floral/mehendi
+  'mayun-night': 'phulkari-bagh', // pa/ek-onkar/mehendi to pa/floral/mehendi
+  'bollywood-marquee': 'garbo-navratri', // en/floral/sangeet to gu/ganesha/sangeet
+  'garba-raas-night': 'garbo-navratri', // gu/ganesha/sangeet to gu/ganesha/sangeet
+  'dhol-jaago': 'garbo-navratri', // pa/ek-onkar/sangeet to gu/ganesha/sangeet
+  'qawwali-mehfil': 'pietra-dura-walima', // en/bismillah/sangeet to en/bismillah/reception
+  'black-tie-emerald': 'aaina-mahal', // en/floral/reception to hi/ganesha/reception
+  'garden-fairy-lights': 'aaina-mahal', // en/floral/reception to hi/ganesha/reception
+  'champagne-minimal': 'aaina-mahal', // en/floral/reception to hi/ganesha/reception
+  'sheesh-mahal': 'aaina-mahal', // hi/ganesha/reception to hi/ganesha/reception
+  'shubho-bibaho': 'sandhya-kankotri', // en/ganesha/wedding to gu/ganesha/wedding
+  'kerala-kasavu': 'sandhya-kankotri', // en/floral/wedding to gu/ganesha/wedding
+  'pelli-patrika': 'korvai-silk', // en/balaji/wedding to ta/balaji/wedding
+  'jain-lagna-patrika': 'jain-kalpasutra', // gu/jain/wedding to gu/jain/wedding
+  'white-chapel': 'rose-window-wedding', // en/christian/wedding to en/christian/wedding
+  'parsi-lagan': 'sandhya-kankotri', // gu/floral/wedding to gu/ganesha/wedding
+  'kashmiri-chinar': 'gota-patti', // hi/ganesha/wedding to hi/ganesha/wedding
+}
+export const liveId = (id: string) => RETIRED[id] ?? id
 // Make your own: a blank luxe card the couple builds from parts. Not in TEMPLATES, so it has no gallery labels,
 // design page or preview; its occasion and symbol come from the invite.
 export const CUSTOM: Template = { id: 'make-your-own', name: 'Your Own Design', design: 'custom', lang: 'en', symbol: 'ganesha', event: 'wedding' }
@@ -142,7 +153,7 @@ const KEY = 'shaadidraft:invite:v2'
 export function loadInvite(): Invite | null {
   try {
     const v = JSON.parse(localStorage.getItem(KEY) ?? 'null')
-    return v?.version === 2 ? v : null
+    return v?.version === 2 ? { ...v, templateId: liveId(v.templateId) } : null
   } catch {
     return null // corrupt or unavailable storage: start fresh
   }

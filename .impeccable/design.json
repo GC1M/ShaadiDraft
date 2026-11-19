@@ -1,0 +1,394 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-19T17:42:48.658875+00:00",
+  "title": "Design System: ShaadiTemplate",
+  "extensions": {
+    "colorMeta": {
+      "wine": {
+        "role": "primary",
+        "displayName": "Wine Velvet",
+        "canonical": "#4a0e1c",
+        "tonalRamp": [
+          "#160408",
+          "#25070e",
+          "#340a14",
+          "#410c19",
+          "#774a55",
+          "#a4868e",
+          "#ccbcbf",
+          "#ede7e8"
+        ]
+      },
+      "wine-deep": {
+        "role": "primary",
+        "displayName": "Deep Wine Lining",
+        "canonical": "#2c0710",
+        "tonalRamp": [
+          "#0d0205",
+          "#160408",
+          "#1f050b",
+          "#27060e",
+          "#61454c",
+          "#968388",
+          "#c4babc",
+          "#eae6e7"
+        ]
+      },
+      "velvet-glow": {
+        "role": "primary",
+        "displayName": "Velvet Glow",
+        "canonical": "#6e1a2d",
+        "tonalRamp": [
+          "#21080e",
+          "#370d16",
+          "#4d1220",
+          "#611728",
+          "#925362",
+          "#b68c96",
+          "#d6bfc4",
+          "#f0e8ea"
+        ]
+      },
+      "maroon": {
+        "role": "secondary",
+        "displayName": "Maroon",
+        "canonical": "#6b1428",
+        "tonalRamp": [
+          "#20060c",
+          "#360a14",
+          "#4b0e1c",
+          "#5e1223",
+          "#904f5e",
+          "#b58a94",
+          "#d6bdc3",
+          "#f0e8ea"
+        ]
+      },
+      "zari": {
+        "role": "secondary",
+        "displayName": "Zari Gold",
+        "canonical": "#c9a45c",
+        "tonalRamp": [
+          "#3c311c",
+          "#64522e",
+          "#8d7340",
+          "#b19051",
+          "#d6bb85",
+          "#e4d2ae",
+          "#f0e6d1",
+          "#faf6ef"
+        ]
+      },
+      "zari-light": {
+        "role": "secondary",
+        "displayName": "Zari Light",
+        "canonical": "#d8b56c",
+        "tonalRamp": [
+          "#413620",
+          "#6c5a36",
+          "#977f4c",
+          "#be9f5f",
+          "#e2c891",
+          "#ecdab6",
+          "#f4ead6",
+          "#fbf8f0"
+        ]
+      },
+      "zari-foil": {
+        "role": "secondary",
+        "displayName": "Zari Foil",
+        "canonical": "#f0d595",
+        "tonalRamp": [
+          "#48402d",
+          "#786a4a",
+          "#a89568",
+          "#d3bb83",
+          "#f4e0b0",
+          "#f8eaca",
+          "#fbf3e1",
+          "#fefbf4"
+        ]
+      },
+      "zari-shadow": {
+        "role": "secondary",
+        "displayName": "Zari Shadow",
+        "canonical": "#b48c45",
+        "tonalRamp": [
+          "#362a15",
+          "#5a4622",
+          "#7e6230",
+          "#9e7b3d",
+          "#c7a974",
+          "#dac6a2",
+          "#eadfcb",
+          "#f8f4ec"
+        ]
+      },
+      "antique-gold": {
+        "role": "secondary",
+        "displayName": "Antique Gold",
+        "canonical": "#9a7330",
+        "tonalRamp": [
+          "#2e220e",
+          "#4d3a18",
+          "#6c5022",
+          "#88652a",
+          "#b39664",
+          "#ccb998",
+          "#e3d8c5",
+          "#f5f1ea"
+        ]
+      },
+      "rose": {
+        "role": "neutral",
+        "displayName": "Ivory Rose",
+        "canonical": "#f7edea",
+        "tonalRamp": [
+          "#4a4746",
+          "#7c7675",
+          "#ada6a4",
+          "#d9d1ce",
+          "#f9f2ef",
+          "#fbf6f4",
+          "#fdfaf9",
+          "#fefdfd"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fffaf6",
+        "tonalRamp": [
+          "#4c4b4a",
+          "#807d7b",
+          "#b2afac",
+          "#e0dcd8",
+          "#fffbf8",
+          "#fffcfa",
+          "#fffefc",
+          "#fffefe"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Kohl Ink",
+        "canonical": "#2b1418",
+        "tonalRamp": [
+          "#0d0607",
+          "#160a0c",
+          "#1e0e11",
+          "#261215",
+          "#604f52",
+          "#958a8c",
+          "#c4bdbe",
+          "#eae8e8"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Hero headline only."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section heads and the greeting ribbon (italic)."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Editor steps, design names, empty states."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "All controls and functional text."
+      },
+      "label": {
+        "displayName": "Eyebrow",
+        "purpose": "Uppercase zari label above the hero headline."
+      },
+      "devanagari-accent": {
+        "displayName": "Devanagari accent",
+        "purpose": "The Devanagari word beside the logo."
+      }
+    },
+    "shadows": [
+      {
+        "name": "card-rest",
+        "value": "0 18px 40px -18px rgba(43, 20, 24, .55)",
+        "purpose": "Every gallery card."
+      },
+      {
+        "name": "card-lifted",
+        "value": "0 28px 50px -20px rgba(43, 20, 24, .6)",
+        "purpose": "Gallery card on hover or focus."
+      },
+      {
+        "name": "foil-button",
+        "value": "0 1px 0 rgba(255, 240, 200, .6) inset, 0 14px 30px -12px rgba(10, 0, 4, .7)",
+        "purpose": "Primary zari buttons."
+      },
+      {
+        "name": "velvet-bar",
+        "value": "0 8px 24px -12px rgba(10, 0, 4, .6)",
+        "purpose": "Sticky editor toolbar."
+      }
+    ],
+    "motion": [
+      {
+        "name": "intro",
+        "value": "900ms cubic-bezier(.2,.7,.2,1)",
+        "purpose": "Hero words and copy rising out of a blur."
+      },
+      {
+        "name": "draw",
+        "value": "1.6s cubic-bezier(.32,.72,0,1)",
+        "purpose": "Mandap strokes drawing in."
+      },
+      {
+        "name": "foil-hover",
+        "value": "background-position .4s ease",
+        "purpose": "Foil gradient catching light."
+      },
+      {
+        "name": "thread",
+        "value": "transform .3s ease",
+        "purpose": "Event-tab zari underline growing."
+      },
+      {
+        "name": "card-lift",
+        "value": "transform 500ms ease-out; outline-color .3s ease; box-shadow .5s ease",
+        "purpose": "Gallery card hover."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "sm",
+        "value": "640px"
+      },
+      {
+        "name": "md",
+        "value": "768px"
+      },
+      {
+        "name": "lg",
+        "value": "1024px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button (foil)",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single main action per view.",
+      "html": "<a class=\"ds-btn-foil\" href=\"#\">Choose your design</a>",
+      "css": ".ds-btn-foil { display:inline-block; background:linear-gradient(180deg, #f0d595 0%, #c9a45c 48%, #b48c45 52%, #d8b56c 100%); background-size:100% 200%; color:#2c0710; font:500 15px Jost, system-ui, sans-serif; padding:16px 32px; border-radius:9999px; text-decoration:none; box-shadow:0 1px 0 rgba(255,240,200,.6) inset, 0 14px 30px -12px rgba(10,0,4,.7); transition:background-position .4s ease; } .ds-btn-foil:hover { background-position:0 100%; } .ds-btn-foil:focus-visible { outline:2px solid #9a7330; outline-offset:3px; }"
+    },
+    {
+      "name": "Secondary Button (wine)",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary action on ivory.",
+      "html": "<button class=\"ds-btn-wine\">Clear filters</button>",
+      "css": ".ds-btn-wine { background:#4a0e1c; color:#f7edea; font:400 15px Jost, system-ui, sans-serif; padding:12px 24px; border:none; border-radius:9999px; transition:background .2s; } .ds-btn-wine:hover { background:#2c0710; } .ds-btn-wine:focus-visible { outline:2px solid #9a7330; outline-offset:3px; }"
+    },
+    {
+      "name": "Outline Button on Velvet",
+      "kind": "button",
+      "refersTo": "button-outline-on-velvet",
+      "description": "Secondary actions in the velvet editor toolbar.",
+      "html": "<div class=\"ds-velvet\"><button class=\"ds-btn-outline\">Download PDF</button></div>",
+      "css": ".ds-velvet { background:#4a0e1c; padding:16px; } .ds-btn-outline { background:transparent; color:#f7edea; font:500 14px Jost, system-ui, sans-serif; padding:10px 16px; border:1px solid rgba(201,164,92,.7); border-radius:9999px; transition:background .2s; } .ds-btn-outline:hover { background:rgba(255,255,255,.1); } .ds-btn-outline:focus-visible { outline:2px solid #c9a45c; outline-offset:3px; }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Editor fields for names, dates and venues.",
+      "html": "<label class=\"ds-label\">Bride's name<input class=\"ds-input\" value=\"Ananya\"></label>",
+      "css": ".ds-label { display:block; font:400 13px Jost, system-ui, sans-serif; color:rgba(43,20,24,.65); } .ds-input { display:block; margin-top:6px; width:100%; background:#fffaf6; color:#2b1418; font:400 16px Jost, system-ui, sans-serif; padding:10px 14px; border:1px solid rgba(74,14,28,.2); border-radius:6px; outline:none; transition:border-color .2s; } .ds-input:hover { border-color:rgba(74,14,28,.4); } .ds-input:focus { border-color:#4a0e1c; box-shadow:0 0 0 2px rgba(201,164,92,.4); }"
+    },
+    {
+      "name": "Segmented Control",
+      "kind": "chip",
+      "refersTo": "segmented-active",
+      "description": "Format, size and language choices.",
+      "html": "<div class=\"ds-seg\" role=\"radiogroup\"><button class=\"ds-seg-on\" role=\"radio\" aria-checked=\"true\">Story</button><button role=\"radio\" aria-checked=\"false\">Print</button></div>",
+      "css": ".ds-seg { display:inline-flex; padding:4px; border-radius:9999px; background:rgba(74,14,28,.06); box-shadow:inset 0 0 0 1px rgba(74,14,28,.1); } .ds-seg button { border:none; background:transparent; color:rgba(43,20,24,.7); font:400 14px Jost, system-ui, sans-serif; padding:6px 14px; border-radius:9999px; transition:color .2s, background .2s; } .ds-seg button:hover { color:#4a0e1c; } .ds-seg .ds-seg-on { background:#4a0e1c; color:#f7edea; box-shadow:0 1px 2px rgba(0,0,0,.1); } .ds-seg button:focus-visible { outline:2px solid #9a7330; outline-offset:3px; }"
+    },
+    {
+      "name": "Event Tabs",
+      "kind": "nav",
+      "refersTo": null,
+      "description": "Ceremony filter with a zari thread under the chosen tab.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab\" aria-pressed=\"true\">Wedding <span>24</span></button><button class=\"ds-tab\" aria-pressed=\"false\">Haldi <span>8</span></button></div>",
+      "css": ".ds-tabs { display:flex; gap:4px; border-bottom:1px solid rgba(74,14,28,.15); background:#f7edea; padding-top:12px; } .ds-tab { position:relative; border:none; background:none; padding:4px 14px 14px; font:400 15px Jost, system-ui, sans-serif; color:rgba(43,20,24,.6); transition:color .2s; } .ds-tab span { margin-left:6px; font-size:12px; color:rgba(43,20,24,.4); } .ds-tab:hover { color:#2b1418; } .ds-tab[aria-pressed='true'] { color:#4a0e1c; } .ds-tab::after { content:''; position:absolute; left:14px; right:14px; bottom:-1px; height:2px; background:#c9a45c; transform:scaleX(0); transition:transform .3s ease; } .ds-tab[aria-pressed='true']::after { transform:scaleX(1); } .ds-tab:focus-visible { outline:2px solid #9a7330; outline-offset:3px; }"
+    },
+    {
+      "name": "Gallery Card",
+      "kind": "card",
+      "refersTo": null,
+      "description": "A design in the gallery: square card, soft warm shadow, zari hairline on hover.",
+      "html": "<a class=\"ds-design\" href=\"#\"><div class=\"ds-card\"></div><h3>Gulabi Kankotri</h3><p>Wedding · Gujarati</p></a>",
+      "css": ".ds-design { display:block; width:180px; color:#2b1418; text-decoration:none; } .ds-card { aspect-ratio:9/16; background:linear-gradient(160deg,#f3d9d2,#e8b9ad); box-shadow:0 18px 40px -18px rgba(43,20,24,.55); outline:1px solid transparent; outline-offset:6px; transition:transform .5s ease-out, outline-color .3s ease, box-shadow .5s ease; } .ds-design:hover .ds-card, .ds-design:focus-visible .ds-card { transform:translateY(-6px); outline-color:#c9a45c; box-shadow:0 28px 50px -20px rgba(43,20,24,.6); } .ds-design:focus-visible { outline:none; } .ds-design h3 { margin:20px 0 0; font:400 19px/1.375 'Bodoni Moda', Didot, serif; } .ds-design p { margin:4px 0 0; font:400 14px Jost, system-ui, sans-serif; color:rgba(43,20,24,.6); }"
+    },
+    {
+      "name": "Filter Select",
+      "kind": "input",
+      "refersTo": "select-filter",
+      "description": "Language and symbol filters above the gallery.",
+      "html": "<select class=\"ds-select\"><option>All languages</option><option>Gujarati</option></select>",
+      "css": ".ds-select { appearance:none; background:#fffaf6 url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%234a0e1c' stroke-width='1.5'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E\") no-repeat right 16px center; color:#2b1418; font:400 15px Jost, system-ui, sans-serif; padding:10px 40px 10px 16px; border:1px solid rgba(74,14,28,.25); border-radius:9999px; } .ds-select:hover { border-color:rgba(74,14,28,.5); } .ds-select:focus { border-color:#4a0e1c; } .ds-select:focus-visible { outline:2px solid #9a7330; outline-offset:3px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Trousseau Box",
+    "overview": "The site is the box a bride's trousseau is shown in: a lining of wine velvet, edges finished in gold zari, and the cards themselves laid out on ivory silk for the family to look over. Velvet frames the moments of arrival and action (the hero, the editor's toolbar and settings panel); ivory rose holds the browsing (the gallery, the editor's form, the static pages). Zari is the thread that stitches the two together, and it is spent sparingly so it still reads as gold.\n\nThe chrome exists to present the cards, not to compete with them. Card designs bring their own palettes, fonts and painted art; the site stays in its three materials (velvet, zari, ivory) so any card looks right on it. Ornament is textile and ceremonial (a woven buta border, a line-drawn mandap, falling marigold petals, a flickering diya), drawn in thin gold strokes, never filled clip-art.\n\nScope: this file governs the site chrome only (the gallery and hero in `src/App.tsx` and `src/Hero.tsx`, the editor in `src/Editor.tsx`, shared primitives in `src/ui.tsx` and `src/index.css`, and the static pages styled by `public/legal.css`). Card designs (`src/card/`) and the Ananya & Arjun sample couple site (`src/site/`, scoped under `.ov` and `.fm`) are separate worlds with their own palettes and are not bound by these tokens.",
+    "keyCharacteristics": [
+      "Two grounds only: wine velvet with grain, and warm ivory rose.",
+      "Zari gold as foil (gradient, catches light on hover), never as a flat fill for large areas.",
+      "Bodoni Moda for anything ceremonial; Jost for everything functional.",
+      "Pills for actions and filters, gentle 6px corners for form fields, square cards.",
+      "Motion is ritual: things draw themselves, rise in, or shimmer; all of it stops under reduced motion."
+    ],
+    "rules": [
+      {
+        "name": "The Thread, Not the Cloth Rule",
+        "body": "Zari is a thread. It appears as strokes, underlines, hairlines, small labels and the foil on one primary button per view. It never fills a section, a card or a panel.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Grounds Rule",
+        "body": "Every surface is either wine velvet or ivory rose (with paper for fields). No grays, no third background color, no pure white or pure black.",
+        "section": "colors"
+      },
+      {
+        "name": "The Engraved Voice Rule",
+        "body": "Bodoni Moda is for ceremony: headlines, names, step numbers, the brand. Buttons, inputs, filters, tabs and help text are always Jost.",
+        "section": "typography"
+      },
+      {
+        "name": "The Lifted Object Rule",
+        "body": "Only cards and the foil button cast shadows. Panels, inputs and sections sit flat and are separated by hairlines or a change of ground.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do keep every surface on one of two grounds: wine velvet (with its grain) or ivory rose, with paper for fields.",
+      "Do use the foil gradient for the single primary action in a view, and zari strokes or underlines for everything else gold.",
+      "Do set ceremonial text in Bodoni Moda and every control in Jost.",
+      "Do use pills for actions and filters, 6px corners for fields, square corners for cards.",
+      "Do tint shadows with wine or near-black and keep them long and soft.",
+      "Do honor `prefers-reduced-motion`: every intro, draw, petal, shine, ribbon and scroll animation has a static fallback.",
+      "Do let the card artwork lead: the chrome around a card stays quiet."
+    ],
+    "donts": [
+      "Don't fill a section, panel or card background with zari gold.",
+      "Don't introduce grays, pure white, pure black or a new accent color into the chrome.",
+      "Don't use Bodoni Moda for buttons, inputs, tabs or help text.",
+      "Don't add shadows to panels, inputs or sections.",
+      "Don't apply these tokens to card designs or the sample couple site; they have their own worlds.",
+      "Don't use bounce or elastic easing in the chrome; motion decelerates smoothly (the intro uses `cubic-bezier(.2,.7,.2,1)`)."
+    ]
+  }
+}

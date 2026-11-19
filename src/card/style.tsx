@@ -1,10 +1,10 @@
 // The luxe layer over the drawn (vector) designs: a foil frame, a tone-on-tone woven pattern, paper or silk texture,
-// a colour palette and a lettering pairing. Each drawn design has its own designer's choice in LOOKS; the couple
-// can change any part in the editor (Invite.style). Painted designs (Design.pages) are left as they are.
+// a colour palette and a lettering pairing. Drawn designs start as drawn (Original); the couple can change any part
+// in the editor (Invite.style). Painted designs (Design.pages) are left as they are.
 import type { ReactElement } from 'react'
 import type { CardStyle } from '../types'
 import { DESIGNS, type Design } from './designs'
-import { EdgeJewel, FoilDefs, GRAIN, GRAIN_LIGHT, LuxeFrame, SHEEN, VIGNETTE, foil, type Foil } from './luxe'
+import { FoilDefs, GRAIN, GRAIN_LIGHT, VIGNETTE, foil, type Foil } from './luxe'
 
 export const FRAMES = { original: 'Original', filigree: 'Filigree', jharokha: 'Jharokha arch', temple: 'Temple border', zari: 'Zari band', deco: 'Art deco', hairline: 'Hairline' } as const
 export const PATTERNS = { none: 'Plain', jaal: 'Jaal trellis', buta: 'Buta florals', bandhani: 'Bandhani dots', scallop: 'Deco fans', stars: 'Starlight' } as const
@@ -37,67 +37,22 @@ const LATIN = {
 }
 
 // Parts for Make your own, borrowed from the designs that draw them: top decorations and bottom scenes.
-export const TOPS = { none: 'None', marigold: 'Marigold garland', udaipur: 'Toran', gulabi: 'Flower vines', 'mayun-night': 'Tassels', 'palace-night': 'Fairy lights', qawwali: 'Lanterns', vrindavan: 'Bells & leaves' } as const
-export const SCENES = { none: 'None', kanchipuram: 'Temple', udaipur: 'Palace', 'palace-night': 'Palace lights', 'haldi-kalash': 'Kalash', kasavu: 'Brass lamp', 'rangoli-haldi': 'Rangoli', peacock: 'Peacock', vrindavan: 'Lotus pond', 'mehendi-hands': 'Mehendi hands', nikkah: 'Mosque', chapel: 'Church', ivory: 'Laurel' } as const
+export const TOPS = { none: 'None', genda: 'Marigold garland', kalire: 'Kalire tassels', pichhwai: 'Lotus garland', garbo: 'Bunting', korvai: 'Zari band', 'gota-patti': 'Gota lace' } as const
+export const SCENES = { none: 'None', choodi: 'Bangles', genda: 'Brass urli', garbo: 'Garbo lamp', harmandir: 'Golden temple', pichhwai: 'Lotus pond', thipka: 'Rangoli', paithani: 'Peacock pallu', korvai: 'Silk pallu', kalire: 'Chooda', deco: 'Deco fan' } as const
 
 export const PLAIN: CardStyle = { frame: 'original', pattern: 'none', foil: 'gold', palette: 'original', fonts: 'original' }
 
-// Designer's choice per drawn design: no two share the same look.
-const L = (frame: CardStyle['frame'], pattern: CardStyle['pattern'], f: Foil, fonts: CardStyle['fonts']): CardStyle => ({ frame, pattern, foil: f, palette: 'original', fonts })
+// Designer's choice where it differs from the design as drawn.
 export const LOOKS: Record<string, CardStyle> = {
-  custom: { ...L('filigree', 'jaal', 'gold', 'regal'), palette: 'maroon', top: 'none', scene: 'kanchipuram' },
-  gulabi: L('filigree', 'buta', 'rose', 'romantic'),
-  udaipur: L('filigree', 'jaal', 'gold', 'regal'),
-  kesar: L('deco', 'buta', 'copper', 'heritage'),
-  marigold: L('original', 'bandhani', 'gold', 'romantic'),
-  henna: L('hairline', 'buta', 'gold', 'romantic'),
-  vrindavan: L('filigree', 'stars', 'gold', 'heritage'),
-  'anand-karaj': L('zari', 'jaal', 'gold', 'regal'),
-  kanchipuram: L('temple', 'bandhani', 'gold', 'heritage'),
-  nikkah: L('hairline', 'stars', 'gold', 'romantic'),
-  paithani: L('zari', 'buta', 'gold', 'heritage'),
-  bandhani: L('zari', 'bandhani', 'gold', 'heritage'),
-  ivory: L('hairline', 'none', 'gold', 'editorial'),
-  nischayam: L('temple', 'jaal', 'gold', 'heritage'),
-  peacock: L('filigree', 'scallop', 'gold', 'romantic'),
-  'palace-night': L('hairline', 'none', 'gold', 'regal'),
-  snanam: L('original', 'scallop', 'copper', 'heritage'),
-  monsoon: L('deco', 'scallop', 'silver', 'editorial'),
-  patang: L('hairline', 'bandhani', 'copper', 'heritage'),
-  calendar: L('hairline', 'none', 'rose', 'editorial'),
-  solitaire: L('filigree', 'none', 'rose', 'editorial'),
-  'gol-dhana': L('zari', 'jaal', 'copper', 'heritage'),
-  phulkari: L('zari', 'buta', 'copper', 'regal'),
-  celestial: L('deco', 'stars', 'gold', 'editorial'),
-  'turmeric-splash': L('original', 'none', 'gold', 'romantic'),
-  'haldi-kalash': L('hairline', 'buta', 'copper', 'heritage'),
-  'pithi-mirror': L('zari', 'scallop', 'copper', 'heritage'),
-  'rangoli-haldi': L('filigree', 'none', 'gold', 'heritage'),
-  'mehendi-hands': L('filigree', 'none', 'silver', 'romantic'),
-  'jharokha-jaal': L('filigree', 'jaal', 'copper', 'romantic'),
-  'mayun-night': L('deco', 'stars', 'gold', 'regal'),
-  marquee: L('deco', 'scallop', 'gold', 'regal'),
-  garba: L('filigree', 'bandhani', 'silver', 'heritage'),
-  jaago: L('filigree', 'none', 'gold', 'regal'),
-  qawwali: L('hairline', 'stars', 'silver', 'regal'),
-  'emerald-deco': L('deco', 'none', 'gold', 'editorial'),
-  'fairy-garden': L('original', 'stars', 'gold', 'romantic'),
-  champagne: L('hairline', 'none', 'silver', 'editorial'),
-  'sheesh-mahal': L('jharokha', 'bandhani', 'silver', 'regal'),
-  shubho: L('deco', 'buta', 'silver', 'heritage'),
-  kasavu: L('hairline', 'none', 'gold', 'heritage'),
-  pelli: L('temple', 'bandhani', 'copper', 'heritage'),
-  'jain-lagna': L('deco', 'none', 'copper', 'heritage'),
-  chapel: L('deco', 'none', 'gold', 'romantic'),
-  'parsi-lagan': L('filigree', 'scallop', 'copper', 'editorial'),
-  chinar: L('filigree', 'jaal', 'silver', 'regal'),
+  custom: { frame: 'filigree', pattern: 'jaal', foil: 'gold', palette: 'maroon', fonts: 'regal', top: 'none', scene: 'choodi' },
 }
 
-// Designs whose own garland, toran or fringe hangs across the top edge: the frame leaves out its top crest there.
-const GARLAND = new Set(['gulabi', 'udaipur', 'kesar', 'bandhani', 'paithani', 'mayun-night', 'nischayam', 'palace-night', 'rangoli-haldi', 'vrindavan', 'kanchipuram', 'pelli'])
+// Designs with no art along the top edge: only there does a frame keep its top crest (elsewhere it would sit on a
+// garland, band or frieze).
+const OPEN_TOP = new Set(['custom', 'aaina', 'thanjavur', 'pietra-dura', 'rose-window'])
 
-// Designs that draw their own arch: a jharokha frame would nest a second one inside it.
-export const OWN_ARCH = new Set(['nikkah', 'palace-night', 'henna', 'jharokha-jaal', 'qawwali'])
+// Designs that draw their own arch or niche: a jharokha frame would nest a second one inside it.
+export const OWN_ARCH = new Set(['aaina', 'pietra-dura', 'rose-window'])
 
 const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
 const rl = (c: number[]) => {
@@ -128,6 +83,8 @@ const lum = (hex: string) => {
 const memo = new Map<string, { d: Design; s: CardStyle | null }>()
 export function styled(d: Design, own?: Partial<CardStyle>): { d: Design; s: CardStyle | null } {
   if (d.pages) return { d, s: null }
+  // Nothing picked: the card exactly as designed.
+  if (!LOOKS[d.id] && !own) return { d, s: PLAIN }
   const key = `${d.id}|${JSON.stringify(own ?? {})}`
   if (!memo.has(key)) memo.set(key, build(d, own))
   return memo.get(key)!
@@ -140,13 +97,12 @@ function build(d: Design, own?: Partial<CardStyle>): { d: Design; s: CardStyle }
   const dark = lum(ink.text) > 0.55
   const ground = p ? p.sky : d.sky
   const colors = Object.fromEntries(Object.entries(ink).map(([k, v]) => [k, legible(v, ground, dark, ['title', 'heading', 'names'].includes(k) ? 3 : 4.5)])) as Design['colors']
-  // Paper tooth on light grounds, silk sheen on dark ones and a soft edge vignette, over the ground; a layer the
-  // design's own sky already has is not added twice (doubled sheen reads as glare).
-  const add = [dark ? GRAIN_LIGHT : GRAIN, ...(dark ? [SHEEN] : []), VIGNETTE].filter((l) => !ground.includes(l))
+  // Paper or silk tooth and a soft edge vignette over the ground; a layer the design's own sky already has is not added twice.
+  const add = [dark ? GRAIN_LIGHT : GRAIN, VIGNETTE].filter((l) => !ground.includes(l))
   const sky = [...add.map((l) => (l === VIGNETTE ? l.replace('55%', '68%').replace('.28', dark ? '.3' : '.1') : l)), ground].join(',')
   const fonts = s.fonts === 'original' ? d.fonts : LATIN[s.fonts]
   const framed = s.frame !== 'original'
-  const Overlay = framed || s.pattern !== 'none' ? (({ h }: { h: number }) => <Layers h={h} s={s} dark={dark} own={framed ? undefined : d.Overlay} ink={colors.title} crest={!GARLAND.has(d.id) && (!s.top || s.top === 'none')} />) : d.Overlay
+  const Overlay = framed || s.pattern !== 'none' ? (({ h }: { h: number }) => <Layers h={h} s={s} dark={dark} own={framed ? undefined : d.Overlay} ink={colors.title} crest={s.top ? s.top === 'none' : OPEN_TOP.has(d.id)} />) : d.Overlay
   // A frame takes the edge, so text keeps clear of it; the wide bands (zari, temple) take more.
   const x = s.frame === 'zari' || s.frame === 'temple' ? 58 : 50
   const safe = framed ? { story: { ...d.safe.story, x: Math.max(d.safe.story.x, x) }, print: { ...d.safe.print, x: Math.max(d.safe.print.x, x * 0.85) } } : d.safe
@@ -311,3 +267,77 @@ function Frame({ h, id, f, crest }: { h: number; id: CardStyle['frame']; f: Foil
     </g>,
   )
 }
+
+
+// Baroque corner in a 120x120 box, pointing at (0,0). Rotate/flip for other corners.
+function FiligreeCorner({ fill, s = 1 }: { fill: string; s?: number }) {
+  return (
+    <g transform={`scale(${s})`} fill="none" stroke={fill} strokeLinecap="round">
+      <path d="M8 66 C8 34 34 8 66 8" strokeWidth="1.6" />
+      <path d="M16 74 C16 42 42 16 74 16" strokeWidth="0.7" />
+      <path d="M66 8 C88 8 98 22 88 32 C80 39 70 31 76 24 C80 20 85 23 84 27" strokeWidth="1.4" />
+      <path d="M8 66 C8 88 22 98 32 88 C39 80 31 70 24 76 C20 80 23 85 27 84" strokeWidth="1.4" />
+      <path d="M74 16 C96 18 112 12 118 4" strokeWidth="0.9" />
+      <path d="M16 74 C18 96 12 112 4 118" strokeWidth="0.9" />
+      <path d="M22 22 C36 26 46 36 50 50 C36 46 26 36 22 22 Z" fill={fill} stroke="none" />
+      <path d="M32 14 C38 5 49 4 54 11 C45 11 38 13 32 14 Z" fill={fill} stroke="none" />
+      <path d="M14 32 C5 38 4 49 11 54 C11 45 13 38 14 32 Z" fill={fill} stroke="none" />
+      <path d="M40 24 C46 20 52 22 54 27 M24 40 C20 46 22 52 27 54" strokeWidth="0.8" />
+      <circle cx="58" cy="58" r="2.6" fill={fill} stroke="none" />
+      <circle cx="28" cy="52" r="1.5" fill={fill} stroke="none" />
+      <circle cx="52" cy="28" r="1.5" fill={fill} stroke="none" />
+      <circle cx="96" cy="10" r="1.4" fill={fill} stroke="none" />
+      <circle cx="10" cy="96" r="1.4" fill={fill} stroke="none" />
+    </g>
+  )
+}
+
+// Small cartouche for the middle of a frame edge, centred on (0,0).
+function EdgeJewel({ fill }: { fill: string }) {
+  return (
+    <g fill="none" stroke={fill} strokeLinecap="round">
+      <path d="M0 -9 L9 0 L0 9 L-9 0 Z" fill={fill} stroke="none" />
+      <path d="M-12 0 C-22 -10 -34 -8 -36 0 C-34 8 -22 10 -12 0 M12 0 C22 -10 34 -8 36 0 C34 8 22 10 12 0" strokeWidth="1.1" />
+      <path d="M-40 0 L-60 0 M40 0 L60 0" strokeWidth="0.8" />
+      <circle cx="-64" cy="0" r="1.6" fill={fill} stroke="none" />
+      <circle cx="64" cy="0" r="1.6" fill={fill} stroke="none" />
+    </g>
+  )
+}
+
+// Full-card frame: triple rule, filigree corners, edge jewels. h in 540-wide units.
+function LuxeFrame({ h, f = 'gold', inset = 16, corners = true, jewels = true }: { h: number; f?: Foil; inset?: number; corners?: boolean; jewels?: boolean }) {
+  const g = foil(f)
+  const i2 = inset + 7
+  const i3 = inset + 12
+  return (
+    <svg viewBox={`0 0 540 ${h}`} width="100%" height="100%" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      <FoilDefs />
+      <rect x={inset} y={inset} width={540 - inset * 2} height={h - inset * 2} stroke={g} strokeWidth="2.4" fill="none" />
+      <rect x={i2} y={i2} width={540 - i2 * 2} height={h - i2 * 2} stroke={g} strokeWidth="0.8" fill="none" />
+      <rect x={i3} y={i3} width={540 - i3 * 2} height={h - i3 * 2} stroke={g} strokeWidth="0.9" strokeDasharray="0.1 5" strokeLinecap="round" fill="none" />
+      {corners &&
+        [
+          [i2, i2, 1, 1],
+          [540 - i2, i2, -1, 1],
+          [i2, h - i2, 1, -1],
+          [540 - i2, h - i2, -1, -1],
+        ].map(([x, y, sx, sy]) => (
+          <g key={`${sx}${sy}`} transform={`translate(${x} ${y}) scale(${sx} ${sy})`}>
+            <FiligreeCorner fill={g} s={0.85} />
+          </g>
+        ))}
+      {jewels && (
+        <>
+          <g transform={`translate(270 ${inset})`}>
+            <EdgeJewel fill={g} />
+          </g>
+          <g transform={`translate(270 ${h - inset})`}>
+            <EdgeJewel fill={g} />
+          </g>
+        </>
+      )}
+    </svg>
+  )
+}
+

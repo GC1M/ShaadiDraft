@@ -149,12 +149,12 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
       <P show={!head && !!p.shlok} style={{ fontSize: '0.76em', color: c.muted, lineHeight: 1.35 }}>
         <Rich text={p.shlok} accent={c.accent} big={c.heading} />
       </P>
-      {!head && (
+      {!head && x.d.cover?.emblem !== false && (
         <div style={{ width: '3.4em', alignSelf: 'center' }}>
           <Emblem symbol={symbol} color={c.title} accent={c.accent} size="100%" />
         </div>
       )}
-      <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.5em', lineHeight: 1.15 }}>
+      <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: `${ty.title ?? 2.5}em`, lineHeight: 1.15 }}>
         {p.title}
       </P>
       <P show={!!p.hostLine} style={{ fontSize: '0.92em', lineHeight: 1.4 }}>
@@ -194,7 +194,7 @@ function Cover({ x, p, symbol, head }: { x: Look; p: CoverPage; symbol: SymbolId
           </P>
         </div>
       )}
-      {!head && (
+      {!head && x.d.cover?.flourish !== false && (
         <div style={{ width: '9em', alignSelf: 'center' }}>
           <Flourish color={c.heading} width="100%" />
         </div>
@@ -291,7 +291,7 @@ function Sections({ x, p, head, cols }: { x: Look; p: SectionsPage; head: boolea
       <P show={!head && !!p.title} style={{ fontFamily: x.f.title, color: c.title, fontSize: '2.3em', lineHeight: 1.15 }}>
         {p.title}
       </P>
-      {!head && (
+      {!head && x.d.cover?.flourish !== false && (
         <div style={{ width: '9em', alignSelf: 'center' }}>
           <Flourish color={c.heading} width="100%" />
         </div>
@@ -374,7 +374,7 @@ export function CardPage({ invite, page }: { invite: Invite; page: Page }) {
   }, [page, base, invite.scale, invite.lang, invite.templateId, art, invite.style])
 
   return (
-    <div className="relative overflow-hidden" style={{ width: w, height: h, background: d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, '--names': x.f.names } as CSSProperties}>
+    <div className="relative overflow-hidden" style={{ width: w, height: h, background: d.sky, color: d.colors.text, fontFamily: x.f.body, letterSpacing: d.tracking, textShadow: d.press, '--names': x.f.names } as CSSProperties}>
       {/* Painted art is an <img>, not a CSS background: Safari's export drops a url() background's size and colour, so pages came out black. */}
       {art && !photo && <img src={art.src} alt="" className="absolute inset-0 size-full object-cover" />}
       {photo && (

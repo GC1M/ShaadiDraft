@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { CardPage, SIZES } from './card/Card'
 import Editor from './Editor'
 import { EVENTS, LANGS, SYMBOLS } from './i18n'
-import { CUSTOM, loadInvite, newInvite, saveInvite, templateOf, TEMPLATES, type Template } from './templates'
+import { CUSTOM, liveId, loadInvite, newInvite, saveInvite, templateOf, TEMPLATES, type Template } from './templates'
 import { EVENT_IDS, LANG_IDS, SYMBOL_IDS, type EventType, type Invite, type Lang, type SymbolId } from './types'
 import { Hero, preview } from './Hero'
 import { ScaledCard, ZariBorder } from './ui'
@@ -18,7 +18,7 @@ const SITES: Record<string, ReturnType<typeof lazy>> = {
 }
 const isSite = () => (location.hash in SITES ? location.hash : '')
 // Static template pages link to #template/<id> to open that design. Consumed once, so StrictMode's re-run is a no-op.
-let linked = [...TEMPLATES, CUSTOM].find((t) => `#template/${t.id}` === location.hash)
+let linked = location.hash.startsWith('#template/') ? [...TEMPLATES, CUSTOM].find((t) => t.id === liveId(location.hash.slice(10))) : undefined
 
 export default function App() {
   const [invite, setInvite] = useState<Invite | null>(loadInvite)
