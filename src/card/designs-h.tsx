@@ -472,7 +472,14 @@ const korvai: Design = {
 const VELVET = "#1a0824";
 const MIRROR = ["#5f6469", "#8e949b", "#b8bec5", "#d9dde2", "#f4f6f8"];
 
-// A mosaic band between two parallel edges, as facets (two triangles per cell) of varied tone.
+// Cut mirror reflects the room, so the shards carry its colours: the plum velvet, the gilt, the lamps.
+// Mostly mid silver and plum, some gilt, a rare near-white glint.
+const SHARDS = [
+  "#4a2a5e", "#6b4a80", "#3a1d4c", "#8e949b", "#b8bec5", "#9a8fa8",
+  "#c49f4d", "#8a6a2a", "#d9dde2", "#5f6469", "#7a5c8e", "#f8f4ff",
+];
+// A mosaic band between two parallel edges. Each cell is broken at an off-centre point into four shards of
+// different size and angle, set in dark lead, the way hand-cut sheesh mahal glass never repeats.
 function Mosaic({
   inner,
   outer,
@@ -482,23 +489,34 @@ function Mosaic({
   outer: [number, number][];
   seed: number;
 }) {
+  const pick = (k: number) => {
+    const r = hash(k);
+    return SHARDS[r > 0.97 ? 11 : Math.floor(hash(k * 7 + 3) * 11)];
+  };
   return (
-    <g stroke={VELVET} strokeWidth="0.5">
-      {inner.slice(1).map((p, i) => {
+    <g stroke="#0c0410" strokeWidth="0.7" strokeLinejoin="round">
+      {inner.slice(1).map((d, i) => {
         const a = inner[i];
         const b = outer[i];
         const c = outer[i + 1];
-        const d = p;
-        const t1 = MIRROR[Math.floor(hash(seed + i * 2) * 5)];
-        const t2 = MIRROR[Math.floor(hash(seed + i * 2 + 1) * 5)];
-        const [s, u] =
-          i % 2
-            ? [`${a} ${b} ${c}`, `${a} ${c} ${d}`]
-            : [`${a} ${b} ${d}`, `${b} ${c} ${d}`];
+        const u = 0.2 + hash(seed + i * 5) * 0.6;
+        const v = 0.2 + hash(seed + i * 5 + 1) * 0.6;
+        const lerp = (p: [number, number], q: [number, number], t: number) =>
+          [p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t] as [number, number];
+        const P = lerp(lerp(a, d, u), lerp(b, c, u), v);
+        const quad = [a, b, c, d];
         return (
           <g key={i}>
-            <polygon points={s} fill={t1} />
-            <polygon points={u} fill={t2} />
+            {quad.map((q, k) => {
+              const r = quad[(k + 1) % 4];
+              return (
+                <polygon
+                  key={k}
+                  points={`${q.join(" ")} ${r.join(" ")} ${P.join(" ")}`}
+                  fill={pick(seed * 31 + i * 4 + k)}
+                />
+              );
+            })}
           </g>
         );
       })}

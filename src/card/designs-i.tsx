@@ -704,7 +704,7 @@ const RANI = "#8a1048";
 const gotaLeaf = "M0 0 C6 -6 15 -6 22 0 C15 6 6 6 0 0 Z";
 
 // A spray of gota leaves along a quadratic stem from (x0,y0) through (cx,cy) to (x1,y1).
-function Spray({ p }: { p: [number, number, number, number, number, number] }) {
+function Spray({ p, k = 1 }: { p: [number, number, number, number, number, number]; k?: number }) {
   const [x0, y0, cx, cy, x1, y1] = p;
   const at = (t: number) => [
     (1 - t) ** 2 * x0 + 2 * (1 - t) * t * cx + t * t * x1,
@@ -728,7 +728,7 @@ function Spray({ p }: { p: [number, number, number, number, number, number] }) {
         const t = 0.08 + i * 0.065;
         const [x, y] = at(t);
         const a = tan(t) + (i % 2 ? 50 : -50);
-        const s = 1.25 - t * 0.6;
+        const s = (1.25 - t * 0.6) * k;
         return (
           <g
             key={i}
@@ -759,37 +759,46 @@ function Spray({ p }: { p: [number, number, number, number, number, number] }) {
     </g>
   );
 }
-const Scallops = ({ y, down }: { y: number; down: boolean }) => (
-  <g>
-    <rect
-      x="0"
-      y={down ? y - 12 : y}
-      width="540"
-      height="12"
-      fill={m("rose")}
-    />
-    {Array.from({ length: 27 }, (_, i) => (
-      <g key={i}>
+// A wide gota ribbon: woven rose-gold tape with a scalloped lace edge, stitched on with a running seam.
+const GotaLace = ({ y, down }: { y: number; down: boolean }) => {
+  const top = down ? y - 44 : y;
+  const edge = down ? y : y;
+  return (
+    <g>
+      <rect x="0" y={top} width="540" height="44" fill={m("rose")} />
+      {/* the flat-woven tape: a fine twill */}
+      {Array.from({ length: 90 }, (_, i) => (
         <path
-          d={`M${i * 20} ${y} a10 10 0 0 ${down ? 0 : 1} 20 0`}
-          fill={m("rose")}
+          key={i}
+          d={`M${i * 6 - 20} ${top + 44} l20 -44`}
+          stroke={RANI}
+          strokeWidth="0.5"
+          opacity="0.22"
         />
-        <circle
-          cx={i * 20 + 10}
-          cy={down ? y + 5 : y - 5}
-          r="1.6"
-          fill={RANI}
-        />
-      </g>
-    ))}
-    <path
-      d={`M0 ${down ? y - 6 : y + 6} H540`}
-      stroke={RANI}
-      strokeWidth="0.8"
-      strokeDasharray="3 3"
-    />
-  </g>
-);
+      ))}
+      {/* a band of cut gota leaves along the middle of the ribbon */}
+      {Array.from({ length: 27 }, (_, i) => (
+        <g key={`l${i}`} transform={`translate(${i * 20 + 4} ${top + 22})`}>
+          <path d={gotaLeaf} fill={m("gold")} transform="scale(0.7)" />
+          <path d="M2 0 H14" stroke={RANI} strokeWidth="0.5" opacity="0.6" />
+        </g>
+      ))}
+      {[top + 5, top + 39].map((yy) => (
+        <path key={yy} d={`M0 ${yy} H540`} stroke={RANI} strokeWidth="0.8" strokeDasharray="3 3" />
+      ))}
+      {Array.from({ length: 19 }, (_, i) => (
+        <g key={`s${i}`}>
+          <path
+            d={`M${i * 30} ${edge} a15 15 0 0 ${down ? 0 : 1} 30 0`}
+            fill={m("rose")}
+          />
+          <circle cx={i * 30 + 15} cy={down ? edge + 7 : edge - 7} r="2.4" fill={RANI} />
+          <circle cx={i * 30 + 15} cy={down ? edge + 7 : edge - 7} r="1" fill={m("gold")} />
+        </g>
+      ))}
+    </g>
+  );
+};
 
 const gota: Design = {
   id: "gota-patti",
@@ -812,22 +821,22 @@ const gota: Design = {
   type: { title: 2.4, names: 2.2 },
   press: VELVET_PRESS,
   Top: () => (
-    <Svg h={150}>
-      <Scallops y={12} down={true} />
-      <Spray p={[0, 30, 40, 110, 150, 120]} />
-      <Spray p={[540, 30, 500, 110, 390, 120]} />
+    <Svg h={190}>
+      <Spray p={[0, 60, 14, 160, 150, 166]} k={1.35} />
+      <Spray p={[540, 60, 526, 160, 390, 166]} k={1.35} />
+      <GotaLace y={50} down={true} />
     </Svg>
   ),
   Bottom: () => (
     <Scene>
-      <Spray p={[0, 330, 30, 210, 170, 200]} />
-      <Spray p={[540, 330, 510, 210, 370, 200]} />
-      <Scallops y={328} down={false} />
+      <Spray p={[0, 290, 14, 190, 150, 178]} k={1.35} />
+      <Spray p={[540, 290, 526, 190, 390, 178]} k={1.35} />
+      <GotaLace y={296} down={false} />
     </Scene>
   ),
   safe: {
-    story: { top: 124, bottom: 128, x: 44 },
-    print: { top: 100, bottom: 104, x: 38 },
+    story: { top: 176, bottom: 176, x: 44 },
+    print: { top: 146, bottom: 140, x: 38 },
   },
 };
 
@@ -1299,42 +1308,60 @@ const paithani: Design = {
       <rect x="0" y="48" width="540" height="4" fill={MAGENTA} />
     </Svg>
   ),
+  // The pallu: a tall magenta field woven with large gold peacock pairs facing lotus sprays.
   Bottom: () => (
     <Scene>
-      <rect x="0" y="200" width="540" height="4" fill={MAGENTA} />
-      <rect x="0" y="204" width="540" height="10" fill={PEACOCK_G} />
-      <rect x="0" y="214" width="540" height="3" fill={m("gold")} />
-      <rect x="0" y="217" width="540" height="123" fill={MAGENTA} />
+      <rect x="0" y="132" width="540" height="4" fill={MAGENTA} />
+      <rect x="0" y="136" width="540" height="12" fill={PEACOCK_G} />
+      {Array.from({ length: 27 }, (_, i) => (
+        <path key={i} d={`M${i * 20 + 10} 138 l4 4 l-4 4 l-4 -4 Z`} fill={m("gold")} />
+      ))}
+      <rect x="0" y="148" width="540" height="3" fill={m("gold")} />
+      <rect x="0" y="151" width="540" height="149" fill={MAGENTA} />
       {/* gold zari stripes in the pallu ground */}
-      {Array.from({ length: 30 }, (_, i) => (
+      {Array.from({ length: 37 }, (_, i) => (
         <path
           key={i}
-          d={`M0 ${219 + i * 4} H540`}
+          d={`M0 ${153 + i * 4} H540`}
           stroke="#d4569f"
           strokeWidth="0.5"
           opacity="0.5"
         />
       ))}
-      {[0, 1, 2].map((k) => {
-        const cx = 90 + k * 180;
-        return (
-          <g key={k}>
-            <Peacock x={cx - 74} y={232} s={1.25} />
-            <Peacock x={cx + 74} y={232} s={1.25} flip />
-            <g transform={`translate(${cx} 266)`}>
-              {[-50, -25, 0, 25, 50].map((a) => (
-                <path
-                  key={a}
-                  d="M0 0 C-6 -10 -5 -22 0 -30 C5 -22 6 -10 0 0 Z"
-                  transform={`rotate(${a})`}
-                  fill={m("gold")}
-                />
-              ))}
-              <path d="M-14 4 H14" stroke={m("gold")} strokeWidth="2" />
-            </g>
+      {[135, 405].map((cx) => (
+        <g key={cx}>
+          <Peacock x={cx - 114} y={168} s={1.7} />
+          <Peacock x={cx + 114} y={168} s={1.7} flip />
+          <g transform={`translate(${cx} 244) scale(1.5)`}>
+            {[-50, -25, 0, 25, 50].map((a) => (
+              <path
+                key={a}
+                d="M0 0 C-6 -10 -5 -22 0 -30 C5 -22 6 -10 0 0 Z"
+                transform={`rotate(${a})`}
+                fill={m("gold")}
+              />
+            ))}
+            {[-50, 0, 50].map((a) => (
+              <path
+                key={`i${a}`}
+                d="M0 -4 C-3 -10 -2 -18 0 -22 C2 -18 3 -10 0 -4 Z"
+                transform={`rotate(${a})`}
+                fill={MAGENTA}
+                opacity="0.55"
+              />
+            ))}
+            <path d="M-16 4 H16" stroke={m("gold")} strokeWidth="2" />
           </g>
-        );
-      })}
+        </g>
+      ))}
+      {/* a row of small lotus buds woven under the peacocks */}
+      {Array.from({ length: 18 }, (_, i) => (
+        <path
+          key={i}
+          d={`M${15 + i * 30} 288 c-4 -5 -3 -11 0 -14 c3 3 4 9 0 14 Z`}
+          fill={m("gold")}
+        />
+      ))}
       <rect x="0" y="300" width="540" height="3" fill={m("gold")} />
       <rect x="0" y="303" width="540" height="8" fill={PEACOCK_G} />
       {Array.from({ length: 27 }, (_, i) => (
@@ -1358,15 +1385,15 @@ const paithani: Design = {
         ))}
       </g>
       <path
-        d={`M14 52 V${h - 150} M526 52 V${h - 150}`}
+        d={`M14 52 V${h - 210} M526 52 V${h - 210}`}
         stroke={MAGENTA}
         strokeWidth="1.2"
       />
     </Frame>
   ),
   safe: {
-    story: { top: 82, bottom: 176, x: 46 },
-    print: { top: 66, bottom: 150, x: 40 },
+    story: { top: 82, bottom: 220, x: 46 },
+    print: { top: 66, bottom: 176, x: 40 },
   },
 };
 
