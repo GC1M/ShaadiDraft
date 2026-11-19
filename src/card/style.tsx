@@ -37,8 +37,10 @@ const LATIN = {
 }
 
 // Parts for Make your own, borrowed from the designs that draw them: top decorations and bottom scenes.
-export const TOPS = { none: 'None', genda: 'Marigold garland', kalire: 'Kalire tassels', pichhwai: 'Lotus garland', garbo: 'Bunting', korvai: 'Zari band', 'gota-patti': 'Gota lace' } as const
-export const SCENES = { none: 'None', choodi: 'Bangles', genda: 'Brass urli', garbo: 'Garbo lamp', harmandir: 'Golden temple', pichhwai: 'Lotus pond', thipka: 'Rangoli', paithani: 'Peacock pallu', korvai: 'Silk pallu', kalire: 'Chooda', deco: 'Deco fan' } as const
+// Only parts drawn in metal or in colours that sit on every palette: a magenta pallu or a blue lotus pond fights
+// half the grounds, so those stay on their own cards.
+export const TOPS = { none: 'None', genda: 'Marigold garland', kalire: 'Kalire tassels', garbo: 'Copper bunting', korvai: 'Gold brocade', 'gota-patti': 'Gota lace' } as const
+export const SCENES = { none: 'None', genda: 'Brass urli', garbo: 'Diya lamp', choodi: 'Bangles', deco: 'Deco fan', harmandir: 'Golden temple' } as const
 
 export const PLAIN: CardStyle = { frame: 'original', pattern: 'none', foil: 'gold', palette: 'original', fonts: 'original' }
 
@@ -50,9 +52,6 @@ export const LOOKS: Record<string, CardStyle> = {
 // Designs with no art along the top edge: only there does a frame keep its top crest (elsewhere it would sit on a
 // garland, band or frieze).
 const OPEN_TOP = new Set(['custom', 'aaina', 'thanjavur', 'pietra-dura', 'rose-window'])
-
-// Designs that draw their own arch or niche: a jharokha frame would nest a second one inside it.
-export const OWN_ARCH = new Set(['aaina', 'pietra-dura', 'rose-window'])
 
 const rgb = (hex: string) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16))
 const rl = (c: number[]) => {
@@ -102,10 +101,17 @@ function build(d: Design, own?: Partial<CardStyle>): { d: Design; s: CardStyle }
   const sky = [...add.map((l) => (l === VIGNETTE ? l.replace('55%', '68%').replace('.28', dark ? '.3' : '.1') : l)), ground].join(',')
   const fonts = s.fonts === 'original' ? d.fonts : LATIN[s.fonts]
   const framed = s.frame !== 'original'
-  const Overlay = framed || s.pattern !== 'none' ? (({ h }: { h: number }) => <Layers h={h} s={s} dark={dark} own={framed ? undefined : d.Overlay} ink={colors.title} crest={s.top ? s.top === 'none' : OPEN_TOP.has(d.id)} />) : d.Overlay
+  const Overlay = framed || s.pattern !== 'none' ? (({ h }: { h: number }) => <Layers h={h} s={s} dark={dark} own={d.Overlay} ink={colors.title} crest={s.top ? s.top === 'none' : OPEN_TOP.has(d.id)} />) : d.Overlay
   // A frame takes the edge, so text keeps clear of it; the wide bands (zari, temple) take more.
   const x = s.frame === 'zari' || s.frame === 'temple' ? 58 : 50
-  const safe = framed ? { story: { ...d.safe.story, x: Math.max(d.safe.story.x, x) }, print: { ...d.safe.print, x: Math.max(d.safe.print.x, x * 0.85) } } : d.safe
+  const safe: Design['safe'] = framed ? { story: { ...d.safe.story, x: Math.max(d.safe.story.x, x) }, print: { ...d.safe.print, x: Math.max(d.safe.print.x, x * 0.85) } } : { ...d.safe }
+  // A borrowed scene or top keeps the words clear of itself, as on the card it comes from.
+  const lend = (id: string | undefined) => (id && id !== 'none' ? DESIGNS[id]?.safe : undefined)
+  const [up, down] = [lend(s.top), lend(s.scene)]
+  for (const f of ['story', 'print'] as const) {
+    if (up) safe[f] = { ...safe[f], top: Math.max(safe[f].top, up[f].top) }
+    if (down) safe[f] = { ...safe[f], bottom: Math.max(safe[f].bottom, down[f].bottom) }
+  }
   // A top decoration or scene borrowed from another design (Make your own), or none.
   const part = (id: string | undefined, key: 'Top' | 'Bottom') => (!id ? d[key] : id === 'none' ? Empty : (DESIGNS[id]?.[key] ?? d[key]))
   return { d: { ...d, sky, colors, fonts, Overlay, safe, Top: part(s.top, 'Top'), Bottom: part(s.scene, 'Bottom') }, s }
@@ -114,7 +120,7 @@ function build(d: Design, own?: Partial<CardStyle>): { d: Design; s: CardStyle }
 function Layers({ h, s, dark, own: Own, ink, crest }: { h: number; s: CardStyle; dark: boolean; own?: Design['Overlay']; ink: string; crest: boolean }) {
   return (
     <>
-      {s.pattern !== 'none' && <Pattern h={h} id={s.pattern} fill={dark ? foil(s.foil) : ink} opacity={dark ? 0.07 : 0.05} />}
+      {s.pattern !== 'none' && <Pattern h={h} id={s.pattern} fill={dark ? foil(s.foil) : ink} opacity={dark ? 0.12 : 0.09} />}
       {Own && <Own h={h} />}
       {s.frame !== 'original' && <Frame h={h} id={s.frame} f={s.foil} crest={crest} />}
     </>
@@ -341,3 +347,24 @@ function LuxeFrame({ h, f = 'gold', inset = 16, corners = true, jewels = true }:
   )
 }
 
+
+// A picture of one choice for the editor's option chips: the design's ground, frame and art as that choice draws
+// them, no words. view is the part of the 540x960 card to show [x, y, w, h], so a pattern or a frame corner is
+// zoomed in far enough to read.
+export function Thumb({ d, style, w, view = [0, 0, 540, 960] }: { d: Design; style: Partial<CardStyle>; w: number; view?: [number, number, number, number] }) {
+  const x = styled(d, style).d
+  const k = w / view[2]
+  return (
+    <div aria-hidden style={{ width: w, height: view[3] * k, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ width: 540, height: 960, position: 'absolute', left: -view[0] * k, top: -view[1] * k, transform: `scale(${k})`, transformOrigin: 'top left', background: x.sky }}>
+        {x.Overlay && <x.Overlay h={960} />}
+        <div style={{ position: 'absolute', left: 0, right: 0, top: 0 }}>
+          <x.Top />
+        </div>
+        <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, height: 340 }}>
+          <x.Bottom />
+        </div>
+      </div>
+    </div>
+  )
+}

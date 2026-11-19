@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type Dispatch, type ReactNode, type SetSta
 import { Wordmark } from './Hero'
 import { CardPage, PHOTO_FIT, SIZES, photoStyle } from './card/Card'
 import { DESIGNS } from './card/designs'
-import { FOIL_SWATCH, FOILS, FONTS, FRAMES, OWN_ARCH, PALETTES, PATTERNS, SCENES, TOPS, styled } from './card/style'
+import { FOIL_SWATCH, FOILS, FONTS, FRAMES, PALETTES, PATTERNS, SCENES, TOPS, Thumb, styled } from './card/style'
 import { DATE_FORMATS, formatDate, type DateFormat } from './dates'
 import { EVENTS, LANGS, SAMPLES, SYMBOLS } from './i18n'
 import { CUSTOM, samplePages, sectionsPage, templateOf } from './templates'
@@ -254,7 +254,7 @@ export default function Editor({ invite, setInvite, onBack }: Props) {
                   />
                 </Control>
               </div>
-              {!artPages && <Customise invite={invite} set={set} rebuild={t.id === CUSTOM.id ? rebuild : undefined} />}
+              {!artPages && <Customise invite={invite} page={page} set={set} rebuild={t.id === CUSTOM.id ? rebuild : undefined} />}
               {L !== 'en' && (
                 <label className="flex items-start gap-3 rounded-md bg-wine/[0.04] p-4 text-[15px] text-ink/85 ring-1 ring-wine/10">
                   <input type="checkbox" checked={phonetic} onChange={(e) => setPhonetic(e.target.checked)} className="mt-1 size-4 accent-wine" />
@@ -622,26 +622,82 @@ function PhotoCrop({ slot, art, fit, onChange }: { slot: { box: number[]; src: s
   )
 }
 
-// Pick the parts of a drawn design: colours and foil up front, frame, pattern and lettering under More options.
-// Unset parts keep the designer's choice.
-// Make your own (rebuild set) also picks the occasion, the god or symbol, a top decoration and a bottom scene.
-function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<Invite>) => void; rebuild?: (p: { event?: EventType; symbol?: SymbolId }) => void }) {
+// True below the two-column layout (phones and small tablets), where the card preview sits under the form.
+function useNarrow() {
+  const q = '(max-width: 1023px)'
+  const [on, setOn] = useState(() => matchMedia(q).matches)
+  useEffect(() => {
+    const m = matchMedia(q)
+    const f = () => setOn(m.matches)
+    m.addEventListener('change', f)
+    return () => m.removeEventListener('change', f)
+  }, [])
+  return on
+}
+
+// Pick the parts of a drawn design: colours up front, pattern and lettering under More options. Every choice shows a
+// picture of itself drawn on this card, so nobody has to click to learn what "Deco fans" looks like.
+// Make your own (rebuild set) also picks the occasion, the god or symbol, a frame, a top decoration and a bottom
+// scene. Templates keep their own frame and art: a borrowed frame would cover what the design is chosen for.
+function Customise({ invite, page, set, rebuild }: { invite: Invite; page: Page; set: (p: Partial<Invite>) => void; rebuild?: (p: { event?: EventType; symbol?: SymbolId }) => void }) {
   const t = templateOf(invite)
   const d = DESIGNS[t.design]
   const s = styled(d, invite.style).s!
   const pick = (patch: Partial<CardStyle>) => set({ style: { ...invite.style, ...patch } })
-  // A design that draws its own arch would get a second one nested inside it.
-  const frames = Object.entries(FRAMES).filter(([id]) => id !== 'jharokha' || !OWN_ARCH.has(d.id)).map(([id, l]) => [id, rebuild && id === 'original' ? 'None' : l] as const)
-  const swatch = (on: boolean) => `size-9 rounded-full ring-offset-2 ring-offset-paper transition ${on ? 'ring-2 ring-wine' : 'ring-1 ring-wine/20 hover:ring-wine/50'}`
-  return (
-    <div className="space-y-4 rounded-md bg-wine/[0.03] p-4 ring-1 ring-wine/10">
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="font-display text-[20px]">{rebuild ? 'Build your design' : 'Customise the design'}</p>
-        {invite.style && (
-          <button type="button" onClick={() => set({ style: undefined })} className="text-[13px] text-wine underline underline-offset-4">
-            Reset design
+  const own = invite.style ?? {}
+  // Foil gradients are shared by id across the page, and a copy inside a hidden subtree paints nothing, so pictures
+  // are only mounted where they show: More options while open, the small card on phones only.
+  const [more, setMore] = useState(!!rebuild)
+  const phone = useNarrow()
+  // Chips of pictures: the card as it would look with that one part changed.
+  const chips = (k: 'frame' | 'pattern' | 'top' | 'scene', label: string, opts: Record<string, string>, view: [number, number, number, number]) => (
+    <Control label={label}>
+      <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-2">
+        {Object.entries(opts)
+          .filter(([id]) => id !== 'harmandir' || t.symbol === 'ek-onkar')
+          .map(([id, l]) => {
+            const on = (s[k] ?? 'none') === id
+            return (
+              <button key={id} type="button" role="radio" aria-checked={on} onClick={() => pick({ [k]: id })} className={`flex w-[76px] flex-col items-center gap-1.5 rounded-md p-1.5 text-center text-[12px] leading-tight transition ${on ? 'bg-wine text-rose' : 'text-ink/75 ring-1 ring-wine/15 hover:ring-wine/40'}`}>
+                <span className="overflow-hidden rounded-sm ring-1 ring-black/10">
+                  <Thumb d={d} style={{ ...own, [k]: id }} w={64} view={view} />
+                </span>
+                {l}
+              </button>
+            )
+          })}
+      </div>
+    </Control>
+  )
+  const swatches = (label: string, opts: [string, string, string][], value: string, onPick: (id: string) => void) => (
+    <Control label={label}>
+      <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-x-1 gap-y-2">
+        {opts.map(([id, name, bg]) => (
+          <button key={id} type="button" role="radio" aria-checked={value === id} aria-label={name} onClick={() => onPick(id)} className="flex w-[68px] flex-col items-center gap-1.5 text-center text-[12px] leading-tight text-ink/75">
+            <span className={`size-11 rounded-full ring-offset-2 ring-offset-paper transition ${value === id ? 'ring-2 ring-wine' : 'ring-1 ring-wine/20 hover:ring-wine/50'}`} style={{ background: bg }} />
+            <span className={value === id ? 'text-wine' : ''}>{name}</span>
           </button>
-        )}
+        ))}
+      </div>
+    </Control>
+  )
+  return (
+    <div className="space-y-5 rounded-md bg-wine/[0.03] p-4 ring-1 ring-wine/10">
+      {/* On phones the card sits under the form, so a small copy of it stays in view while choosing. */}
+      <div className="sticky top-[66px] z-10 -mx-4 -mt-4 flex items-center justify-between gap-4 rounded-t-md bg-rose px-4 py-3 lg:static lg:m-0 lg:bg-transparent lg:p-0">
+        <div>
+          <p className="font-display text-[20px]">{rebuild ? 'Build your design' : 'Customize the design'}</p>
+          {invite.style && (
+            <button type="button" onClick={() => set({ style: undefined })} className="mt-1 text-[13px] text-wine underline underline-offset-4">
+              Reset design
+            </button>
+          )}
+        </div>
+        {phone && <div className="w-[68px] shrink-0">
+          <ScaledCard w={SIZES[invite.format].w} h={SIZES[invite.format].h} className="shadow-md">
+            <CardPage invite={invite} page={page} />
+          </ScaledCard>
+        </div>}
       </div>
       {rebuild && (
         <div className="flex flex-wrap gap-x-6 gap-y-4">
@@ -667,46 +723,33 @@ function Customise({ invite, set, rebuild }: { invite: Invite; set: (p: Partial<
           </label>
         </div>
       )}
-      <Control label="Colours">
-        <div role="radiogroup" aria-label="Colours" className="mt-1.5 flex flex-wrap gap-2.5">
-          {Object.entries(PALETTES).filter(([id]) => !rebuild || id !== 'original').map(([id, p]) => (
-            <button key={id} type="button" role="radio" aria-checked={s.palette === id} title={p?.label ?? 'Original'} aria-label={p?.label ?? 'Original'} onClick={() => pick({ palette: id as CardStyle['palette'] })} className={swatch(s.palette === id)} style={{ background: p ? p.sky : d.sky }} />
-          ))}
-        </div>
-      </Control>
-      {(s.frame !== 'original' || s.pattern !== 'none') && <Control label="Foil">
-        <div role="radiogroup" aria-label="Foil" className="mt-1.5 flex flex-wrap gap-2.5">
-          {(Object.keys(FOILS) as CardStyle['foil'][]).map((f) => (
-            <button key={f} type="button" role="radio" aria-checked={s.foil === f} title={FOILS[f]} aria-label={FOILS[f]} onClick={() => pick({ foil: f })} className={swatch(s.foil === f)} style={{ background: FOIL_SWATCH[f] }} />
-          ))}
-        </div>
-      </Control>}
-      {rebuild &&
-        (
-          [
-            ['top', 'Top decoration', TOPS],
-            ['scene', 'Bottom scene', SCENES],
-          ] as const
-        ).map(([k, label, opts]) => (
-          <Control key={k} label={label}>
-            <Segmented<string> label={label} value={s[k] ?? 'none'} onChange={(v) => pick({ [k]: v })} options={Object.entries(opts).filter(([id]) => id !== 'harmandir' || t.symbol === 'ek-onkar').map(([id, l]) => ({ id, label: l }))} />
+      {swatches(
+        'Colours',
+        Object.entries(PALETTES)
+          .filter(([id]) => !rebuild || id !== 'original')
+          .map(([id, p]) => [id, p?.label ?? 'As designed', p ? p.sky : d.sky]),
+        s.palette,
+        (id) => pick({ palette: id as CardStyle['palette'] }),
+      )}
+      {rebuild && chips('frame', 'Frame', { ...FRAMES, original: 'None' }, [0, 0, 300, 220])}
+      {rebuild && chips('top', 'Top decoration', TOPS, [0, 0, 540, 300])}
+      {rebuild && chips('scene', 'Bottom scene', SCENES, [0, 620, 540, 340])}
+      <details open={more} onToggle={(e) => setMore(e.currentTarget.open)}>
+        <summary className="cursor-pointer py-2 text-[14px] text-wine">More options: pattern, foil, lettering</summary>
+        {more && <div className="mt-3 space-y-5">
+          {chips('pattern', 'Pattern', PATTERNS, [150, 400, 240, 176])}
+          {/* Foil colours the frame and pattern, so it only shows once one of them is on. */}
+          {(s.frame !== 'original' || s.pattern !== 'none') &&
+            swatches(
+              'Foil',
+              (Object.keys(FOILS) as CardStyle['foil'][]).map((f) => [f, FOILS[f], FOIL_SWATCH[f]]),
+              s.foil,
+              (f) => pick({ foil: f as CardStyle['foil'] }),
+            )}
+          <Control label="Lettering">
+            <Segmented<string> label="Lettering" value={s.fonts} onChange={(v) => pick({ fonts: v as CardStyle['fonts'] })} options={Object.entries(FONTS).filter(([id]) => !rebuild || id !== 'original').map(([id, l]) => ({ id, label: id === 'original' ? 'As designed' : l }))} />
           </Control>
-        ))}
-      <details className="group" open={!!rebuild}>
-        <summary className="cursor-pointer text-[14px] text-wine">More options: frame, pattern, lettering</summary>
-        <div className="mt-4 space-y-4">
-          {(
-            [
-              ['frame', 'Frame', frames],
-              ['pattern', 'Pattern', Object.entries(PATTERNS)],
-              ['fonts', 'Lettering', Object.entries(FONTS).filter(([id]) => !rebuild || id !== 'original')],
-            ] as const
-          ).map(([k, label, opts]) => (
-            <Control key={k} label={label}>
-              <Segmented<string> label={label} value={s[k]} onChange={(v) => pick({ [k]: v })} options={opts.map(([id, l]) => ({ id, label: l }))} />
-            </Control>
-          ))}
-        </div>
+        </div>}
       </details>
     </div>
   )
