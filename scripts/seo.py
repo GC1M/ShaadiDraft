@@ -23,7 +23,7 @@ SITE = 'https://shaaditemplate.com'
 AUTHOR = 'Ashok Lalakiya'
 # Every page names the publisher in full, so the reference resolves inside each page's own graph.
 ORG = {'@type': 'Organization', '@id': f'{SITE}/#org', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'logo': f'{SITE}/icon-512.png'}
-HOME_CARDS = ['royal-udaipur', 'gulabi-kankotri', 'kanchipuram']  # featured designs for the homepage's structured data
+HOME_CARDS = ['harmandir-gold-leaf', 'gota-patti', 'korvai-silk']  # featured designs for the homepage's structured data
 FONTS = ROOT / 'node_modules/@fontsource'
 WINE, WINE_DEEP, ZARI, ROSE = (74, 14, 28), (44, 7, 16), (201, 164, 92), (247, 237, 234)
 TODAY = datetime.date.today().isoformat()
@@ -127,7 +127,7 @@ def structured(path, page, url, title, desc, image, cards):
             {'@type': 'WebApplication', 'name': 'ShaadiTemplate', 'url': f'{SITE}/', 'description': desc, 'applicationCategory': 'DesignApplication', 'operatingSystem': 'Any',
              'browserRequirements': 'Requires JavaScript', 'isAccessibleForFree': True, 'offers': {'@type': 'Offer', 'price': '0', 'priceCurrency': 'INR'},
              'inLanguage': ['en', 'hi', 'mr', 'gu', 'pa', 'ta'], 'image': image, 'publisher': ORG,
-             'featureList': ['Invitations for Save the Date, Ring Ceremony, Haldi, Mehendi, Sangeet, Wedding and Reception', 'English, Hindi, Marathi, Gujarati, Punjabi and Tamil',
+             'featureList': ['Invitations for Save the Date, Ring Ceremony, Haldi, Mehendi, Sangeet, Wedding, Reception and Baby Shower (Simant)', 'English, Hindi, Marathi, Gujarati, Punjabi and Tamil',
                              'Phonetic typing in Indian scripts', '1080x1920 image for WhatsApp', '5x7 inch print-ready PDF', 'No login']},
         ]
     if rel in ('templates/index.html', 'guides/index.html'):

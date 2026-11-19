@@ -3,15 +3,6 @@
 import type { ReactNode } from 'react'
 import type { SymbolId } from '../types'
 
-// Deterministic "randomness" so a card renders identically on screen and in export.
-export function rng(seed: number) {
-  return () => {
-    seed = (seed + 0x6d2b79f5) | 0
-    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 /* ---------------- small pieces ---------------- */
 
@@ -38,16 +29,6 @@ export function Marigold({ x, y, r, dark = '#d35400', light = '#f39c12' }: { x: 
   )
 }
 
-const PAISLEY = 'M0 22 C -14 18 -16 0 -10 -10 C -4 -20 10 -22 14 -12 C 18 -2 10 6 4 2 C 0 -1 2 -8 6 -6'
-export function Paisley({ x, y, s = 1, rot = 0, color, fill }: { x: number; y: number; s?: number; rot?: number; color: string; fill?: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) rotate(${rot}) scale(${s})`}>
-      <path d={PAISLEY} stroke={color} strokeWidth={1.6 / s} fill={fill ?? 'none'} />
-      <path d={PAISLEY} stroke={color} strokeWidth={0.9 / s} fill="none" transform="scale(0.6) translate(0 6)" />
-      <circle cx="-3" cy="8" r="2" fill={color} />
-    </g>
-  )
-}
 
 export function LotusBloom({ x, y, s = 1, petal = '#f4a7b9', deep = '#c2185b' }: { x: number; y: number; s?: number; petal?: string; deep?: string }) {
   return (
@@ -63,185 +44,18 @@ export function LotusBloom({ x, y, s = 1, petal = '#f4a7b9', deep = '#c2185b' }:
   )
 }
 
-export function LotusPad({ x, y, r, fill = '#5f8f4e', vein = '#3f6b35' }: { x: number; y: number; r: number; fill?: string; vein?: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(1 0.4)`}>
-      <path d={`M0 0 L${r * 0.26} ${-r} A${r} ${r} 0 1 1 ${-r * 0.26} ${-r} Z`} fill={fill} stroke={vein} strokeWidth="2" />
-    </g>
-  )
-}
 
 /* ---------------- top decor ---------------- */
 
-type Drop = 'bud' | 'bell' | 'lantern' | 'marigold' | 'diya' | 'mirror'
 
-function Pendant({ kind, x, y, c }: { kind: Drop; x: number; y: number; c: { a: string; b: string } }) {
-  if (kind === 'bell')
-    return (
-      <g transform={`translate(${x} ${y})`}>
-        <path d="M-11 18 Q-11 0 0 -2 Q11 0 11 18 Z" fill={c.a} stroke={c.b} strokeWidth="1" />
-        <rect x="-13" y="17" width="26" height="3" rx="1.5" fill={c.b} />
-        <circle cy="23" r="2.6" fill={c.b} />
-      </g>
-    )
-  if (kind === 'lantern')
-    return (
-      <g transform={`translate(${x} ${y})`}>
-        <path d="M0 -2 L9 8 L7 24 L0 30 L-7 24 L-9 8 Z" fill={c.a} stroke={c.b} strokeWidth="1" />
-        <path d="M-9 8 L9 8 M-7 24 L7 24" stroke={c.b} strokeWidth="1" />
-        <path d="M0 30 L0 38" stroke={c.b} strokeWidth="1.4" />
-      </g>
-    )
-  if (kind === 'marigold') return <Marigold x={x} y={y + 6} r={7} />
-  if (kind === 'diya')
-    return (
-      <g transform={`translate(${x} ${y})`}>
-        <path d="M-10 6 Q0 16 10 6 Z" fill={c.a} stroke={c.b} strokeWidth="1" />
-        <ellipse cy="0" rx="3" ry="6" fill="#ffb300" />
-      </g>
-    )
-  if (kind === 'mirror')
-    return (
-      <g transform={`translate(${x} ${y})`}>
-        <path d="M0 0 L8 10 L0 20 L-8 10 Z" fill={c.a} stroke={c.b} strokeWidth="1.2" />
-        <circle cy="10" r="3" fill="#e8eef5" stroke={c.b} strokeWidth="0.8" />
-      </g>
-    )
-  // bud: copper lotus bud, as in the reference kankotri
-  return (
-    <g transform={`translate(${x} ${y})`}>
-      <path d="M0 -2 C 10 6 11 18 0 28 C -11 18 -10 6 0 -2 Z" fill={c.a} stroke={c.b} strokeWidth="1.2" />
-      <path d="M0 4 C 5 10 5 18 0 24 C -5 18 -5 10 0 4 Z" fill={c.b} opacity="0.35" />
-    </g>
-  )
-}
 
-// Hanging greenery with pendants on cords: the signature top of modern kankotris.
-export function HangingVines({ drop = 'bud', leaf = ['#3d6b2f', '#5b8a3a', '#7aa84e'], cord = '#f3e7d3', pendant = { a: '#d98b5f', b: '#8a4b2a' }, seed = 7 }: {
-  drop?: Drop
-  leaf?: string[]
-  cord?: string
-  pendant?: { a: string; b: string }
-  seed?: number
-}) {
-  const r = rng(seed)
-  const strands = Array.from({ length: 34 }, (_, i) => ({ x: i * 16 + r() * 8, len: 30 + r() * 90 }))
-  const drops = Array.from({ length: 9 }, (_, i) => ({ x: 34 + i * 59, len: 70 + (i % 2) * 34 + r() * 16 }))
-  return (
-    <svg viewBox="0 0 540 200" width="100%" style={{ display: 'block' }}>
-      <rect x="0" y="0" width="540" height="22" fill={leaf[0]} />
-      {strands.map((s, i) => (
-        <g key={i}>
-          <path d={`M${s.x} 0 Q ${s.x + 4} ${s.len / 2} ${s.x - 2} ${s.len}`} stroke={leaf[0]} strokeWidth="1" fill="none" />
-          {Array.from({ length: Math.floor(s.len / 7) }, (_, j) => {
-            const y = j * 7 + 4
-            const side = j % 2 ? 1 : -1
-            return <ellipse key={j} cx={s.x + side * 3} cy={y} rx="2.4" ry="5.5" fill={leaf[(i + j) % leaf.length]} transform={`rotate(${side * 35} ${s.x + side * 3} ${y})`} />
-          })}
-        </g>
-      ))}
-      {drops.map((d, i) => (
-        <g key={i}>
-          <line x1={d.x} y1="10" x2={d.x} y2={d.len} stroke={cord} strokeWidth="2.2" />
-          {[0.35, 0.6].map((t) => (
-            <circle key={t} cx={d.x} cy={10 + (d.len - 10) * t} r="2.2" fill={pendant.b} />
-          ))}
-          <Pendant kind={drop} x={d.x} y={d.len} c={pendant} />
-        </g>
-      ))}
-    </svg>
-  )
-}
 
-// Rajasthani marigold toran.
-export function Toran({ thread = '#b8860b', leaf = '#3f7d2c', accent = '#7a1f1f' }: { thread?: string; leaf?: string; accent?: string }) {
-  const xs = Array.from({ length: 17 }, (_, i) => 16 + i * 31.7)
-  return (
-    <svg viewBox="0 0 540 120" width="100%" style={{ display: 'block' }}>
-      <path d="M0 8 Q 270 26 540 8" stroke={thread} strokeWidth="3" fill="none" />
-      {xs.map((x, i) => {
-        const beads = i % 2 ? 5 : 8
-        const top = 8 + 18 * Math.sin((Math.PI * x) / 540) * 0.7
-        return (
-          <g key={x}>
-            <line x1={x} y1={top} x2={x} y2={top + beads * 10 + 4} stroke={thread} strokeWidth="1" />
-            {Array.from({ length: beads }, (_, j) => (
-              <Marigold key={j} x={x} y={top + 7 + j * 10} r={5.4} dark={j % 3 === 2 ? '#e0a800' : '#e8730c'} light={j % 3 === 2 ? '#ffd23f' : '#ffa726'} />
-            ))}
-            <path d={`M${x} ${top + beads * 10 + 3} l-4 8 l4 3 l4 -3 z`} fill={i % 2 ? leaf : accent} />
-            <ellipse cx={x + 16} cy={top + 5} rx="3.5" ry="10" fill={leaf} transform={`rotate(-20 ${x + 16} ${top + 5})`} />
-          </g>
-        )
-      })}
-    </svg>
-  )
-}
 
-// Scalloped Mughal/Rajput arch frame in foil gold; content sits inside the arch.
-export function ArchFrame({ gold, inner, h }: { gold: string; inner: string; h: number }) {
-  const top = 70
-  const d = `M40 ${h} L40 ${top + 150} Q40 ${top + 60} 150 ${top + 30} Q 230 ${top + 10} 270 ${top - 40} Q 310 ${top + 10} 390 ${top + 30} Q 500 ${top + 60} 500 ${top + 150} L500 ${h}`
-  return (
-    <svg viewBox={`0 0 540 ${h}`} width="100%" height="100%" preserveAspectRatio="none" style={{ position: 'absolute', inset: 0 }}>
-      <path d={d} stroke={gold} strokeWidth="3" fill="none" />
-      <path d={d} stroke={inner} strokeWidth="1.2" fill="none" transform="translate(270 0) scale(0.955 1) translate(-270 14)" />
-      {Array.from({ length: 9 }, (_, i) => (
-        <circle key={i} cx={40} cy={top + 170 + i * ((h - top - 200) / 8)} r="2.4" fill={gold} />
-      ))}
-      {Array.from({ length: 9 }, (_, i) => (
-        <circle key={i} cx={500} cy={top + 170 + i * ((h - top - 200) / 8)} r="2.4" fill={gold} />
-      ))}
-    </svg>
-  )
-}
 
-// Repeating triangle border (temple teeth / phulkari / mirror-work), drawn as a top band.
-export function TeethBand({ base, tooth, line, inner, h = 26, n = 22, pattern }: { base: string; tooth: string; line: string; inner?: ReactNode; h?: number; n?: number; pattern?: (x: number, i: number) => ReactNode }) {
-  const w = 540 / n
-  return (
-    <svg viewBox={`0 0 540 ${h + 24}`} width="100%" style={{ display: 'block' }}>
-      <rect width="540" height={h} fill={base} />
-      <line x1="0" y1="4" x2="540" y2="4" stroke={line} strokeWidth="1.2" />
-      <line x1="0" y1={h - 4} x2="540" y2={h - 4} stroke={line} strokeWidth="1.2" />
-      {pattern && Array.from({ length: n }, (_, i) => pattern(i * w + w / 2, i))}
-      {inner}
-      {Array.from({ length: n }, (_, i) => (
-        <path key={i} d={`M${i * w} ${h} L${i * w + w / 2} ${h + 20} L${(i + 1) * w} ${h} Z`} fill={tooth} stroke={line} strokeWidth="1" />
-      ))}
-    </svg>
-  )
-}
 
 /* ---------------- bottom scenes (540 x 340 grid, anchored to the card's bottom) ---------------- */
 
-export function Mountains({ far = '#b9a7c4', near = '#9c93ae', y = 150 }: { far?: string; near?: string; y?: number }) {
-  return (
-    <g>
-      <path d={`M0 ${y + 30} L60 ${y - 10} L120 ${y + 20} L190 ${y - 40} L260 ${y + 10} L330 ${y - 30} L410 ${y + 15} L470 ${y - 20} L540 ${y + 10} L540 340 L0 340 Z`} fill={far} opacity="0.55" />
-      <path d={`M0 ${y + 60} L80 ${y + 20} L150 ${y + 50} L230 ${y + 10} L310 ${y + 55} L390 ${y + 25} L460 ${y + 50} L540 ${y + 20} L540 340 L0 340 Z`} fill={near} opacity="0.6" />
-    </g>
-  )
-}
 
-export function Trees({ y = 230, seed = 3, greens = ['#2f5d34', '#3f7a3f', '#4f8f45'] }: { y?: number; seed?: number; greens?: string[] }) {
-  const r = rng(seed)
-  return (
-    <g>
-      {Array.from({ length: 14 }, (_, i) => {
-        const x = i * 42 + r() * 20
-        const s = 22 + r() * 18
-        return (
-          <g key={i}>
-            <rect x={x - 2} y={y - 4} width="4" height="24" fill="#4a3424" />
-            <circle cx={x} cy={y - s * 0.6} r={s} fill={greens[i % 3]} />
-            <circle cx={x - s * 0.6} cy={y - s * 0.2} r={s * 0.7} fill={greens[(i + 1) % 3]} />
-            <circle cx={x + s * 0.6} cy={y - s * 0.1} r={s * 0.7} fill={greens[(i + 2) % 3]} />
-          </g>
-        )
-      })}
-    </g>
-  )
-}
 
 // Nagara temple: curvilinear shikhara with amalaka and flag, plus a small mandapa.
 export function Temple({ x = 400, y = 270, s = 1, stone = '#d9a35b', line = '#9a6a2c' }: { x?: number; y?: number; s?: number; stone?: string; line?: string }) {
@@ -261,51 +75,8 @@ export function Temple({ x = 400, y = 270, s = 1, stone = '#d9a35b', line = '#9a
   )
 }
 
-export function Grass({ y = 300, seed = 5, color = '#2e5b2a', light = '#5a8a3a' }: { y?: number; seed?: number; color?: string; light?: string }) {
-  const r = rng(seed)
-  return (
-    <g>
-      <rect x="0" y={y} width="540" height={340 - y} fill={color} />
-      {Array.from({ length: 70 }, (_, i) => {
-        const x = i * 8 + r() * 6
-        const h = 14 + r() * 26
-        return <path key={i} d={`M${x} ${y + 6} Q ${x + (r() - 0.5) * 12} ${y - h / 2} ${x + (r() - 0.5) * 10} ${y - h}`} stroke={i % 3 ? color : light} strokeWidth="2" fill="none" />
-      })}
-    </g>
-  )
-}
 
-// Climbing stem of small flowers for the side edges.
-export function SideVine({ x, flip = false, top = 120, bottom = 330, flower = '#e88aa5', center = '#fff1c1', stem = '#5a7a3a' }: { x: number; flip?: boolean; top?: number; bottom?: number; flower?: string; center?: string; stem?: string }) {
-  const n = 7
-  return (
-    <g transform={flip ? `translate(${x * 2} 0) scale(-1 1)` : undefined}>
-      <path d={`M${x} ${bottom} C ${x + 30} ${(top + bottom) / 2} ${x - 10} ${top + 40} ${x + 20} ${top}`} stroke={stem} strokeWidth="2" fill="none" />
-      {Array.from({ length: n }, (_, i) => {
-        const t = i / (n - 1)
-        const yy = bottom - (bottom - top) * t
-        const xx = x + Math.sin(t * Math.PI) * 18 + (i % 2 ? 12 : -4)
-        return (
-          <g key={i}>
-            <ellipse cx={xx - 8} cy={yy + 6} rx="3" ry="7" fill={stem} transform={`rotate(-40 ${xx - 8} ${yy + 6})`} />
-            <Flower x={xx} y={yy} r={7 + (i % 3)} n={5} fill={flower} center={center} />
-          </g>
-        )
-      })}
-    </g>
-  )
-}
 
-export function Water({ y = 270, color = '#7fb2c4', line = '#d8ecf2' }: { y?: number; color?: string; line?: string }) {
-  return (
-    <g>
-      <rect x="0" y={y} width="540" height={340 - y} fill={color} />
-      {Array.from({ length: 5 }, (_, i) => (
-        <path key={i} d={`M${20 + (i % 2) * 40} ${y + 14 + i * 12} q 15 -5 30 0 t 30 0 M${260 + (i % 2) * 30} ${y + 18 + i * 11} q 15 -5 30 0 t 30 0`} stroke={line} strokeWidth="1.4" fill="none" opacity="0.8" />
-      ))}
-    </g>
-  )
-}
 
 // Udaipur-style palace skyline: chhatris and domes.
 export function Palace({ fill, line, y = 260 }: { fill: string; line: string; y?: number }) {
@@ -332,55 +103,7 @@ export function Palace({ fill, line, y = 260 }: { fill: string; line: string; y?
   )
 }
 
-// South Indian gopuram: stacked tiers with a barrel-vault crown.
-export function Gopuram({ x = 270, y = 300, s = 1, fill, line }: { x?: number; y?: number; s?: number; fill: string; line: string }) {
-  const tiers = 6
-  return (
-    <g transform={`translate(${x} ${y}) scale(${s})`}>
-      {Array.from({ length: tiers }, (_, i) => {
-        const w = 120 - i * 15
-        const yy = -i * 28
-        return (
-          <g key={i}>
-            <rect x={-w / 2} y={yy - 28} width={w} height="28" fill={fill} stroke={line} strokeWidth="1.2" />
-            {Array.from({ length: Math.max(2, Math.floor(w / 18)) }, (_, j) => (
-              <rect key={j} x={-w / 2 + 6 + j * ((w - 12) / Math.max(2, Math.floor(w / 18)))} y={yy - 22} width="6" height="14" fill={line} opacity="0.45" />
-            ))}
-          </g>
-        )
-      })}
-      <path d={`M-32 ${-tiers * 28} Q0 ${-tiers * 28 - 34} 32 ${-tiers * 28} Z`} fill={fill} stroke={line} strokeWidth="1.2" />
-      {[-18, 0, 18].map((xx) => (
-        <path key={xx} d={`M${xx} ${-tiers * 28 - 18} L${xx} ${-tiers * 28 - 34}`} stroke={line} strokeWidth="2" />
-      ))}
-    </g>
-  )
-}
 
-export function Mosque({ fill, line, y = 280 }: { fill: string; line: string; y?: number }) {
-  const minaret = (x: number) => (
-    <g key={x}>
-      <rect x={x - 7} y={y - 150} width="14" height="150" fill={fill} stroke={line} strokeWidth="1.2" />
-      <rect x={x - 11} y={y - 110} width="22" height="5" fill={line} />
-      <path d={`M${x - 8} ${y - 150} Q${x} ${y - 178} ${x + 8} ${y - 150} Z`} fill={fill} stroke={line} strokeWidth="1.2" />
-      <path d={`M${x} ${y - 172} L${x} ${y - 186}`} stroke={line} strokeWidth="1.5" />
-    </g>
-  )
-  return (
-    <g>
-      {minaret(110)}
-      {minaret(430)}
-      <rect x="150" y={y - 70} width="240" height="70" fill={fill} stroke={line} strokeWidth="1.2" />
-      {[190, 230, 270, 310, 350].map((x) => (
-        <path key={x} d={`M${x - 12} ${y} L${x - 12} ${y - 34} Q${x} ${y - 52} ${x + 12} ${y - 34} L${x + 12} ${y}`} fill={line} opacity="0.3" />
-      ))}
-      <path d={`M200 ${y - 70} Q200 ${y - 150} 270 ${y - 160} Q340 ${y - 150} 340 ${y - 70} Z`} fill={fill} stroke={line} strokeWidth="1.4" />
-      <path d={`M270 ${y - 160} L270 ${y - 182}`} stroke={line} strokeWidth="2" />
-      <path d={`M264 ${y - 192} A9 9 0 1 0 276 ${y - 180} A7 7 0 1 1 264 ${y - 192} Z`} fill={line} />
-      <path d={`M160 ${y - 70} Q160 ${y - 104} 190 ${y - 108} Q205 ${y - 100} 205 ${y - 70} Z M335 ${y - 70} Q335 ${y - 100} 350 ${y - 108} Q380 ${y - 104} 380 ${y - 70} Z`} fill={fill} stroke={line} strokeWidth="1.2" />
-    </g>
-  )
-}
 
 // Wedding mandap: four pillars, a draped canopy and kalash on top.
 export function Mandap({ fill, line, cloth, y = 300 }: { fill: string; line: string; cloth: string; y?: number }) {
@@ -550,6 +273,89 @@ export function Emblem({ symbol, color, accent, size }: { symbol: SymbolId; colo
         {/* Tilak-chandlo: saffron U-shaped tilak with a round red chandlo */}
         <path d="M36 20 L36 58 Q50 82 64 58 L64 20 L57 20 L57 56 Q50 68 43 56 L43 20 Z" fill={accent} stroke={color} strokeWidth="1.4" />
         <circle cx="50" cy="48" r="7" fill="#d32f2f" stroke={color} strokeWidth="1" />
+      </g>
+    )
+  else if (symbol === 'mahalakshmi')
+    inner = (
+      <g>
+        {/* Lakshmi's lotus with gold coins falling into it */}
+        <LotusBloom x={50} y={74} s={1} petal={accent} deep={color} />
+        {[
+          [36, 30],
+          [50, 22],
+          [64, 30],
+          [50, 40],
+        ].map(([x, y]) => (
+          <circle key={`${x}-${y}`} cx={x} cy={y} r="5" fill={accent} stroke={color} strokeWidth="1.4" />
+        ))}
+      </g>
+    )
+  else if (symbol === 'chamunda')
+    inner = (
+      <g>
+        {/* Chamunda Maa's shrine on Chotila hill, with her red dhaja */}
+        <path d="M14 82 Q34 54 50 50 Q66 54 86 82 Z" fill={color} />
+        <rect x="42" y="38" width="16" height="14" fill={accent} />
+        <path d="M40 38 L50 28 L60 38 Z" fill={accent} />
+        <rect x="49" y="12" width="2" height="18" fill={color} />
+        <path d="M51 12 L68 16 L51 21 Z" fill="#d32f2f" />
+      </g>
+    )
+  else if (symbol === 'brahmani')
+    inner = (
+      <g>
+        {/* Brahmani Mataji's mount, the hamsa (swan) */}
+        <path d="M26 66 Q30 80 52 80 Q76 80 80 62 Q66 70 56 66 Q50 62 54 50 Q58 38 50 30 Q42 24 36 32 L28 32 L36 36 Q44 34 46 42 Q48 50 42 58 Q34 66 26 66 Z" fill={color} />
+        <path d="M58 64 Q66 56 76 58 Q70 66 58 64 Z" fill={accent} />
+        <circle cx="40" cy="32" r="1.6" fill={accent} />
+      </g>
+    )
+  else if (symbol === 'mahakali')
+    inner = (
+      <g>
+        {/* Mahakali's khadga (curved sword) with a flame above */}
+        <path d="M46 84 L54 84 L54 74 L46 74 Z" fill={color} />
+        <rect x="40" y="70" width="20" height="4" rx="2" fill={accent} />
+        <path d="M47 70 Q40 50 50 26 Q62 48 53 70 Z" fill={color} />
+        <path d="M50 22 Q44 16 50 8 Q56 16 50 22 Z" fill="#e8892b" />
+      </g>
+    )
+  else if (symbol === 'umiya')
+    inner = (
+      <g>
+        {/* Umiya Mataji's temple shikhar with a saffron flag */}
+        <path d="M30 80 L30 58 Q34 34 50 24 Q66 34 70 58 L70 80 Z" fill={color} />
+        <path d="M44 80 L44 68 Q50 60 56 68 L56 80 Z" fill={accent} />
+        {[46, 52].map((y) => (
+          <line key={y} x1="34" y1={y} x2="66" y2={y} stroke={accent} strokeWidth="1.4" />
+        ))}
+        <rect x="49" y="8" width="2" height="18" fill={color} />
+        <path d="M51 8 L68 13 L51 18 Z" fill="#e8892b" />
+      </g>
+    )
+  else if (symbol === 'shrinathji')
+    inner = (
+      <g>
+        {/* Shrinathji lifting Govardhan hill on his raised left hand */}
+        <path d="M18 34 Q34 14 50 18 Q66 14 82 34 Z" fill={color} />
+        <rect x="47" y="34" width="6" height="34" rx="3" fill={color} />
+        <circle cx="50" cy="35" r="5" fill={accent} />
+        <path d="M36 84 Q50 66 64 84 Z" fill={accent} />
+      </g>
+    )
+  else if (symbol === 'ranchhodrai')
+    inner = (
+      <g>
+        {/* Ranchhodraiji of Dakor: the Sudarshan chakra over a red dhaja */}
+        <circle cx="50" cy="44" r="18" fill="none" stroke={color} strokeWidth="3" />
+        <circle cx="50" cy="44" r="5" fill={accent} />
+        {Array.from({ length: 12 }, (_, i) => (
+          <g key={i} transform={`rotate(${i * 30} 50 44)`}>
+            <line x1="50" y1="44" x2="50" y2="27" stroke={color} strokeWidth="1.4" />
+            <path d="M47 26 L50 19 L53 26 Z" fill={accent} />
+          </g>
+        ))}
+        <path d="M30 74 L70 74 L64 84 L36 84 Z" fill="#d32f2f" />
       </g>
     )
   else if (symbol === 'jain')
