@@ -29,6 +29,7 @@ import { designs as batchC } from './designs-c'
 import { designs as batchD } from './designs-d'
 import { designs as batchE } from './designs-e'
 import { designs as batchF } from './designs-f'
+import { designs as batchG } from './designs-g'
 
 export interface Design {
   id: string
@@ -830,6 +831,6 @@ const snanam: Design = {
 }
 
 export const DESIGNS: Record<string, Design> = Object.fromEntries(
-  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF].map((d) => [d.id, d]),
+  [gulabi, udaipur, kesar, marigold, henna, vrindavan, anandKaraj, kanchipuram, nikkah, paithani, bandhani, ivory, nischayam, peacock, palaceNight, snanam, ...batchA, ...batchB, ...batchC, ...batchD, ...batchE, ...batchF, ...batchG].map((d) => [d.id, d]),
 )
 
