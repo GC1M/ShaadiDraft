@@ -34,7 +34,8 @@ if (args[0] === '--write') {
     if (!t) throw new Error(`No template with id ${id}`)
     saved[id] = fingerprint(t)
   }
-  writeFileSync(MANIFEST, JSON.stringify(Object.fromEntries(Object.entries(saved).sort()), null, 2) + '\n')
+  const live = Object.entries(saved).filter(([id]) => tpl.TEMPLATES.some((t) => t.id === id)) // drop removed templates
+  writeFileSync(MANIFEST, JSON.stringify(Object.fromEntries(live.sort()), null, 2) + '\n')
 } else {
   const stale = tpl.TEMPLATES.filter((t) => saved[t.id] !== fingerprint(t)).map((t) => t.id)
   if (stale.length) {
