@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { CardPage, SIZES } from './card/Card'
 import Editor from './Editor'
 import { EVENTS, LANGS, SYMBOLS } from './i18n'
-import { liveId, loadInvite, newInvite, saveInvite, TEMPLATES, type Template } from './templates'
+import { CUSTOM, liveId, loadInvite, newInvite, saveInvite, templateOf, TEMPLATES, type Template } from './templates'
 import { EVENT_IDS, LANG_IDS, SYMBOL_IDS, type EventType, type Invite, type Lang, type SymbolId } from './types'
 import { Hero, preview } from './Hero'
 import { ScaledCard, ZariBorder } from './ui'
@@ -18,7 +18,7 @@ const SITES: Record<string, ReturnType<typeof lazy>> = {
 }
 const isSite = () => (location.hash in SITES ? location.hash : '')
 // Static template pages link to #template/<id> to open that design. Consumed once, so StrictMode's re-run is a no-op.
-let linked = location.hash.startsWith('#template/') ? TEMPLATES.find((t) => t.id === liveId(location.hash.slice(10))) : undefined
+let linked = location.hash.startsWith('#template/') ? [...TEMPLATES, CUSTOM].find((t) => t.id === liveId(location.hash.slice(10))) : undefined
 
 export default function App() {
   const [invite, setInvite] = useState<Invite | null>(loadInvite)
@@ -48,7 +48,7 @@ export default function App() {
   const open = (t: Template) => {
     // Re-opening the template you were editing keeps your text.
     if (invite?.templateId !== t.id) {
-      const prev = invite && TEMPLATES.find((p) => p.id === invite.templateId)
+      const prev = invite && [...TEMPLATES, CUSTOM].find((p) => p.id === invite.templateId) && templateOf(invite)
       // Page ids are random, so ignore them when checking whether the draft was ever edited.
       const plain = (i: Invite) => JSON.stringify(i, (k, v) => (k === 'id' ? undefined : v))
       const edited = prev && plain(invite) !== plain(newInvite(prev, invite.lang))
@@ -93,6 +93,24 @@ function Preview({ t }: { t: Template }) {
   return <img src={preview(t.id)} width={540} height={960} loading="lazy" alt={`${t.name}, ${EVENTS[t.event]} invitation card`} onError={() => setLive(true)} className="design-card h-auto w-full" />
 }
 
+// The first tile: a blank luxe card the couple builds from parts (colours, foil, frame, pattern, decoration, scene).
+function MakeYourOwn({ onOpen }: { onOpen: () => void }) {
+  const inv = useMemo(() => newInvite(CUSTOM), [])
+  return (
+    <button type="button" onClick={onOpen} className="design group flex min-w-0 flex-col text-left">
+      <div className="pointer-events-none relative w-full transition-transform duration-500 ease-out group-hover:-translate-y-1.5">
+        <span className="zari-button absolute left-2 top-2 z-10 rounded-full px-2.5 py-1 text-xs font-medium text-wine-deep shadow">✦ New</span>
+        <ScaledCard w={SIZES.story.w} h={SIZES.story.h} className="design-card">
+          <CardPage invite={inv} page={inv.pages[0]} />
+        </ScaledCard>
+      </div>
+      <h3 className="mt-5 font-display text-[19px] leading-snug">Make your own</h3>
+      <p className="mt-1 text-sm text-ink/60">Choose colours, foil, frame, pattern and scene</p>
+      <span className="mt-2.5 text-sm font-medium text-wine underline decoration-zari underline-offset-[6px] group-hover:decoration-wine">Start designing</span>
+    </button>
+  )
+}
+
 const GREETINGS = ['Shubh Vivah', 'शुभ विवाह', 'શુભ લગ્ન', 'ਸ਼ੁਭ ਵਿਆਹ', 'சுப முகூர்த்தம்', 'शुभमंगल सावधान', 'Save the Date']
 
 function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invite | null }) {
@@ -110,7 +128,7 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
     setSymbol('all')
     setEvent('all')
   }
-  const draftName = draft && TEMPLATES.find((t) => t.id === draft.templateId)?.name
+  const draftName = draft && [...TEMPLATES, CUSTOM].find((t) => t.id === draft.templateId)?.name
   // When a filter changes, bring the top of the grid back into view and fade the new set in.
   const top = useRef<HTMLDivElement>(null)
   const grid = useRef<HTMLDivElement>(null)
@@ -201,6 +219,7 @@ function Gallery({ onOpen, draft }: { onOpen: (t: Template) => void; draft: Invi
           </div>
         ) : (
           <div ref={grid} className="mt-12 grid grid-cols-2 gap-x-5 gap-y-14 sm:gap-x-10 md:grid-cols-3 lg:grid-cols-4">
+            <MakeYourOwn onOpen={() => onOpen(CUSTOM)} />
             {shown.map((t) => {
               return (
                 // A link to the design's own page, so crawlers reach every design from the homepage; a plain click opens the editor.

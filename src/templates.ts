@@ -79,7 +79,17 @@ const RETIRED: Record<string, string> = {
   'kashmiri-chinar': 'gota-patti', // hi/ganesha/wedding to hi/ganesha/wedding
 }
 export const liveId = (id: string) => RETIRED[id] ?? id
-export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0]
+// Make your own: a blank luxe card the couple builds from parts. Not in TEMPLATES, so it has no gallery labels,
+// design page or preview; its occasion and symbol come from the invite.
+export const CUSTOM: Template = { id: 'make-your-own', name: 'Your Own Design', design: 'custom', lang: 'en', symbol: 'ganesha', event: 'wedding' }
+
+export const templateById = (id: string) => TEMPLATES.find((t) => t.id === id) ?? (id === CUSTOM.id ? CUSTOM : TEMPLATES[0])
+
+// The template as this invite uses it: the blank one takes the occasion and symbol chosen for it.
+export const templateOf = (i: Pick<Invite, 'templateId' | 'event' | 'symbol'>) => {
+  const t = templateById(i.templateId)
+  return t === CUSTOM ? { ...t, event: i.event ?? t.event, symbol: i.symbol ?? t.symbol } : t
+}
 
 let n = 0
 const uid = () => `p${Date.now().toString(36)}${(n++).toString(36)}`
